@@ -1,0 +1,9 @@
+Ever noticed how you lurch forward when a bus suddenly brakes? Or why a ball you kick seems to keep rolling for quite a while even on flat ground?
+
+This isn't magic; it's physics! We're talking about **Newton's First Law of Motion**, also known as the **Law of Inertia**. Simply put, this law tells us that an object at rest will stay at rest, and an object in motion will stay in motion with the same speed and in the same direction, unless acted upon by an **unbalanced external force**.
+
+Think of it like this: objects are a bit stubborn! They prefer to keep doing whatever they're already doing. If they're chilling, they want to keep chilling. If they're moving, they want to keep moving. This natural tendency to resist changes in their state of motion is called **Inertia**. So, for anything to start moving if it's still, or to stop moving, speed up, slow down, or change direction if it's already in motion, there has to be a push or a pull – an external force – that makes it change.
+
+Let's go back to that bus example. When the bus is moving, you're moving with it. But when the driver slams the brakes, the bus stops, but *your body* wants to continue moving forward because of **inertia**. That's why you feel that push! Similarly, a spacecraft can travel for millions of miles through space without its engines on, because there's almost no external force like air resistance or friction to stop it.
+
+So, the next time you see something just sitting there, or something moving along, remember: it's all thanks to **Newton's First Law** and the power of **inertia**! Objects are stubborn; they resist change unless something makes them change.

@@ -1,0 +1,7 @@
+Ever wondered why some objects seem perfectly balanced, while others easily topple? It's all thanks to a fascinating concept called the **Centre of Gravity**, or C.G. for short.
+
+Imagine a single point inside any object where its *entire weight* seems to act. That's its Centre of Gravity. For simple, symmetrical shapes, finding the C.G. is quite straightforward. Take a perfect circle or a ring – its Centre of Gravity is right at its **geometric center**. A rectangle, like your phone screen? Its C.G. is where its two **diagonals intersect**. A uniform rod? Its C.G. is precisely at its **midpoint**. And a triangle, say a slice of pizza? Its C.G. is at its **centroid**, which is one-third of the way up from the base along any median. What's really cool is that the C.G. doesn't always have to be *inside* the body itself! Think about that ring again – its center is empty space!
+
+Understanding C.G. is crucial in so many fields! Think about how racing cars are designed with a very **low Centre of Gravity** to prevent them from flipping over during high-speed turns. This principle is key to stability. That little toy with a rounded base that always rights itself no matter how much you push it? Its C.G. is very low down, helping it return to an upright position. On the other hand, an object with a high C.G. is much easier to topple.
+
+So, the **Centre of Gravity** is that magical point where an object's weight is concentrated. Knowing its location helps us understand balance, stability, and even how things move.

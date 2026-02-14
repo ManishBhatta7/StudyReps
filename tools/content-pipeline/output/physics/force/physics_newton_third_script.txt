@@ -1,0 +1,9 @@
+Have you ever pushed a heavy box or leaned against a wall? What happens? You push the wall, but does the wall do anything back?
+
+Well, according to *Newton's Third Law of Motion*, for every action, there is an *equal and opposite reaction*. This means that forces never happen alone; they always come in pairs. When one object *exerts a force* on another object – that's the action – the second object simultaneously *exerts an equal and opposite force back* on the first object – that's the reaction. Think of it like a constant conversation between forces!
+
+We can write this scientifically as F₁₂ = -F₂₁. This just means the force of object 1 on object 2 is equal in magnitude but opposite in direction to the force of object 2 on object 1. The most important thing to remember here is that these action and reaction forces *always act on different bodies*. They never cancel each other out because they aren't acting on the same object!
+
+Let's look at how a rocket launches into space. The rocket engine *pushes hot gases downwards* (that's the action). In reaction, the *hot gases push the rocket upwards* with an equal and opposite force, propelling it into the sky! See how the force on the gases is different from the force on the rocket? Or consider how you walk: when you take a step, your foot *pushes the ground backwards* (the action). The ground, in turn, *pushes your foot forwards* (the reaction), allowing you to move! Without that reaction, you wouldn't go anywhere.
+
+So, next time you push something, or even just stand still, remember Newton's Third Law: every action has an *equal and opposite reaction*, and these forces *always act on different objects*.

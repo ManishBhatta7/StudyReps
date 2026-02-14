@@ -1,0 +1,13 @@
+Hey everyone! Ever wondered why a soccer ball stops rolling, or why you can push a shopping cart? The answer is **force**! It’s a really important concept in physics, and today we’re going to break it down.
+
+So, what exactly *is* a force? Simply put, a force is a **physical cause** that can change how something is moving, or even if it's moving at all. Imagine a book sitting still on a table. It’s at rest, right? If you push it, you’re applying a force, and now it’s moving! Or, think about a ball rolling down a hill – it’s already in motion, and the force of gravity is keeping it going.
+
+We measure force using units. The standard unit is the **Newton**, often shortened to 'N'. You might also hear about 'Dynes,' which is an older unit. Just so you know, 1 Newton is equal to 10 to the power of 5 Dynes – that’s a lot!
+
+Now, forces come in different flavors. We can broadly categorize them into two types: **contact forces** and **non-contact forces**. Contact forces need physical touch. Think about **friction** – that’s what stops your shoes from sliding on the floor. **Tension** is the force when you pull on a rope, and **normal force** is the force that keeps a table from sinking when you put something on it.
+
+Then there are **non-contact forces**. These forces act even without touching! The most familiar one is **gravity**, which pulls everything towards the Earth. **Magnetic forces** hold magnets together, and **electric forces** are responsible for things like static electricity – you know, when you rub your socks on the carpet and get a little zap!
+
+Let’s look at an example. Imagine you’re riding a bike. You’re pushing the pedals – that’s a force! The friction between the tires and the road allows you to move forward. Gravity is pulling you down, but the wheels are pushing back up. It’s a whole bunch of forces working together!
+
+So, to recap: a **force** is a push or a pull that can change motion. We measure it in **Newtons**, and they come in two main types: **contact forces** like friction, and **non-contact forces** like gravity. Pretty cool, huh?

@@ -1,0 +1,37 @@
+<svg viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#0F172A"/>
+
+  <text x="540" y="200" font-family="Arial, sans-serif" font-size="80" fill="white" text-anchor="middle" font-weight="bold">Units of Force</text>
+  <text x="540" y="280" font-family="Arial, sans-serif" font-size="50" fill="white" text-anchor="middle">Measuring Push and Pull</text>
+
+  <!-- Newton -->
+  <rect x="150" y="400" width="780" height="250" rx="20" ry="20" fill="rgba(255,255,255,0.05)" stroke="#6366F1" stroke-width="5"/>
+  <text x="200" y="480" font-family="Arial, sans-serif" font-size="60" fill="white" text-anchor="start" font-weight="bold">Newton</text>
+  <text x="200" y="580" font-family="Arial, sans-serif" font-size="100" fill="#6366F1" text-anchor="start" font-weight="bold">N</text>
+  <text x="450" y="550" font-family="Arial, sans-serif" font-size="40" fill="white" text-anchor="start">Standard International Unit (SI)</text>
+  <text x="450" y="600" font-family="Arial, sans-serif" font-size="30" fill="white" text-anchor="start">(Named after Isaac Newton)</text>
+
+  <!-- Dyne -->
+  <rect x="150" y="750" width="780" height="250" rx="20" ry="20" fill="rgba(255,255,255,0.05)" stroke="#F43F5E" stroke-width="5"/>
+  <text x="200" y="830" font-family="Arial, sans-serif" font-size="60" fill="white" text-anchor="start" font-weight="bold">Dyne</text>
+  <text x="200" y="930" font-family="Arial, sans-serif" font-size="80" fill="#F43F5E" text-anchor="start" font-weight="bold">Dyne</text>
+  <text x="450" y="900" font-family="Arial, sans-serif" font-size="40" fill="white" text-anchor="start">CGS System Unit</text>
+
+  <!-- Conversion -->
+  <rect x="100" y="1100" width="880" height="300" rx="20" ry="20" fill="rgba(255,255,255,0.08)" stroke="#10B981" stroke-width="5"/>
+  <text x="540" y="1200" font-family="Arial, sans-serif" font-size="60" fill="white" text-anchor="middle" font-weight="bold">Conversion:</text>
+  <text x="540" y="1300" font-family="Arial, sans-serif" font-size="100" fill="#10B981" text-anchor="middle" font-weight="bold">1 N = 100,000 Dyne</text>
+  <text x="540" y="1380" font-family="Arial, sans-serif" font-size="60" fill="white" text-anchor="middle">(10<tspan baseline-shift="super" font-size="0.7em">5</tspan> Dyne)</text>
+
+  <!-- Visual magnitude -->
+  <text x="540" y="1600" font-family="Arial, sans-serif" font-size="40" fill="white" text-anchor="middle">Visualizing the difference:</text>
+  <text x="540" y="1700" font-family="Arial, sans-serif" font-size="120" fill="#6366F1" text-anchor="middle" font-weight="bold">N</text>
+  <g transform="translate(540, 1780)">
+    <text x="-250" y="0" font-family="Arial, sans-serif" font-size="40" fill="#F43F5E" text-anchor="middle" font-weight="bold">Dyne</text>
+    <text x="-150" y="0" font-family="Arial, sans-serif" font-size="40" fill="#F43F5E" text-anchor="middle" font-weight="bold">Dyne</text>
+    <text x="-50" y="0" font-family="Arial, sans-serif" font-size="40" fill="#F43F5E" text-anchor="middle" font-weight="bold">...</text>
+    <text x="50" y="0" font-family="Arial, sans-serif" font-size="40" fill="#F43F5E" text-anchor="middle" font-weight="bold">Dyne</text>
+    <text x="150" y="0" font-family="Arial, sans-serif" font-size="40" fill="#F43F5E" text-anchor="middle" font-weight="bold">Dyne</text>
+    <text x="250" y="0" font-family="Arial, sans-serif" font-size="40" fill="#F43F5E" text-anchor="middle" font-weight="bold">Dyne</text>
+  </g>
+</svg>

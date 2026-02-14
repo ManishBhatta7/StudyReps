@@ -1,0 +1,29 @@
+<svg width="1080" height="1920" viewBox="0 0 1080 1920" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#0F172A" />
+  <rect width="1080" height="1920" fill="#0F172A"/>
+
+  <!-- Newton's Third Law Text -->
+  <text x="540" y="250" font-family="Arial, sans-serif" font-size="72" fill="#E2E8F0" text-anchor="middle">Newton's Third Law</text>
+  <text x="540" y="350" font-family="Arial, sans-serif" font-size="56" fill="#E2E8F0" text-anchor="middle">of Motion</text>
+
+  <text x="540" y="1400" font-family="Arial, sans-serif" font-size="64" fill="#10B981" text-anchor="middle">"For every action, there is an</text>
+  <text x="540" y="1470" font-family="Arial, sans-serif" font-size="64" fill="#10B981" text-anchor="middle">equal and opposite reaction."</text>
+  <text x="540" y="1600" font-family="Arial, sans-serif" font-size="48" fill="#A0AEC0" text-anchor="middle">Forces always come in pairs!</text>
+
+  <!-- Object 1 -->
+  <rect x="200" y="750" width="300" height="300" fill="#3F51B5" rx="30"/>
+  <text x="350" y="1000" font-family="Arial, sans-serif" font-size="48" fill="#E2E8F0" text-anchor="middle">Object 1</text>
+
+  <!-- Object 2 -->
+  <rect x="580" y="750" width="300" height="300" fill="#673AB7" rx="30"/>
+  <text x="730" y="1000" font-family="Arial, sans-serif" font-size="48" fill="#E2E8F0" text-anchor="middle">Object 2</text>
+
+  <!-- Force 1 on 2 (Action) -->
+  <path d="M500 900 H580 M580 900 L560 880 M580 900 L560 920" stroke="#F43F5E" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="540" y="850" font-family="Arial, sans-serif" font-size="48" fill="#F43F5E" text-anchor="middle">Action</text>
+
+
+  <!-- Force 2 on 1 (Reaction) -->
+  <path d="M580 990 H500 M500 990 L520 970 M500 990 L520 1010" stroke="#6366F1" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="540" y="1040" font-family="Arial, sans-serif" font-size="48" fill="#6366F1" text-anchor="middle">Reaction</text>
+
+</svg>

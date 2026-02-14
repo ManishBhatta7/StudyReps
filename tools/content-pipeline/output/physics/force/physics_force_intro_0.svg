@@ -1,0 +1,29 @@
+<svg viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#0F172A"/>
+
+  <!-- Soccer Ball Scenario -->
+  <g transform="translate(150, 400)">
+    <circle cx="100" cy="100" r="80" fill="#E0E0E0" stroke="white" stroke-width="3"/>
+    <path d="M 50 180 L 150 180 M 120 160 L 150 180 L 120 200" stroke="#6366F1" stroke-width="12" fill="none"/>
+    <text x="100" y="300" font-family="Arial, sans-serif" font-size="40" fill="white" text-anchor="middle">Why does it fly?</text>
+    <text x="100" y="350" font-family="Arial, sans-serif" font-size="60" fill="#F43F5E" text-anchor="middle">?</text>
+  </g>
+
+  <!-- Car Stopping Scenario -->
+  <g transform="translate(600, 400)">
+    <rect x="0" y="50" width="250" height="120" rx="10" ry="10" fill="#E0E0E0" stroke="white" stroke-width="3"/>
+    <circle cx="30" cy="170" r="25" fill="#555"/>
+    <circle cx="220" cy="170" r="25" fill="#555"/>
+    <path d="M 250 110 L 150 110 M 180 90 L 150 110 L 180 130" stroke="#F43F5E" stroke-width="12" fill="none"/>
+    <text x="125" y="300" font-family="Arial, sans-serif" font-size="40" fill="white" text-anchor="middle">Why does it stop?</text>
+    <text x="125" y="350" font-family="Arial, sans-serif" font-size="60" fill="#F43F5E" text-anchor="middle">?</text>
+  </g>
+
+  <!-- Central Answer -->
+  <text x="540" y="1000" font-family="Arial, sans-serif" font-size="70" fill="white" text-anchor="middle" font-weight="bold">The answer to all these is...</text>
+  <text x="540" y="1150" font-family="Arial, sans-serif" font-size="150" fill="#10B981" text-anchor="middle" font-weight="bold">FORCE!</text>
+
+  <text x="540" y="1400" font-family="Arial, sans-serif" font-size="45" fill="white" text-anchor="middle">A physical cause that can</text>
+  <text x="540" y="1460" font-family="Arial, sans-serif" font-size="55" fill="#6366F1" text-anchor="middle" font-weight="bold">change the state of rest or motion</text>
+  <text x="540" y="1520" font-family="Arial, sans-serif" font-size="45" fill="white" text-anchor="middle">of an object.</text>
+</svg>

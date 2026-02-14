@@ -1,0 +1,30 @@
+<svg width="1080" height="1920" viewBox="0 0 1080 1920" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#0F172A" />
+  <rect width="1080" height="1920" fill="#0F172A"/>
+
+  <!-- Title -->
+  <text x="540" y="250" font-family="Arial, sans-serif" font-size="72" fill="#E2E8F0" text-anchor="middle">Rocket Launch</text>
+  <text x="540" y="350" font-family="Arial, sans-serif" font-size="56" fill="#A0AEC0" text-anchor="middle">Newton's Third Law in action!</text>
+
+  <!-- Rocket Body -->
+  <rect x="440" y="600" width="200" height="500" fill="#A0AEC0" rx="20"/>
+  <!-- Rocket Top (Cone) -->
+  <path d="M440 600 L540 400 L640 600 Z" fill="#A0AEC0"/>
+  <!-- Rocket Fins -->
+  <path d="M440 850 H400 V950 H440 Z" fill="#6366F1"/>
+  <path d="M640 850 H680 V950 H640 Z" fill="#6366F1"/>
+
+  <!-- Exhaust (abstracted flames) -->
+  <path d="M460 1100 Q540 1250 620 1100 Q540 1300 460 1100 Z" fill="#F43F5E" opacity="0.8"/>
+  <path d="M480 1100 Q540 1200 600 1100 Q540 1250 480 1100 Z" fill="#FFD700" opacity="0.8"/>
+
+  <!-- Force on Gases (Action) - Downwards -->
+  <path d="M540 1080 V1200 M540 1200 L520 1180 M540 1200 L560 1180" stroke="#F43F5E" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="540" y="1300" font-family="Arial, sans-serif" font-size="48" fill="#F43F5E" text-anchor="middle">Force on Gases</text>
+  <text x="540" y="1350" font-family="Arial, sans-serif" font-size="40" fill="#F43F5E" text-anchor="middle">(Action)</text>
+
+  <!-- Force on Rocket (Reaction/Thrust) - Upwards -->
+  <path d="M540 580 V450 M540 450 L520 470 M540 450 L560 470" stroke="#10B981" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="540" y="500" font-family="Arial, sans-serif" font-size="48" fill="#10B981" text-anchor="middle">Force on Rocket</text>
+  <text x="540" y="550" font-family="Arial, sans-serif" font-size="40" fill="#10B981" text-anchor="middle">(Reaction / Thrust)</text>
+
+</svg>
