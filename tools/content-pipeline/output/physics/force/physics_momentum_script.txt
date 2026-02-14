@@ -1,9 +1,0 @@
-Ever wonder why a large truck moving slowly can be much harder to stop than a small car speeding past? Or what makes a tiny bullet so incredibly impactful? The answer lies in a fundamental concept in physics called **momentum**.
-
-Momentum is essentially the "quantity of motion" an object possesses. It tells us not just how fast something is moving, but also how much "oomph" it has due to its mass. Mathematically, it's defined as the product of an object's **mass** and its **velocity**. So, we write it as **p = mv**, where 'p' stands for momentum. Since velocity has both magnitude and direction, momentum is also a **vector quantity** – meaning it has a direction too! The SI unit for momentum is **kilogram-meter per second**, or **kg·m/s**.
-
-Now for one of the coolest principles: the **conservation of momentum**. Imagine an **isolated system** – that's a system where no external forces like friction or air resistance are acting on it. In such a system, the **total momentum before** an event, like a collision, is *exactly equal* to the **total momentum after** that event. Momentum is never lost or gained, only transferred between objects!
-
-Think about playing billiards. When the cue ball strikes another ball, the cue ball slows down, transferring some of its momentum. The second ball then speeds up, gaining momentum in a new direction. But if you were to measure it, the total combined momentum of both balls *before* the collision would be precisely the same as their total combined momentum *after* the collision. It just redistributed itself!
-
-So, remember: **Momentum** is mass times velocity, it's a vector quantity, and in an isolated system, it's always **conserved**. It's a key idea for understanding how objects interact in our universe!
