@@ -58,14 +58,21 @@ class GateOverlay extends StatelessWidget {
                     width: MediaQuery.of(context).size.width * 0.9,
                     padding: const EdgeInsets.fromLTRB(24, 60, 24, 24), // Top padding for Mascot
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: StudyRepsTheme.bgSecondary.withOpacity(0.8),
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                         color: isAnswered 
                             ? StudyRepsTheme.successGreen 
-                            : StudyRepsTheme.primaryPurple.withOpacity(0.5),
-                        width: 2,
+                            : StudyRepsTheme.borderSubtle,
+                        width: isAnswered ? 2 : 1,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
                     ),
                     child: isAnswered 
                         ? _buildSuccessContent()

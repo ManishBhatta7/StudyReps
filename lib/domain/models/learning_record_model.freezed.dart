@@ -51,6 +51,7 @@ mixin _$LearningRecord {
 // ── Timestamps ──
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime? get updatedAt => throw _privateConstructorUsedError;
+  DateTime? get syncedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -80,7 +81,8 @@ abstract class $LearningRecordCopyWith<$Res> {
       double masteryScore,
       bool isMastered,
       DateTime createdAt,
-      DateTime? updatedAt});
+      DateTime? updatedAt,
+      DateTime? syncedAt});
 }
 
 /// @nodoc
@@ -112,6 +114,7 @@ class _$LearningRecordCopyWithImpl<$Res, $Val extends LearningRecord>
     Object? isMastered = null,
     Object? createdAt = null,
     Object? updatedAt = freezed,
+    Object? syncedAt = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -178,6 +181,10 @@ class _$LearningRecordCopyWithImpl<$Res, $Val extends LearningRecord>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
+      syncedAt: freezed == syncedAt
+          ? _value.syncedAt
+          : syncedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -206,7 +213,8 @@ abstract class _$$LearningRecordImplCopyWith<$Res>
       double masteryScore,
       bool isMastered,
       DateTime createdAt,
-      DateTime? updatedAt});
+      DateTime? updatedAt,
+      DateTime? syncedAt});
 }
 
 /// @nodoc
@@ -236,6 +244,7 @@ class __$$LearningRecordImplCopyWithImpl<$Res>
     Object? isMastered = null,
     Object? createdAt = null,
     Object? updatedAt = freezed,
+    Object? syncedAt = freezed,
   }) {
     return _then(_$LearningRecordImpl(
       id: null == id
@@ -302,6 +311,10 @@ class __$$LearningRecordImplCopyWithImpl<$Res>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
+      syncedAt: freezed == syncedAt
+          ? _value.syncedAt
+          : syncedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ));
   }
 }
@@ -325,7 +338,8 @@ class _$LearningRecordImpl extends _LearningRecord {
       this.masteryScore = 0.0,
       this.isMastered = false,
       required this.createdAt,
-      this.updatedAt})
+      this.updatedAt,
+      this.syncedAt})
       : super._();
 
   factory _$LearningRecordImpl.fromJson(Map<String, dynamic> json) =>
@@ -387,10 +401,12 @@ class _$LearningRecordImpl extends _LearningRecord {
   final DateTime createdAt;
   @override
   final DateTime? updatedAt;
+  @override
+  final DateTime? syncedAt;
 
   @override
   String toString() {
-    return 'LearningRecord(id: $id, userId: $userId, videoId: $videoId, dwellTimeMs: $dwellTimeMs, attempts: $attempts, isCorrect: $isCorrect, correctCount: $correctCount, easeFactor: $easeFactor, interval: $interval, repetition: $repetition, nextReviewAt: $nextReviewAt, lastReviewedAt: $lastReviewedAt, masteryScore: $masteryScore, isMastered: $isMastered, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'LearningRecord(id: $id, userId: $userId, videoId: $videoId, dwellTimeMs: $dwellTimeMs, attempts: $attempts, isCorrect: $isCorrect, correctCount: $correctCount, easeFactor: $easeFactor, interval: $interval, repetition: $repetition, nextReviewAt: $nextReviewAt, lastReviewedAt: $lastReviewedAt, masteryScore: $masteryScore, isMastered: $isMastered, createdAt: $createdAt, updatedAt: $updatedAt, syncedAt: $syncedAt)';
   }
 
   @override
@@ -426,7 +442,9 @@ class _$LearningRecordImpl extends _LearningRecord {
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+                other.updatedAt == updatedAt) &&
+            (identical(other.syncedAt, syncedAt) ||
+                other.syncedAt == syncedAt));
   }
 
   @JsonKey(ignore: true)
@@ -448,7 +466,8 @@ class _$LearningRecordImpl extends _LearningRecord {
       masteryScore,
       isMastered,
       createdAt,
-      updatedAt);
+      updatedAt,
+      syncedAt);
 
   @JsonKey(ignore: true)
   @override
@@ -482,7 +501,8 @@ abstract class _LearningRecord extends LearningRecord {
       final double masteryScore,
       final bool isMastered,
       required final DateTime createdAt,
-      final DateTime? updatedAt}) = _$LearningRecordImpl;
+      final DateTime? updatedAt,
+      final DateTime? syncedAt}) = _$LearningRecordImpl;
   const _LearningRecord._() : super._();
 
   factory _LearningRecord.fromJson(Map<String, dynamic> json) =
@@ -523,6 +543,8 @@ abstract class _LearningRecord extends LearningRecord {
   DateTime get createdAt;
   @override
   DateTime? get updatedAt;
+  @override
+  DateTime? get syncedAt;
   @override
   @JsonKey(ignore: true)
   _$$LearningRecordImplCopyWith<_$LearningRecordImpl> get copyWith =>

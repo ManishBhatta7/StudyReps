@@ -1,3 +1,5 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 /// Application-wide constants for StudyReps
 /// 
 /// StudyReps: "TikTok for Logic" - Learn through micro-struggles
@@ -11,14 +13,11 @@ class AppConstants {
   static const String appVersion = '1.0.0';
 
   // Supabase Configuration
-  // TODO: Move to environment variables for production
-  static const String supabaseUrl = 'https://gwarmogcmeehajnevbmi.supabase.co';
-  static const String supabaseAnonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3YXJtb2djbWVlaGFqbmV2Ym1pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUyOTc1MjAsImV4cCI6MjA2MDg3MzUyMH0.EiTIeIZMrDjMIufMUEuDr74ydPFHtRAIveTvAkBxTds';
+  static String get supabaseUrl => dotenv.env['SUPABASE_URL'] ?? '';
+  static String get supabaseAnonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? '';
 
   // Google Gemini API Configuration
-  // TODO: Move to environment variables for production
-  static const String geminiApiKey = 'AIzaSyBktbMaT76dgrgQHB4QoXnmQ3bFbZOnkiI';
+  static String get geminiApiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
   static const String geminiModel = 'gemini-1.5-flash';
   static const String geminiBaseUrl = 'https://generativelanguage.googleapis.com/v1beta';
   

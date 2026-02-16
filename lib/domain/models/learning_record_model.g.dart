@@ -30,6 +30,9 @@ _$LearningRecordImpl _$$LearningRecordImplFromJson(Map<String, dynamic> json) =>
       updatedAt: json['updatedAt'] == null
           ? null
           : DateTime.parse(json['updatedAt'] as String),
+      syncedAt: json['syncedAt'] == null
+          ? null
+          : DateTime.parse(json['syncedAt'] as String),
     );
 
 Map<String, dynamic> _$$LearningRecordImplToJson(
@@ -51,4 +54,5 @@ Map<String, dynamic> _$$LearningRecordImplToJson(
       'isMastered': instance.isMastered,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt?.toIso8601String(),
+      'syncedAt': instance.syncedAt?.toIso8601String(),
     };

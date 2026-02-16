@@ -445,10 +445,10 @@ class _SwipeGatedVideoItemState extends State<SwipeGatedVideoItem>
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.2), // Top dim
+                    StudyRepsTheme.bgPrimary.withOpacity(0.6),
                     Colors.transparent,
                     Colors.transparent,
-                    Colors.black.withOpacity(0.8), // Bottom text protection
+                    StudyRepsTheme.bgPrimary.withOpacity(0.95),
                   ],
                   stops: const [0.0, 0.2, 0.7, 1.0],
                 ),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:video_player/video_player.dart';
 import '../../core/theme/study_reps_theme.dart';
+import '../providers/auth_provider.dart';
 import 'main_navigation_shell.dart';
 
 /// Login Screen - Beautiful login with video background
@@ -17,7 +18,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLoading = false;
+  final _nameController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isSignUp = false;
   VideoPlayerController? _videoController;
@@ -45,40 +46,57 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _nameController.dispose();
     _videoController?.dispose();
     super.dispose();
   }
 
   void _handleLogin() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      _showSnackBar('Please fill in all fields');
+      return;
+    }
+
+    if (_isSignUp && _nameController.text.isEmpty) {
+      _showSnackBar('Please enter your name');
+      return;
+    }
+    
+    final authController = ref.read(authControllerProvider.notifier);
+    final success = _isSignUp
+        ? await authController.signUp(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+            fullName: _nameController.text.trim(),
+          )
+        : await authController.signIn(
+            _emailController.text.trim(),
+            _passwordController.text.trim(),
+          );
+
+    if (success && mounted) {
+      // Navigation is handled by auth state listener in router, 
+      // but we can also manually push if needed or show success message
+      if (_isSignUp) {
+         _showSnackBar('Account created! Please check your email.', isError: false);
+      }
+    } else {
+      final error = ref.read(authErrorProvider);
+      if (error != null) {
+        _showSnackBar(error);
+      }
+    }
+  }
+
+  void _showSnackBar(String message, {bool isError = true}) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please fill in all fields'),
-          backgroundColor: StudyRepsTheme.errorPink,
+          content: Text(message),
+          backgroundColor: isError ? StudyRepsTheme.errorPink : StudyRepsTheme.successGreen,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
-      return;
-    }
-    
-    setState(() => _isLoading = true);
-    
-    // Simulate login delay
-    await Future.delayed(const Duration(seconds: 2));
-    
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const MainNavigationShell(),
-          transitionDuration: const Duration(milliseconds: 500),
-          transitionsBuilder: (_, animation, __, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-        ),
-      );
-    }
   }
 
   void _skipLogin() {
@@ -96,6 +114,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(isAuthLoadingProvider);
+
     return Scaffold(
       backgroundColor: StudyRepsTheme.bgPrimary,
       body: Stack(
@@ -121,7 +141,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 48),
                   
                   // Login Form Card
-                  _buildFormCard(),
+                  _buildFormCard(isLoading),
                   
                   const SizedBox(height: 24),
                   
@@ -244,7 +264,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Widget _buildFormCard() {
+  Widget _buildFormCard(bool isLoading) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
@@ -264,7 +284,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 _buildTextField(
                   label: 'Full Name',
                   icon: Icons.person_outline_rounded,
-                  controller: TextEditingController(),
+                  controller: _nameController,
                 ),
                 const SizedBox(height: 16),
               ],
@@ -312,7 +332,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleLogin,
+                  onPressed: isLoading ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: StudyRepsTheme.primaryIndigo,
                     padding: const EdgeInsets.symmetric(vertical: 18),
@@ -322,7 +342,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     elevation: 8,
                     shadowColor: StudyRepsTheme.primaryIndigo.withOpacity(0.4),
                   ),
-                  child: _isLoading
+                  child: isLoading
                       ? const SizedBox(
                           width: 24,
                           height: 24,

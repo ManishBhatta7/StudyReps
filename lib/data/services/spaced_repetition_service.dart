@@ -16,7 +16,7 @@ import '../../domain/models/learning_record_model.dart';
 ///
 /// Local storage uses Hive; syncs to Supabase when online.
 class SpacedRepetitionService {
-  static const String _boxName = 'learning_records';
+  static const String boxName = 'learning_records';
 
   /// Store a record after user interacts with a video
   static Future<LearningRecord> recordInteraction({
@@ -26,7 +26,7 @@ class SpacedRepetitionService {
     required int dwellTimeMs,
     int quality = 3, // 0-5 SM-2 quality rating
   }) async {
-    final box = await Hive.openBox(_boxName);
+    final box = await Hive.openBox(boxName);
     final key = '${userId}_$videoId';
 
     // Load existing record or create new
@@ -68,7 +68,7 @@ class SpacedRepetitionService {
 
   /// Get all videos due for review right now
   static Future<List<String>> getVideosForReview(String userId) async {
-    final box = await Hive.openBox(_boxName);
+    final box = await Hive.openBox(boxName);
     final now = DateTime.now();
     final dueVideoIds = <String>[];
 
@@ -94,7 +94,7 @@ class SpacedRepetitionService {
 
   /// Get the learning record for a specific video
   static Future<LearningRecord?> getRecord(String userId, String videoId) async {
-    final box = await Hive.openBox(_boxName);
+    final box = await Hive.openBox(boxName);
     final key = '${userId}_$videoId';
     final data = box.get(key);
 
@@ -106,7 +106,7 @@ class SpacedRepetitionService {
 
   /// Get all learning records for a user
   static Future<List<LearningRecord>> getAllRecords(String userId) async {
-    final box = await Hive.openBox(_boxName);
+    final box = await Hive.openBox(boxName);
     final records = <LearningRecord>[];
 
     for (final key in box.keys) {
@@ -214,7 +214,7 @@ class SpacedRepetitionService {
 
   /// Clear all records (for testing)
   static Future<void> clearAll() async {
-    final box = await Hive.openBox(_boxName);
+    final box = await Hive.openBox(boxName);
     await box.clear();
   }
 }

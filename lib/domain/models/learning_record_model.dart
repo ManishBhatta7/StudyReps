@@ -37,6 +37,7 @@ class LearningRecord with _$LearningRecord {
     // ── Timestamps ──
     required DateTime createdAt,
     DateTime? updatedAt,
+    DateTime? syncedAt, // Track when this record was last pushed to Supabase
   }) = _LearningRecord;
 
   factory LearningRecord.fromJson(Map<String, dynamic> json) =>

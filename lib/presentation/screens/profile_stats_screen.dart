@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/theme/study_reps_theme.dart';
 import 'settings_screen.dart';
+import '../../presentation/providers/stats_provider.dart';
 
 /// Profile Stats Screen
 /// 
@@ -12,6 +13,9 @@ class ProfileStatsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final dashboardStatsAsync = ref.watch(dashboardStatsProvider);
+    final tsrHealthAsync = ref.watch(tsrHealthProvider);
+
     return Scaffold(
       backgroundColor: StudyRepsTheme.bgPrimary,
       appBar: AppBar(
@@ -39,13 +43,21 @@ class ProfileStatsScreen extends ConsumerWidget {
             
             const SizedBox(height: 24),
             
-            // Level Progress
-            _buildLevelProgress(),
-            
+            // TSR Health Score (New)
+            tsrHealthAsync.when(
+              data: (health) => _buildHealthScore(health),
+              loading: () => _buildLoadingCard("Calculating Health Score..."),
+              error: (err, _) => _buildErrorCard("Could not load health score"),
+            ),
+
             const SizedBox(height: 24),
             
             // Stats Grid
-            _buildStatsGrid(),
+            dashboardStatsAsync.when(
+              data: (stats) => _buildStatsGrid(stats),
+              loading: () => _buildStatsLoading(),
+              error: (err, _) => _buildErrorCard("Could not load stats"),
+            ),
             
             const SizedBox(height: 32),
             
@@ -126,7 +138,11 @@ class ProfileStatsScreen extends ConsumerWidget {
     ).animate().fadeIn().scale(begin: const Offset(0.9, 0.9));
   }
 
-  Widget _buildLevelProgress() {
+  Widget _buildHealthScore(TSRHealthStats health) {
+    Color scoreColor = StudyRepsTheme.successGreen;
+    if (health.score < 50) scoreColor = StudyRepsTheme.errorPink;
+    else if (health.score < 80) scoreColor = Colors.orange;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -140,38 +156,62 @@ class ProfileStatsScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Progress to Level 13',
+                'TSR Health Score',
                 style: TextStyle(
                   color: StudyRepsTheme.textSecondary,
                   fontSize: 14,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              Text(
-                '85%',
-                style: TextStyle(
-                  color: StudyRepsTheme.primaryIndigoLight,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                   color: scoreColor.withOpacity(0.2),
+                   borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  health.status.toUpperCase(),
+                  style: TextStyle(
+                    color: scoreColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: LinearProgressIndicator(
-              value: 0.85,
-              minHeight: 10,
-              backgroundColor: StudyRepsTheme.bgTertiary,
-              valueColor: AlwaysStoppedAnimation(StudyRepsTheme.primaryIndigo),
-            ),
+          const SizedBox(height: 20),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              SizedBox(
+                width: 100,
+                height: 100,
+                child: CircularProgressIndicator(
+                  value: health.score / 100,
+                  strokeWidth: 10,
+                  backgroundColor: StudyRepsTheme.bgTertiary,
+                  valueColor: AlwaysStoppedAnimation(scoreColor),
+                ),
+              ),
+              Text(
+                '${health.score}',
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 20),
           Text(
-            '750 XP to Level 13',
+            health.advice,
+            textAlign: TextAlign.center,
             style: TextStyle(
               color: StudyRepsTheme.textMuted,
-              fontSize: 12,
+              fontSize: 14,
+              fontStyle: FontStyle.italic,
             ),
           ),
         ],
@@ -179,37 +219,64 @@ class ProfileStatsScreen extends ConsumerWidget {
     ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1);
   }
 
-  Widget _buildStatsGrid() {
-    final stats = [
-      {'label': 'Reps', 'value': '2,847', 'icon': Icons.fitness_center_rounded, 'color': StudyRepsTheme.primaryIndigo},
-      {'label': 'Accuracy', 'value': '89%', 'icon': Icons.check_circle_outline_rounded, 'color': StudyRepsTheme.successGreen},
-      {'label': 'Day Streak', 'value': '15', 'icon': Icons.local_fire_department_rounded, 'color': Colors.orange},
-      {'label': 'XP', 'value': '4,250', 'icon': Icons.star_rounded, 'color': StudyRepsTheme.accentCyan},
+  Widget _buildStatsGrid(DashboardStats stats) {
+    final statItems = [
+      {'label': 'Total Reps', 'value': '${stats.totalReps}', 'icon': Icons.fitness_center_rounded, 'color': StudyRepsTheme.primaryIndigo},
+      {'label': 'Accuracy', 'value': stats.accuracy, 'icon': Icons.check_circle_outline_rounded, 'color': StudyRepsTheme.successGreen},
+      // You could add streak here if you were tracking it in the DB
     ];
 
     return Row(
       children: [
-        Expanded(
-          child: Column(
-            children: [
-              _buildStatCard(stats[0], 0),
-              const SizedBox(height: 12),
-              _buildStatCard(stats[2], 2),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            children: [
-              _buildStatCard(stats[1], 1),
-              const SizedBox(height: 12),
-              _buildStatCard(stats[3], 3),
-            ],
-          ),
-        ),
+        for (int i = 0; i < statItems.length; i++) ...[
+             Expanded(
+              child: _buildStatCard(statItems[i], i),
+            ),
+            if (i < statItems.length - 1) const SizedBox(width: 12),
+        ]
       ],
     );
+  }
+  
+  Widget _buildLoadingCard(String message) {
+      return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: StudyRepsTheme.bgSecondary.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+              children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(message, style: TextStyle(color: StudyRepsTheme.textMuted)),
+              ],
+          ),
+      );
+  }
+  
+  Widget _buildStatsLoading() {
+      return Row(
+          children: [
+              Expanded(child: _buildLoadingCard("...")),
+              const SizedBox(width: 12),
+              Expanded(child: _buildLoadingCard("...")),
+          ],
+      );
+  }
+  
+  Widget _buildErrorCard(String error) {
+      return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+              color: StudyRepsTheme.errorPink.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: StudyRepsTheme.errorPink.withOpacity(0.5)),
+          ),
+          child: Text(error, style: TextStyle(color: StudyRepsTheme.errorPink)),
+      );
   }
 
   Widget _buildStatCard(Map<String, dynamic> stat, int index) {
@@ -249,13 +316,6 @@ class ProfileStatsScreen extends ConsumerWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
-          Text(
-            stat['label'],
-            style: TextStyle(
-              color: StudyRepsTheme.textMuted,
-              fontSize: 12,
-            ),
-          ),
         ],
       ),
     ).animate().fadeIn(delay: (150 + index * 80).ms).scale(begin: const Offset(0.9, 0.9));
@@ -290,7 +350,7 @@ class ProfileStatsScreen extends ConsumerWidget {
               final activity = activities[index];
               return Container(
                 width: 100,
-                margin: EdgeInsets.only(right: 12),
+                margin: const EdgeInsets.only(right: 12),
                 decoration: BoxDecoration(
                   color: StudyRepsTheme.bgSecondary,
                   borderRadius: BorderRadius.circular(16),
