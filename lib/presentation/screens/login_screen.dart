@@ -75,11 +75,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
 
     if (success && mounted) {
-      // Navigation is handled by auth state listener in router, 
-      // but we can also manually push if needed or show success message
       if (_isSignUp) {
          _showSnackBar('Account created! Please check your email.', isError: false);
       }
+      _skipLogin();
     } else {
       final error = ref.read(authErrorProvider);
       if (error != null) {

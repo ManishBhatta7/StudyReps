@@ -3,8 +3,11 @@ import 'package:flutter/physics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:ui';
-import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/study_reps_theme.dart';
+import '../providers/video_feed_provider.dart';
 import '../../domain/models/video_model.dart';
 import '../../data/services/spaced_repetition_service.dart';
 import '../providers/adaptive_feed_provider.dart';
@@ -205,7 +208,7 @@ class _SwipeGatedFeedScreenState extends ConsumerState<SwipeGatedFeedScreen> {
 }
 
 /// Individual Video Item with Loop Tracking and Question Gate
-class SwipeGatedVideoItem extends StatefulWidget {
+class SwipeGatedVideoItem extends ConsumerStatefulWidget {
   final VideoModel video;
   final bool isActive;
   final bool isReviewItem;
@@ -222,10 +225,10 @@ class SwipeGatedVideoItem extends StatefulWidget {
   });
 
   @override
-  State<SwipeGatedVideoItem> createState() => _SwipeGatedVideoItemState();
+  ConsumerState<SwipeGatedVideoItem> createState() => _SwipeGatedVideoItemState();
 }
 
-class _SwipeGatedVideoItemState extends State<SwipeGatedVideoItem> 
+class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem> 
     with SingleTickerProviderStateMixin {
   VideoPlayerController? _controller;
   bool _isInitialized = false;
@@ -240,6 +243,11 @@ class _SwipeGatedVideoItemState extends State<SwipeGatedVideoItem>
   int? _selectedOption;
   bool _showHint = false;
   
+  // Interaction State
+  late bool _isLiked;
+  late int _likesCount;
+  late bool _isSaved;
+  
   // Animation
   late AnimationController _shakeController;
   
@@ -253,6 +261,10 @@ class _SwipeGatedVideoItemState extends State<SwipeGatedVideoItem>
   @override
   void initState() {
     super.initState();
+    _isLiked = widget.video.isLiked;
+    _likesCount = widget.video.likesCount;
+    _isSaved = widget.video.isSaved;
+    
     _shakeController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -263,13 +275,15 @@ class _SwipeGatedVideoItemState extends State<SwipeGatedVideoItem>
 
   Future<void> _initializeVideo() async {
     try {
-      if (widget.video.videoUrl.startsWith('http')) {
+      // On web, dart:io File is not available. Always use network URL.
+      if (kIsWeb || widget.video.videoUrl.startsWith('http')) {
         _controller = VideoPlayerController.networkUrl(
           Uri.parse(widget.video.videoUrl),
         );
       } else {
-        _controller = VideoPlayerController.file(
-          File(widget.video.videoUrl),
+        // Mobile/Desktop only: local file playback
+        _controller = VideoPlayerController.networkUrl(
+          Uri.parse(widget.video.videoUrl), // Fallback to network for safety
         );
       }
 
@@ -307,14 +321,14 @@ class _SwipeGatedVideoItemState extends State<SwipeGatedVideoItem>
 
   void _handleLoopComplete() {
     _loopCount++;
-    print('🔄 Loop $_loopCount completed');
+    // print('🔄 Loop $_loopCount completed');
     
     if (_loopCount >= _maxLoops && !_isAnswered) {
       // LOCK THE FEED
       _controller!.pause();
       setState(() => _showGate = true);
       widget.onLockTriggered();
-      print('🔒 GATE LOCKED - Answer required!');
+      // print('🔒 GATE LOCKED - Answer required!');
     } else if (!_isAnswered) {
       // Restart for next loop
       _controller!.seekTo(Duration.zero);
@@ -389,6 +403,54 @@ class _SwipeGatedVideoItemState extends State<SwipeGatedVideoItem>
   void _showSuccessOverlay() {
     // Replace gate content with success
     setState(() {});
+  }
+  
+  Future<void> _toggleLike() async {
+    final newStatus = !_isLiked;
+    final newCount = _isLiked ? _likesCount - 1 : _likesCount + 1;
+    
+    // Optimistic Update
+    setState(() {
+        _isLiked = newStatus;
+        _likesCount = newCount;
+    });
+    
+    try {
+        final repo = ref.read(videosRepositoryProvider);
+        // Assuming current user is "local_user" for now or fetch from auth logic
+        // Use Supabase auth logic in real app
+        final userId = Supabase.instance.client.auth.currentUser?.id ?? 'anon';
+        await repo.toggleLike(widget.video.id, userId);
+    } catch (e) {
+        // Revert on error
+        setState(() {
+            _isLiked = !newStatus;
+            _likesCount = _isLiked ? _likesCount + 1 : _likesCount - 1;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to update like: $e')),
+        );
+    }
+  }
+
+  Future<void> _toggleSave() async {
+    final newStatus = !_isSaved;
+    
+    // Optimistic Update
+    setState(() => _isSaved = newStatus);
+    
+    try {
+      final repo = ref.read(videosRepositoryProvider);
+      final userId = Supabase.instance.client.auth.currentUser?.id ?? 'anon';
+      await repo.toggleSave(widget.video.id, userId);
+    } catch (e) {
+      setState(() => _isSaved = !newStatus);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update bookmark: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -632,6 +694,10 @@ class _SwipeGatedVideoItemState extends State<SwipeGatedVideoItem>
           ),
           const SizedBox(height: 20),
           
+          // Like Button (New)
+          _buildLikeButton(),
+           const SizedBox(height: 20),
+          
           // Comments
           _buildActionButton(
             icon: Icons.chat_bubble_outline_rounded,
@@ -647,6 +713,10 @@ class _SwipeGatedVideoItemState extends State<SwipeGatedVideoItem>
             onTap: () => AccessibilityPanel.show(context),
           ),
            const SizedBox(height: 20),
+
+          // Save / Bookmark Button (New)
+          _buildSaveButton(),
+           const SizedBox(height: 20),
            
            // Share (Mock)
            _buildActionButton(
@@ -656,6 +726,69 @@ class _SwipeGatedVideoItemState extends State<SwipeGatedVideoItem>
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSaveButton() {
+    return GestureDetector(
+      onTap: _toggleSave,
+      child: Column(
+        children: [
+          Icon(
+            _isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+            color: _isSaved ? StudyRepsTheme.accentCyan : Colors.white,
+            size: 32,
+            shadows: const [
+              Shadow(color: Colors.black54, offset: Offset(0, 2), blurRadius: 6),
+            ],
+          ).animate(target: _isSaved ? 1 : 0)
+              .scale(begin: const Offset(0.85, 0.85), end: const Offset(1.15, 1.15), duration: 200.ms)
+              .then()
+              .scale(begin: const Offset(1.15, 1.15), end: const Offset(1.0, 1.0), duration: 100.ms),
+          const SizedBox(height: 4),
+          Text(
+            _isSaved ? 'Saved' : 'Save',
+            style: TextStyle(
+              color: _isSaved ? StudyRepsTheme.accentCyan : Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              shadows: const [
+                Shadow(color: Colors.black54, offset: Offset(0, 1), blurRadius: 2),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildLikeButton() {
+    return GestureDetector(
+        onTap: _toggleLike,
+        child: Column(
+            children: [
+                Icon(
+                    _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                    color: _isLiked ? StudyRepsTheme.errorPink : Colors.white,
+                    size: 32,
+                    shadows: [
+                        Shadow(color: Colors.black54, offset: Offset(0, 2), blurRadius: 6),
+                    ],
+                ).animate(target: _isLiked ? 1 : 0).scale(begin: const Offset(0.8, 0.8), end: const Offset(1.2, 1.2), duration: 200.ms).then().scale(begin: const Offset(1.2, 1.2), end: const Offset(1.0, 1.0), duration: 100.ms),
+                const SizedBox(height: 4),
+                Text(
+                    '$_likesCount',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                         shadows: [
+                            Shadow(color: Colors.black54, offset: Offset(0, 1), blurRadius: 2),
+                        ],
+                    ),
+                ),
+            ],
+        ),
     );
   }
 

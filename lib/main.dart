@@ -8,7 +8,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'core/constants/app_constants.dart';
 import 'core/theme/study_reps_theme.dart';
-import 'presentation/screens/swipe_gated_feed_screen.dart';
+import 'presentation/screens/login_screen.dart';
+import 'presentation/screens/main_navigation_shell.dart';
 
 void main() {
   runZonedGuarded(() async {
@@ -35,14 +36,13 @@ class AppRoot extends StatefulWidget {
 class _AppRootState extends State<AppRoot> {
   bool _isInitialized = false;
   String? _error;
+  bool _isAuthenticated = false;
 
   @override
   void initState() {
     super.initState();
     _initializeApp();
   }
-
-
 
   Future<void> _initializeApp() async {
     try {
@@ -66,6 +66,13 @@ class _AppRootState extends State<AppRoot> {
           anonKey: AppConstants.supabaseAnonKey,
         );
         debugPrint('✅ Supabase initialized');
+        
+        // Check session
+        final session = Supabase.instance.client.auth.currentSession;
+        _isAuthenticated = session != null;
+        if (_isAuthenticated) {
+          debugPrint('🔑 User already logged in: ${session!.user.email}');
+        }
       } catch (e) {
         debugPrint('⚠️ Supabase initialization failed, continuing offline: $e');
       }
@@ -146,7 +153,8 @@ class _AppRootState extends State<AppRoot> {
       debugShowCheckedModeBanner: false,
       theme: StudyRepsTheme.darkTheme,
       themeMode: ThemeMode.dark,
-      home: const SwipeGatedFeedScreen(),
+      // Create global navigation key if needed, or rely on internal routing
+      home: _isAuthenticated ? const MainNavigationShell() : const LoginScreen(),
     );
   }
 }

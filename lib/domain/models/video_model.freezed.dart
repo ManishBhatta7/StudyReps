@@ -33,6 +33,7 @@ mixin _$VideoModel {
   int get likesCount => throw _privateConstructorUsedError;
   int get repsCompleted => throw _privateConstructorUsedError;
   bool get isLiked => throw _privateConstructorUsedError;
+  bool get isSaved => throw _privateConstructorUsedError;
   Duration get duration =>
       throw _privateConstructorUsedError; // Added missing duration
 // ── Adaptive Feed & Spaced Repetition Fields ──
@@ -74,6 +75,7 @@ abstract class $VideoModelCopyWith<$Res> {
       int likesCount,
       int repsCompleted,
       bool isLiked,
+      bool isSaved,
       Duration duration,
       String transcript,
       List<String> tags,
@@ -111,6 +113,7 @@ class _$VideoModelCopyWithImpl<$Res, $Val extends VideoModel>
     Object? likesCount = null,
     Object? repsCompleted = null,
     Object? isLiked = null,
+    Object? isSaved = null,
     Object? duration = null,
     Object? transcript = null,
     Object? tags = null,
@@ -168,6 +171,10 @@ class _$VideoModelCopyWithImpl<$Res, $Val extends VideoModel>
       isLiked: null == isLiked
           ? _value.isLiked
           : isLiked // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isSaved: null == isSaved
+          ? _value.isSaved
+          : isSaved // ignore: cast_nullable_to_non_nullable
               as bool,
       duration: null == duration
           ? _value.duration
@@ -234,6 +241,7 @@ abstract class _$$VideoModelImplCopyWith<$Res>
       int likesCount,
       int repsCompleted,
       bool isLiked,
+      bool isSaved,
       Duration duration,
       String transcript,
       List<String> tags,
@@ -270,6 +278,7 @@ class __$$VideoModelImplCopyWithImpl<$Res>
     Object? likesCount = null,
     Object? repsCompleted = null,
     Object? isLiked = null,
+    Object? isSaved = null,
     Object? duration = null,
     Object? transcript = null,
     Object? tags = null,
@@ -328,6 +337,10 @@ class __$$VideoModelImplCopyWithImpl<$Res>
           ? _value.isLiked
           : isLiked // ignore: cast_nullable_to_non_nullable
               as bool,
+      isSaved: null == isSaved
+          ? _value.isSaved
+          : isSaved // ignore: cast_nullable_to_non_nullable
+              as bool,
       duration: null == duration
           ? _value.duration
           : duration // ignore: cast_nullable_to_non_nullable
@@ -381,6 +394,7 @@ class _$VideoModelImpl implements _VideoModel {
       this.likesCount = 0,
       this.repsCompleted = 0,
       this.isLiked = false,
+      this.isSaved = false,
       this.duration = Duration.zero,
       this.transcript = '',
       final List<String> tags = const [],
@@ -427,6 +441,9 @@ class _$VideoModelImpl implements _VideoModel {
   @override
   @JsonKey()
   final bool isLiked;
+  @override
+  @JsonKey()
+  final bool isSaved;
   @override
   @JsonKey()
   final Duration duration;
@@ -476,7 +493,7 @@ class _$VideoModelImpl implements _VideoModel {
 
   @override
   String toString() {
-    return 'VideoModel(id: $id, videoUrl: $videoUrl, lockTimestamp: $lockTimestamp, question: $question, creatorName: $creatorName, creatorAvatar: $creatorAvatar, title: $title, subject: $subject, thumbnailUrl: $thumbnailUrl, likesCount: $likesCount, repsCompleted: $repsCompleted, isLiked: $isLiked, duration: $duration, transcript: $transcript, tags: $tags, prerequisiteIds: $prerequisiteIds, difficultyLevel: $difficultyLevel, topicId: $topicId, conceptCluster: $conceptCluster, language: $language)';
+    return 'VideoModel(id: $id, videoUrl: $videoUrl, lockTimestamp: $lockTimestamp, question: $question, creatorName: $creatorName, creatorAvatar: $creatorAvatar, title: $title, subject: $subject, thumbnailUrl: $thumbnailUrl, likesCount: $likesCount, repsCompleted: $repsCompleted, isLiked: $isLiked, isSaved: $isSaved, duration: $duration, transcript: $transcript, tags: $tags, prerequisiteIds: $prerequisiteIds, difficultyLevel: $difficultyLevel, topicId: $topicId, conceptCluster: $conceptCluster, language: $language)';
   }
 
   @override
@@ -504,6 +521,7 @@ class _$VideoModelImpl implements _VideoModel {
             (identical(other.repsCompleted, repsCompleted) ||
                 other.repsCompleted == repsCompleted) &&
             (identical(other.isLiked, isLiked) || other.isLiked == isLiked) &&
+            (identical(other.isSaved, isSaved) || other.isSaved == isSaved) &&
             (identical(other.duration, duration) ||
                 other.duration == duration) &&
             (identical(other.transcript, transcript) ||
@@ -536,6 +554,7 @@ class _$VideoModelImpl implements _VideoModel {
         likesCount,
         repsCompleted,
         isLiked,
+        isSaved,
         duration,
         transcript,
         const DeepCollectionEquality().hash(_tags),
@@ -574,6 +593,7 @@ abstract class _VideoModel implements VideoModel {
       final int likesCount,
       final int repsCompleted,
       final bool isLiked,
+      final bool isSaved,
       final Duration duration,
       final String transcript,
       final List<String> tags,
@@ -610,6 +630,8 @@ abstract class _VideoModel implements VideoModel {
   int get repsCompleted;
   @override
   bool get isLiked;
+  @override
+  bool get isSaved;
   @override
   Duration get duration;
   @override // Added missing duration

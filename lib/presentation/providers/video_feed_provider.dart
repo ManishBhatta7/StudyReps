@@ -2,16 +2,43 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/video_model.dart';
 import '../../data/content/force_chapter_videos.dart';
 
-/// Mock Video Data Provider
-/// 
-/// Includes Physics Force chapter content from ICSE Class X
-/// Videos are designed for "The Lock" feature with varied question types
-final mockVideosProvider = Provider<List<VideoModel>>((ref) {
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../data/repositories/videos_repository.dart';
+
+/// Videos Repository Provider
+final videosRepositoryProvider = Provider<VideosRepository>((ref) {
+  return VideosRepository(Supabase.instance.client);
+});
+
+/// All Videos Provider (Supabase with Mock Fallback)
+final allVideosProvider = FutureProvider<List<VideoModel>>((ref) async {
+  try {
+    final repo = ref.read(videosRepositoryProvider);
+    final videos = await repo.fetchVideos(limit: 50); // Fetch initial batch
+    
+    if (videos.isNotEmpty) {
+      return videos;
+    }
+  } catch (e) {
+    print('⚠️ Failed to fetch videos from Supabase, falling back to mock: $e');
+  }
+  
+  // Fallback to mock data
   return [
-    // ============ PHYSICS: FORCE CHAPTER (High Quality AI Content) ============
     ...ForceChapterVideos.getVideos(),
-    // ==========================================================================
   ];
+});
+
+/// Legacy Mock Provider (Deprecated, pointing to new FutureProvider logic via adaptive feed)
+/// Kept for compatibility but should be migrated away from. 
+/// Using standard Provider here to avoid breaking changes in dependent widgets 
+/// that expect synchronous list, but this will return empty initially if purely async.
+/// 
+/// Ideally, consumers should watch `adaptiveFeedProvider` or `allVideosProvider` directly.
+final mockVideosProvider = Provider<List<VideoModel>>((ref) {
+   // This is a temporary shim. Real app should use async providers.
+   // For now, return mock data immediately to prevent breakage.
+   return ForceChapterVideos.getVideos();
 });
 
 /// Current Video Index State

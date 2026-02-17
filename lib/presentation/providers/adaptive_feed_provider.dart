@@ -24,7 +24,7 @@ final feedConfigProvider = Provider<FeedConfig>((ref) => const FeedConfig());
 
 // ── The main adaptive feed ──
 final adaptiveFeedProvider = FutureProvider<List<VideoModel>>((ref) async {
-  final allVideos = ref.watch(mockVideosProvider);
+  final allVideos = await ref.watch(allVideosProvider.future);
   final userId = ref.watch(currentUserIdProvider);
   final config = ref.watch(feedConfigProvider);
 

@@ -22,6 +22,7 @@ class VideoModel with _$VideoModel {
     @Default(0) int likesCount,
     @Default(0) int repsCompleted,
     @Default(false) bool isLiked,
+    @Default(false) bool isSaved,
     @Default(Duration.zero) Duration duration, // Added missing duration
 
     // ── Adaptive Feed & Spaced Repetition Fields ──

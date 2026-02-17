@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/study_reps_theme.dart';
+import 'login_screen.dart';
 
 // Settings Providers
 final autoLockEnabledProvider = StateProvider<bool>((ref) => true);
@@ -158,7 +160,15 @@ class SettingsScreen extends ConsumerWidget {
               child: SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () {},
+                  onPressed: () async {
+                    await Supabase.instance.client.auth.signOut();
+                    if (context.mounted) {
+                      Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                         MaterialPageRoute(builder: (_) => const LoginScreen()),
+                         (route) => false,
+                      );
+                    }
+                  },
                   icon: const Icon(Icons.logout_rounded, color: StudyRepsTheme.errorPink),
                   label: const Text(
                     'Log Out',

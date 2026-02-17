@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/study_reps_theme.dart';
@@ -17,7 +16,7 @@ class _CreateRepDialogState extends State<CreateRepDialog> {
   final _picker = ImagePicker();
   
   // Video Source
-  File? _selectedVideo;
+  XFile? _selectedVideo;
   String? _videoUrl;
   bool _isUrlMode = false;
   
@@ -34,7 +33,7 @@ class _CreateRepDialogState extends State<CreateRepDialog> {
     final XFile? video = await _picker.pickVideo(source: ImageSource.gallery);
     if (video != null) {
       setState(() {
-        _selectedVideo = File(video.path);
+        _selectedVideo = video;
         _isUrlMode = false;
         // Auto-fill title from filename if empty
         if (_titleController.text.isEmpty) {

@@ -22,6 +22,7 @@ _$VideoModelImpl _$$VideoModelImplFromJson(Map<String, dynamic> json) =>
       likesCount: (json['likesCount'] as num?)?.toInt() ?? 0,
       repsCompleted: (json['repsCompleted'] as num?)?.toInt() ?? 0,
       isLiked: json['isLiked'] as bool? ?? false,
+      isSaved: json['isSaved'] as bool? ?? false,
       duration: json['duration'] == null
           ? Duration.zero
           : Duration(microseconds: (json['duration'] as num).toInt()),
@@ -53,6 +54,7 @@ Map<String, dynamic> _$$VideoModelImplToJson(_$VideoModelImpl instance) =>
       'likesCount': instance.likesCount,
       'repsCompleted': instance.repsCompleted,
       'isLiked': instance.isLiked,
+      'isSaved': instance.isSaved,
       'duration': instance.duration.inMicroseconds,
       'transcript': instance.transcript,
       'tags': instance.tags,
