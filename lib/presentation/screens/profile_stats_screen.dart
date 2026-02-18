@@ -4,6 +4,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/theme/study_reps_theme.dart';
 import 'settings_screen.dart';
 import '../../presentation/providers/stats_provider.dart';
+import '../../domain/models/video_model.dart';
+import '../providers/video_feed_provider.dart';
 
 /// Profile Stats Screen
 /// 
@@ -59,6 +61,9 @@ class ProfileStatsScreen extends ConsumerWidget {
               error: (err, _) => _buildErrorCard("Could not load stats"),
             ),
             
+            // My Created Reps (Categorized)
+            _buildMyRepsSection(ref),
+
             const SizedBox(height: 32),
             
             // Recent Activity
@@ -321,76 +326,226 @@ class ProfileStatsScreen extends ConsumerWidget {
     ).animate().fadeIn(delay: (150 + index * 80).ms).scale(begin: const Offset(0.9, 0.9));
   }
 
-  Widget _buildRecentActivity() {
-    final activities = [
-      {'title': 'Spanish Vocab', 'time': '10m', 'icon': Icons.translate_rounded},
-      {'title': 'Math Quiz', 'time': '10m', 'icon': Icons.calculate_rounded},
-      {'title': 'Spanish', 'time': '10m', 'icon': Icons.language_rounded},
-      {'title': 'Art History', 'time': '10m', 'icon': Icons.palette_rounded},
-    ];
+  Widget _buildMyRepsSection(WidgetRef ref) {
+    // 1. Get user created videos
+    final userVideos = ref.watch(userCreatedVideosProvider);
+
+    if (userVideos.isEmpty) return const SizedBox.shrink();
+
+    // 2. Group by subject
+    final grouped = <String, List<VideoModel>>{};
+    for (final video in userVideos) {
+      final subject = video.subject.isEmpty ? 'General' : video.subject;
+      if (!grouped.containsKey(subject)) {
+        grouped[subject] = [];
+      }
+      grouped[subject]!.add(video);
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Recent Activity',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: StudyRepsTheme.textPrimary,
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: Text(
+            'My Reps',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 120,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: activities.length,
-            itemBuilder: (context, index) {
-              final activity = activities[index];
-              return Container(
-                width: 100,
-                margin: const EdgeInsets.only(right: 12),
-                decoration: BoxDecoration(
-                  color: StudyRepsTheme.bgSecondary,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: StudyRepsTheme.borderSubtle),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: StudyRepsTheme.primaryIndigo.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        activity['icon'] as IconData,
-                        color: StudyRepsTheme.primaryIndigo,
-                        size: 24,
-                      ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.03),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
+          ),
+          child: Column(
+            children: grouped.entries.map((entry) {
+              final subject = entry.key;
+              final reps = entry.value;
+              
+              return Theme(
+                data: Theme.of(ref.context).copyWith(dividerColor: Colors.transparent),
+                child: ExpansionTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: StudyRepsTheme.primaryIndigo.withOpacity(0.2),
+                      shape: BoxShape.circle,
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      activity['title'] as String,
-                      style: TextStyle(
-                        color: StudyRepsTheme.textPrimary,
+                    child: Icon(
+                      _getSubjectIcon(subject),
+                      color: StudyRepsTheme.accentCyan,
+                      size: 16,
+                    ),
+                  ),
+                  title: Text(
+                    subject,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${reps.length}',
+                      style: const TextStyle(
+                        color: Colors.white70,
                         fontSize: 12,
-                        fontWeight: FontWeight.w500,
                       ),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ],
+                  ),
+                  children: reps.map((rep) => _buildRepTile(rep)).toList(),
                 ),
-              ).animate().fadeIn(delay: (400 + index * 80).ms);
-            },
+              );
+            }).toList(),
           ),
         ),
       ],
     ).animate().fadeIn(delay: 350.ms);
+  }
+
+  Widget _buildRepTile(VideoModel rep) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.help_outline_rounded, 
+                  color: StudyRepsTheme.textSecondary, size: 14),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  rep.question.prompt,
+                  style: const TextStyle(
+                    color: Colors.white, 
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Icon(Icons.check_circle_outline_rounded, 
+                  color: StudyRepsTheme.successGreen, size: 14),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  rep.question.correctAnswer,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7), 
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _getSubjectIcon(String subject) {
+    switch (subject.toLowerCase()) {
+      case 'biology': return Icons.biotech_rounded;
+      case 'physics': return Icons.bolt_rounded;
+      case 'chemistry': return Icons.science_rounded;
+      case 'history': return Icons.history_edu_rounded;
+      case 'math': 
+      case 'mathematics': return Icons.calculate_rounded;
+      default: return Icons.school_rounded;
+    }
+  }
+
+  Widget _buildRecentActivity() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: Text(
+            'Recent Activity',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        // Placeholder data
+        _buildActivityItem('Mastered "Newton\'s Second Law"', '2m ago', Icons.emoji_events_rounded, Colors.amber),
+        _buildActivityItem('Completed Physics Quiz', '1h ago', Icons.quiz_rounded, Colors.purple),
+        _buildActivityItem('Started 7 Day Streak', '1d ago', Icons.local_fire_department_rounded, Colors.orange),
+      ],
+    );
+  }
+  
+  Widget _buildActivityItem(String text, String time, IconData icon, Color color) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  text,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  time,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.4),
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

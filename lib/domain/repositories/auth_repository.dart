@@ -32,6 +32,9 @@ abstract class AuthRepository {
   /// Send password reset email
   Future<void> sendPasswordResetEmail(String email);
 
+  /// Sign in with Google OAuth
+  Future<bool> signInWithGoogle();
+
   /// Update user password
   Future<void> updatePassword(String newPassword);
 

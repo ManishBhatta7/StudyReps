@@ -18,7 +18,7 @@ class AppConstants {
 
   // Google Gemini API Configuration
   static String get geminiApiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
-  static const String geminiModel = 'gemini-1.5-flash';
+  static const String geminiModel = 'gemini-2.5-flash';
   static const String geminiBaseUrl = 'https://generativelanguage.googleapis.com/v1beta';
   
   // Gemini Prompt Templates

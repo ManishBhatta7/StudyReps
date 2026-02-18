@@ -8,6 +8,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'core/constants/app_constants.dart';
 import 'core/theme/study_reps_theme.dart';
+import 'data/services/chat_persistence_service.dart';
 import 'presentation/screens/login_screen.dart';
 import 'presentation/screens/main_navigation_shell.dart';
 
@@ -57,6 +58,9 @@ class _AppRootState extends State<AppRoot> {
 
       // Init Hive
       await Hive.initFlutter();
+
+      // Init Chat Persistence (Tutorbot memory)
+      await ChatPersistenceService.init();
 
       // Init Supabase
       debugPrint('🚀 Initializing Supabase...');

@@ -37,6 +37,8 @@ dependencies:
   
   # AI - Gemini API
   http: ^1.1.0
+  speech_to_text: ^6.6.0
+  flutter_tts: ^4.0.2
   
   # Utilities
   freezed_annotation: ^2.4.1
@@ -54,6 +56,7 @@ dependencies:
   glassmorphism: ^3.0.0
   youtube_player_iframe: ^5.2.1
   image_picker: ^1.1.2
+  file_picker: ^8.0.0
   flutter_markdown: ^0.7.7+1
   flutter_dotenv: ^6.0.0
 

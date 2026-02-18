@@ -16,13 +16,20 @@ import '../widgets/gate_overlay.dart';
 import '../widgets/mascot_reactor.dart';
 import '../widgets/video_tutorbot_sheet.dart';
 import '../widgets/comment_section.dart';
-import '../widgets/accessibility_panel.dart';
+
 import 'drill_screen.dart';
 
 /// Swipe-Gated Video Feed Screen
 /// Users cannot swipe until they answer the question correctly
 class SwipeGatedFeedScreen extends ConsumerStatefulWidget {
-  const SwipeGatedFeedScreen({super.key});
+  final List<VideoModel>? initialVideos;
+  final int initialIndex;
+
+  const SwipeGatedFeedScreen({
+    super.key,
+    this.initialVideos,
+    this.initialIndex = 0,
+  });
 
   @override
   ConsumerState<SwipeGatedFeedScreen> createState() => _SwipeGatedFeedScreenState();
@@ -39,8 +46,15 @@ class _SwipeGatedFeedScreenState extends ConsumerState<SwipeGatedFeedScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
-    _loadAdaptiveFeed();
+    _currentPage = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+    
+    if (widget.initialVideos != null && widget.initialVideos!.isNotEmpty) {
+      _videos = widget.initialVideos!;
+      _feedLoaded = true;
+    } else {
+      _loadAdaptiveFeed();
+    }
   }
 
   Future<void> _loadAdaptiveFeed() async {
@@ -92,24 +106,30 @@ class _SwipeGatedFeedScreenState extends ConsumerState<SwipeGatedFeedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Listen for feed updates (e.g. from fallback or new reps)
+    ref.listen(adaptiveFeedProvider, (previous, next) {
+      next.whenData((feed) {
+        if (feed.isNotEmpty) {
+          // If we have no videos, or if the feed was just reloaded/updated
+          // We update the local state.
+          // Note: Only update if empty to avoid disrupting current view, 
+          // unless we want to force refresh on new content.
+          if (_videos.isEmpty) {
+            setState(() {
+              _videos = feed;
+              _feedLoaded = true;
+            });
+            // If we just loaded fresh content, ensure we're at page 0
+            if (_pageController.hasClients) {
+               _pageController.jumpToPage(0);
+            }
+          }
+        }
+      });
+    });
+
     return Scaffold(
       backgroundColor: StudyRepsTheme.bgPrimary,
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 80), // Move above video info
-        child: FloatingActionButton(
-          onPressed: () async {
-            final newVideo = await showDialog<VideoModel>(
-              context: context,
-              builder: (context) => const CreateRepDialog(),
-            );
-            if (newVideo != null) {
-              _addVideo(newVideo);
-            }
-          },
-          backgroundColor: StudyRepsTheme.primaryPurple,
-          child: const Icon(Icons.add, color: Colors.white),
-        ),
-      ),
       body: Stack(
         children: [
           if (_videos.isEmpty)
@@ -130,7 +150,7 @@ class _SwipeGatedFeedScreenState extends ConsumerState<SwipeGatedFeedScreen> {
                 scrollDirection: Axis.vertical,
                 physics: _isLocked 
                     ? const NeverScrollableScrollPhysics() 
-                    : const BouncingScrollPhysics(),
+                    : null, // Use platform default (PageScrollPhysics) for better snap
                 itemCount: _videos.length,
                 onPageChanged: (index) {
                   setState(() {
@@ -149,28 +169,7 @@ class _SwipeGatedFeedScreenState extends ConsumerState<SwipeGatedFeedScreen> {
               ),
             ),
           
-          // Coach Mode Button (Top Right)
-          Positioned(
-            top: 50,
-            right: 20,
-            child: IconButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const DrillScreen()),
-                );
-              },
-              icon: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: StudyRepsTheme.primaryPurple, width: 2),
-                ),
-                child: const Icon(Icons.psychology, color: Colors.white, size: 28),
-              ),
-              tooltip: 'Adaptive Coach',
-            ),
-          ),
+
         ],
       ),
     );
@@ -258,6 +257,36 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
   // Dim factor for loop 2
   double get _dimFactor => _loopCount >= 1 ? 0.7 : 1.0;
 
+  // Play/Pause Overlay State
+  bool _showPlayPauseOverlay = false;
+  bool _isPlaying = true; // defaulting to true as we auto-play
+  IconData _overlayIcon = Icons.pause;
+
+  void _togglePlayPause() {
+    if (_showGate) return; // Don't toggle if gate is active
+
+    setState(() {
+      if (_controller!.value.isPlaying) {
+        _controller!.pause();
+        _isPlaying = false;
+        _overlayIcon = Icons.play_arrow_rounded; // Show Play icon when paused
+        _showPlayPauseOverlay = true; // Keep visible while paused
+      } else {
+        _controller!.play();
+        _isPlaying = true;
+        _overlayIcon = Icons.pause_rounded; // Flash pause icon
+        _showPlayPauseOverlay = true;
+        
+        // Hide overlay after animation when resuming
+        Future.delayed(const Duration(milliseconds: 600), () {
+          if (mounted && _isPlaying) {
+            setState(() => _showPlayPauseOverlay = false);
+          }
+        });
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -297,6 +326,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
         setState(() => _isInitialized = true);
         if (widget.isActive) {
           _controller!.play();
+          ref.read(videosRepositoryProvider).logView(widget.video.id);
         }
       }
     } catch (e) {
@@ -443,6 +473,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
       final repo = ref.read(videosRepositoryProvider);
       final userId = Supabase.instance.client.auth.currentUser?.id ?? 'anon';
       await repo.toggleSave(widget.video.id, userId);
+      ref.invalidate(savedVideosProvider);
     } catch (e) {
       setState(() => _isSaved = !newStatus);
       if (mounted) {
@@ -459,6 +490,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
     if (widget.isActive != oldWidget.isActive) {
       if (widget.isActive && !_showGate) {
         _controller?.play();
+        ref.read(videosRepositoryProvider).logView(widget.video.id);
       } else {
         _controller?.pause();
       }
@@ -499,20 +531,31 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
               ),
             ),
 
+          // 👆 Tap Area (Full Screen)
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: _togglePlayPause,
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+
           // Gradient Overlay for Readability (Reels Style)
           Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    StudyRepsTheme.bgPrimary.withOpacity(0.6),
-                    Colors.transparent,
-                    Colors.transparent,
-                    StudyRepsTheme.bgPrimary.withOpacity(0.95),
-                  ],
-                  stops: const [0.0, 0.2, 0.7, 1.0],
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      StudyRepsTheme.bgPrimary.withOpacity(0.6),
+                      Colors.transparent,
+                      Colors.transparent,
+                      StudyRepsTheme.bgPrimary.withOpacity(0.95),
+                    ],
+                    stops: const [0.0, 0.2, 0.7, 1.0],
+                  ),
                 ),
               ),
             ),
@@ -529,6 +572,34 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
               ),
             ),
 
+          // Play/Pause Icon Overlay
+          if (_showPlayPauseOverlay)
+            IgnorePointer( // Allow clicks to pass through to screen tap handler
+              child: Center(
+                child: TweenAnimationBuilder<double>(
+                  key: ValueKey(_overlayIcon), // Force restart on icon change
+                  tween: Tween(begin: 1.5, end: 1.0),
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.elasticOut,
+                  builder: (context, scale, child) => Transform.scale(
+                    scale: scale,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.4),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        _overlayIcon,
+                        size: 60,
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
           // Video Info Overlay
           _buildVideoInfo(),
 
@@ -541,16 +612,14 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
               bottom: 0,
               left: 0,
               right: 0,
-              child: SizedBox(
-                height: 2,
-                child: VideoProgressIndicator(
-                  _controller!,
-                  allowScrubbing: false,
-                  colors: VideoProgressColors(
-                    playedColor: Colors.white,
-                    bufferedColor: Colors.white.withOpacity(0.5),
-                    backgroundColor: Colors.white.withOpacity(0.2),
-                  ),
+              child: VideoProgressIndicator(
+                _controller!,
+                allowScrubbing: true, // Enable user seeking/rewinding
+                padding: const EdgeInsets.only(top: 12, bottom: 8), // Increase hit area
+                colors: VideoProgressColors(
+                  playedColor: StudyRepsTheme.primaryPurple,
+                  bufferedColor: Colors.white.withOpacity(0.5),
+                  backgroundColor: Colors.white.withOpacity(0.2),
                 ),
               ),
             ),
@@ -706,13 +775,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
           ),
           const SizedBox(height: 20),
 
-          // Accessibility
-          _buildActionButton(
-            icon: Icons.accessibility_new_rounded,
-            label: 'Views', // Simplified label
-            onTap: () => AccessibilityPanel.show(context),
-          ),
-           const SizedBox(height: 20),
+
 
           // Save / Bookmark Button (New)
           _buildSaveButton(),
@@ -722,7 +785,12 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
            _buildActionButton(
             icon: Icons.share_rounded,
             label: 'Share',
-            onTap: () {},
+            onTap: () {
+              ref.read(videosRepositoryProvider).logShare(widget.video.id, platform: 'link');
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Sharing link copied! (Mock)')),
+              );
+            },
           ),
         ],
       ),

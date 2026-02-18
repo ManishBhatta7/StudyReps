@@ -95,8 +95,15 @@ class AdaptiveFeedEngine {
     final prerequisiteVideos = <VideoModel>[];
     final newVideos = <VideoModel>[];
     final masteredVideos = <VideoModel>[];
+    final userPriorityVideos = <VideoModel>[]; // New category for immediate feedback
 
     for (final video in allVideos) {
+      // Check for user-created content (AI reps) first
+      if (video.id.startsWith('ai_')) {
+        userPriorityVideos.add(video);
+        continue; 
+      }
+
       if (reviewVideoIds.contains(video.id)) {
         reviewVideos.add(video);
       } else if (masteredVideoIds.contains(video.id)) {
@@ -128,6 +135,12 @@ class AdaptiveFeedEngine {
 
     // 5. Interleave: review items injected at configured rate
     final feed = <VideoModel>[];
+    
+    // 🌟 IMMEDIATE PRIORITY: User created AI reps go first!
+    // Reverse to show newest AI rep at the very top (if added sequentially)
+    // Actually, usually we want FIFO or LIFO. Let's stick to order in allVideos (newest first from provider).
+    feed.addAll(userPriorityVideos);
+
     int newIndex = 0;
     int reviewIndex = 0;
     int prereqIndex = 0;
@@ -136,7 +149,7 @@ class AdaptiveFeedEngine {
         ? (1 / config.reviewInjectionRate).round()
         : 999;
 
-    // Prioritize prerequisites first
+    // Prioritize prerequisites next
     while (prereqIndex < prerequisiteVideos.length) {
       feed.add(prerequisiteVideos[prereqIndex++]);
     }
@@ -167,6 +180,14 @@ class AdaptiveFeedEngine {
     // If feed is empty (all mastered), recycle mastered at higher difficulty
     if (fairFeed.isEmpty && masteredVideos.isNotEmpty) {
       return masteredVideos;
+    }
+
+    // Fallback to Discovery Mode: Return all videos if feed is still empty
+    // This ensures new users or those with no due reps still see content
+    if (fairFeed.isEmpty && allVideos.isNotEmpty) {
+      // Create a copy to shuffle
+      final discoveryFeed = List<VideoModel>.from(allVideos)..shuffle();
+      return discoveryFeed;
     }
 
     return fairFeed;

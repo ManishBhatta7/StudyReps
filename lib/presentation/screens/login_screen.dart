@@ -87,6 +87,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  bool _isGoogleLoading = false;
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() => _isGoogleLoading = true);
+    
+    try {
+      final authController = ref.read(authControllerProvider.notifier);
+      final success = await authController.signInWithGoogle();
+      
+      if (success && mounted) {
+        // On web, a redirect happens here. The app will reload with
+        // the session already active, caught by the auth listener in main.dart.
+        // This code path executes mainly on mobile.
+        _skipLogin();
+      } else if (mounted) {
+        final error = ref.read(authErrorProvider);
+        if (error != null) {
+          _showSnackBar(error);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackBar('Google Sign-In failed: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isGoogleLoading = false);
+      }
+    }
+  }
+
   void _showSnackBar(String message, {bool isError = true}) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -471,42 +502,111 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         
         const SizedBox(height: 20),
         
-        // Social Buttons
-        Row(
-          children: [
-            Expanded(child: _buildSocialButton('Google', Icons.g_mobiledata_rounded)),
-            const SizedBox(width: 12),
-            Expanded(child: _buildSocialButton('Apple', Icons.apple_rounded)),
-          ],
-        ),
+        // Google Sign-In — Primary Social Button
+        _buildGoogleButton(),
+        
+        const SizedBox(height: 12),
+        
+        // Apple Sign-In — Secondary
+        _buildSocialButton('Apple', Icons.apple_rounded, onPressed: () {
+          _showSnackBar('Apple Sign-In coming soon!', isError: false);
+        }),
       ],
     ).animate().fadeIn(delay: 500.ms);
   }
 
-  Widget _buildSocialButton(String label, IconData icon) {
-    return OutlinedButton(
-      onPressed: () {},
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        side: BorderSide(color: StudyRepsTheme.borderSubtle),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        backgroundColor: StudyRepsTheme.bgSecondary.withOpacity(0.5),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: StudyRepsTheme.textPrimary, size: 24),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              color: StudyRepsTheme.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
+  /// Premium Google Sign-In button with official styling
+  Widget _buildGoogleButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: _isGoogleLoading ? null : _handleGoogleSignIn,
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          side: BorderSide(
+            color: _isGoogleLoading
+                ? StudyRepsTheme.borderSubtle
+                : const Color(0xFF4285F4).withOpacity(0.5),
+            width: 1.5,
           ),
-        ],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          backgroundColor: StudyRepsTheme.bgSecondary.withOpacity(0.7),
+        ),
+        child: _isGoogleLoading
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  color: Color(0xFF4285F4),
+                  strokeWidth: 2.5,
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Google "G" logo colors
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'G',
+                        style: TextStyle(
+                          color: Color(0xFF4285F4),
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Continue with Google',
+                    style: TextStyle(
+                      color: StudyRepsTheme.textPrimary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  Widget _buildSocialButton(String label, IconData icon, {VoidCallback? onPressed}) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: onPressed ?? () {},
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          side: BorderSide(color: StudyRepsTheme.borderSubtle),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          backgroundColor: StudyRepsTheme.bgSecondary.withOpacity(0.5),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: StudyRepsTheme.textPrimary, size: 24),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                color: StudyRepsTheme.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

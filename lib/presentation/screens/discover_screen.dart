@@ -40,14 +40,29 @@ final discoverSearchResultsProvider = FutureProvider<List<VideoModel>>((ref) asy
 });
 
 /// Trending videos (most liked / viewed)
+/// Trending videos (most liked / viewed)
 final trendingVideosProvider = FutureProvider<List<VideoModel>>((ref) async {
+  final category = ref.watch(discoverCategoryProvider);
+
+  List<VideoModel> videos = [];
   try {
     final repo = ref.read(videosRepositoryProvider);
-    final videos = await repo.fetchVideos(limit: 10);
-    if (videos.isNotEmpty) return videos;
+    // TODO: Pass category to repo.fetchVideos if backend supports it
+    // For now, fetch generic trending and filter locally
+    videos = await repo.fetchVideos(limit: 20); 
   } catch (_) {}
 
-  return ref.read(mockVideosProvider).take(6).toList();
+  // Fallback to mock data if empty
+  if (videos.isEmpty) {
+    videos = ref.read(mockVideosProvider);
+  }
+
+  // Filter by category if selected
+  if (category != null && category.isNotEmpty) {
+    videos = videos.where((v) => v.subject.toLowerCase() == category.toLowerCase()).toList();
+  }
+
+  return videos.take(10).toList();
 });
 
 /// Category-filtered videos
@@ -68,15 +83,7 @@ final categoryVideosProvider = FutureProvider<List<VideoModel>>((ref) async {
       .toList();
 });
 
-/// Saved / Bookmarked videos
-final savedVideosProvider = FutureProvider<List<VideoModel>>((ref) async {
-  try {
-    final repo = ref.read(videosRepositoryProvider);
-    return await repo.fetchSavedVideos();
-  } catch (_) {
-    return [];
-  }
-});
+
 
 // ── Discover Screen ──
 
@@ -110,6 +117,11 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.index == 2) { // Saved Tab
+        ref.invalidate(savedVideosProvider);
+      }
+    });
     _searchFocusNode.addListener(() {
       setState(() => _isSearchActive = _searchFocusNode.hasFocus);
     });
@@ -431,7 +443,9 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
           padding: const EdgeInsets.symmetric(horizontal: 16),
           itemCount: videos.length,
           itemBuilder: (context, index) {
-            return _buildVideoListTile(videos[index], index, showRank: true)
+            return _buildVideoListTile(videos[index], index, showRank: true, onTap: () {
+              _navigateToVideo(videos, index);
+            })
                 .animate()
                 .fadeIn(delay: (index * 60).ms)
                 .slideX(begin: 0.05);
@@ -468,7 +482,9 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
           ),
           itemCount: videos.length,
           itemBuilder: (context, index) =>
-              _buildVideoGridCard(videos[index], index)
+              _buildVideoGridCard(videos[index], index, onTap: () {
+                _navigateToVideo(videos, index);
+              })
                   .animate()
                   .fadeIn(delay: (index * 50).ms)
                   .scale(begin: const Offset(0.95, 0.95)),
@@ -501,7 +517,9 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
           padding: const EdgeInsets.symmetric(horizontal: 16),
           itemCount: videos.length,
           itemBuilder: (context, index) =>
-              _buildVideoListTile(videos[index], index, showSaved: true)
+              _buildVideoListTile(videos[index], index, showSaved: true, onTap: () {
+                _navigateToVideo(videos, index);
+              })
                   .animate()
                   .fadeIn(delay: (index * 60).ms)
                   .slideX(begin: 0.05),
@@ -534,7 +552,9 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           itemCount: results.length,
           itemBuilder: (context, index) =>
-              _buildVideoListTile(results[index], index)
+              _buildVideoListTile(results[index], index, onTap: () {
+                _navigateToVideo(results, index);
+              })
                   .animate()
                   .fadeIn(delay: (index * 40).ms)
                   .slideY(begin: 0.03),
@@ -549,9 +569,9 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
 
   /// Rich list tile for a video — used in Trending, Search, Saved
   Widget _buildVideoListTile(VideoModel video, int index,
-      {bool showRank = false, bool showSaved = false}) {
+      {bool showRank = false, bool showSaved = false, VoidCallback? onTap}) {
     return GestureDetector(
-      onTap: () => _navigateToVideo(video),
+      onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(12),
@@ -720,9 +740,9 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
   }
 
   /// Grid card for "For You" tab
-  Widget _buildVideoGridCard(VideoModel video, int index) {
+  Widget _buildVideoGridCard(VideoModel video, int index, {VoidCallback? onTap}) {
     return GestureDetector(
-      onTap: () => _navigateToVideo(video),
+      onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           color: StudyRepsTheme.bgSecondary,
@@ -923,16 +943,16 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
 
   // ── Navigation ──
 
-  void _navigateToVideo(VideoModel video) {
-    // Navigate to the video in the main feed
-    // For now, show a snackbar; ideally, this would push a dedicated video player screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Opening: ${video.title}'),
-        backgroundColor: StudyRepsTheme.primaryIndigo,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        duration: const Duration(seconds: 1),
+  void _navigateToVideo(List<VideoModel> contextList, int index) {
+    // Navigate to the video in a dedicated feed screen
+    // This allows playing the clicked video and swiping to others in the list
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SwipeGatedFeedScreen(
+          initialVideos: contextList,
+          initialIndex: index,
+        ),
       ),
     );
   }

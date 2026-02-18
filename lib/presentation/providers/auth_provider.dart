@@ -173,6 +173,25 @@ class AuthController extends StateNotifier<AuthControllerState> {
     }
   }
 
+  /// Sign in with Google
+  Future<bool> signInWithGoogle() async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    
+    try {
+      final success = await _repository.signInWithGoogle();
+      // On web, a redirect happens so loading will persist until page returns.
+      // On mobile, the external browser opens.
+      state = state.copyWith(isLoading: false);
+      return success;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _parseError(e),
+      );
+      return false;
+    }
+  }
+
   /// Clear error state
   void clearError() {
     state = state.copyWith(clearError: true);

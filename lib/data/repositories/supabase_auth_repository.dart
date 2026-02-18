@@ -128,6 +128,40 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<bool> signInWithGoogle() async {
+    debugPrint('🔐 AuthRepo: Attempting Google Sign-In...');
+    try {
+      // On web, this triggers an OAuth redirect to Google
+      // After auth, the user is redirected back to the app
+      // Supabase handles the token exchange automatically
+      final redirectUrl = kIsWeb ? Uri.base.origin : null;
+      
+      final success = await _client.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: redirectUrl,
+        authScreenLaunchMode: kIsWeb
+            ? LaunchMode.platformDefault
+            : LaunchMode.externalApplication,
+      );
+
+      debugPrint('✅ AuthRepo: Google OAuth launched: $success');
+      
+      // On web, the page will redirect, so this return doesn't matter much.
+      // The auth state listener will pick up the new session on return.
+      return success;
+    } on AuthException catch (e) {
+      debugPrint('❌ AuthRepo: Google Sign-In error - ${e.message}');
+      throw RepositoryException(message: e.message, originalError: e);
+    } catch (e) {
+      debugPrint('❌ AuthRepo: Google Sign-In unexpected error - $e');
+      throw RepositoryException(
+        message: 'Google Sign-In failed. Please try again.',
+        originalError: e,
+      );
+    }
+  }
+
+  @override
   Future<void> updatePassword(String newPassword) async {
     try {
       await _client.auth.updateUser(UserAttributes(password: newPassword));

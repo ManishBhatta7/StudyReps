@@ -10,23 +10,28 @@ final videosRepositoryProvider = Provider<VideosRepository>((ref) {
   return VideosRepository(Supabase.instance.client);
 });
 
-/// All Videos Provider (Supabase with Mock Fallback)
+/// Local state for user-created videos (immediate feedback)
+final userCreatedVideosProvider = StateProvider<List<VideoModel>>((ref) => []);
+
+/// All Videos Provider (Supabase + Local + Mock Fallback)
 final allVideosProvider = FutureProvider<List<VideoModel>>((ref) async {
+  final userVideos = ref.watch(userCreatedVideosProvider);
+  List<VideoModel> fetchedVideos = [];
+
   try {
     final repo = ref.read(videosRepositoryProvider);
-    final videos = await repo.fetchVideos(limit: 50); // Fetch initial batch
-    
-    if (videos.isNotEmpty) {
-      return videos;
-    }
+    fetchedVideos = await repo.fetchVideos(limit: 50); // Fetch initial batch
   } catch (e) {
     print('⚠️ Failed to fetch videos from Supabase, falling back to mock: $e');
   }
   
-  // Fallback to mock data
-  return [
-    ...ForceChapterVideos.getVideos(),
-  ];
+  // Fallback to mock data if empty
+  if (fetchedVideos.isEmpty) {
+    fetchedVideos = ForceChapterVideos.getVideos();
+  }
+
+  // Combine user created (newest first) with fetched
+  return [...userVideos, ...fetchedVideos];
 });
 
 /// Legacy Mock Provider (Deprecated, pointing to new FutureProvider logic via adaptive feed)
@@ -91,4 +96,15 @@ final filteredVideosProvider = Provider<List<VideoModel>>((ref) {
   }
   
   return videos.where((v) => v.subject == selectedSubject).toList();
+});
+
+/// Saved / Bookmarked videos
+/// Fetches persistent saves from Supabase/Local storage
+final savedVideosProvider = FutureProvider<List<VideoModel>>((ref) async {
+  try {
+    final repo = ref.read(videosRepositoryProvider);
+    return await repo.fetchSavedVideos();
+  } catch (_) {
+    return [];
+  }
 });
