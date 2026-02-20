@@ -6,6 +6,7 @@ import 'settings_screen.dart';
 import '../../presentation/providers/stats_provider.dart';
 import '../../domain/models/video_model.dart';
 import '../providers/video_feed_provider.dart';
+import '../../presentation/providers/xp_provider.dart';
 
 /// Profile Stats Screen
 /// 
@@ -17,6 +18,7 @@ class ProfileStatsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardStatsAsync = ref.watch(dashboardStatsProvider);
     final tsrHealthAsync = ref.watch(tsrHealthProvider);
+    final xpAsync = ref.watch(xpProvider);
 
     return Scaffold(
       backgroundColor: StudyRepsTheme.bgPrimary,
@@ -41,7 +43,11 @@ class ProfileStatsScreen extends ConsumerWidget {
             const SizedBox(height: 10),
             
             // Avatar & Name
-            _buildProfileHeader(),
+            xpAsync.when(
+              data: (xp) => _buildProfileHeader(xp.currentLevel, xp.totalXp, xp.xpForNextLevel),
+              loading: () => const CircularProgressIndicator(),
+              error: (_, __) => _buildProfileHeader(1, 0, 100),
+            ),
             
             const SizedBox(height: 24),
             
@@ -76,7 +82,7 @@ class ProfileStatsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(int level, int xp, int nextLevelXp) {
     return Column(
       children: [
         // Avatar
@@ -124,19 +130,41 @@ class ProfileStatsScreen extends ConsumerWidget {
         
         // Level Badge
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: StudyRepsTheme.primaryIndigo.withOpacity(0.2),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: StudyRepsTheme.primaryIndigo.withOpacity(0.5)),
           ),
-          child: Text(
-            'Level 12',
-            style: TextStyle(
-              color: StudyRepsTheme.primaryIndigoLight,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.star_rounded, color: Colors.amber, size: 18),
+              const SizedBox(width: 6),
+              Text(
+                'Level $level',
+                style: const TextStyle(
+                  color: StudyRepsTheme.primaryIndigoLight,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                width: 1,
+                height: 12,
+                color: StudyRepsTheme.primaryIndigo.withOpacity(0.4),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                '$xp / $nextLevelXp XP',
+                style: const TextStyle(
+                  color: StudyRepsTheme.textSecondary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            ],
           ),
         ),
       ],

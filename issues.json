@@ -68,7 +68,7 @@
         "phase": 4,
         "title": "XP and leveling system",
         "description": "Award XP for completed reps and implement a leveling system based on cumulative XP.",
-        "status": "todo",
+        "status": "done",
         "slug": "xp-levels"
     },
     {

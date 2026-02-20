@@ -13,6 +13,7 @@ import '../../data/services/spaced_repetition_service.dart';
 import '../providers/adaptive_feed_provider.dart';
 import '../../data/services/gemini_coach_service.dart';
 import '../providers/streak_provider.dart';
+import '../providers/xp_provider.dart';
 import '../widgets/create_rep_dialog.dart';
 import '../widgets/lock_overlay.dart';
 import '../widgets/mascot_reactor.dart';
@@ -427,6 +428,9 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
 
     // Track the streak & rep completion
     ref.read(streakProvider.notifier).logRep();
+    
+    // Add XP! Optionally award streak bonus if they hit the daily goal, but handled simply here.
+    ref.read(xpProvider.notifier).addXp();
     
     // After delay, unlock and advance
     Future.delayed(const Duration(milliseconds: 1500), () {
