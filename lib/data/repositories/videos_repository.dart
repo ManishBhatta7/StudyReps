@@ -49,8 +49,8 @@ class VideosRepository {
       return (response as List<dynamic>).map((json) {
         final likes = json['educational_likes'] as List<dynamic>? ?? [];
         final saves = json['educational_saves'] as List<dynamic>? ?? [];
-        final isLiked = userId != null && likes.any((l) => l['user_id'] == userId);
-        final isSaved = userId != null && saves.any((s) => s['user_id'] == userId);
+        final isLiked = (userId != null && likes.any((l) => l['user_id'] == userId)) || _localLikedVideoIds.contains(json['id']);
+        final isSaved = (userId != null && saves.any((s) => s['user_id'] == userId)) || _localSavedVideoIds.contains(json['id']);
 
         final Map<String, dynamic> videoData = Map.from(json);
         videoData.remove('educational_likes');
@@ -126,21 +126,23 @@ class VideosRepository {
     await _ensureLocalLoaded();
     try {
       final userId = _currentUserId;
-      if (userId == null) return [];
+      final savedVideos = <VideoModel>[];
 
-      final response = await _supabase
-          .from('educational_saves')
-          .select('video_id, educational_content(*)')
-          .eq('user_id', userId)
-          .order('created_at', ascending: false);
+      if (userId != null) {
+        final response = await _supabase
+            .from('educational_saves')
+            .select('video_id, educational_content(*)')
+            .eq('user_id', userId)
+            .order('created_at', ascending: false);
 
-      final savedVideos = (response as List<dynamic>)
-          .where((r) => r['educational_content'] != null)
-          .map((r) {
-        final videoData = Map<String, dynamic>.from(r['educational_content']);
-        videoData['isSaved'] = true;
-        return VideoModel.fromJson(videoData);
-      }).toList();
+        savedVideos.addAll((response as List<dynamic>)
+            .where((r) => r['educational_content'] != null)
+            .map((r) {
+          final videoData = Map<String, dynamic>.from(r['educational_content']);
+          videoData['isSaved'] = true;
+          return VideoModel.fromJson(videoData);
+        }));
+      }
 
       // Merge with local saved state (for session persistence if DB lags or fails)
       final fetchedIds = savedVideos.map((v) => v.id).toSet();
