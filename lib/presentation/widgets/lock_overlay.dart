@@ -379,29 +379,56 @@ class _LockOverlayState extends State<LockOverlay> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.close_rounded,
-                    color: StudyRepsTheme.errorPink,
+                    Icons.auto_awesome_rounded,
+                    color: StudyRepsTheme.primaryPurpleLight,
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Not quite...',
+                    'AI Coach Feedback',
                     style: TextStyle(
-                      color: StudyRepsTheme.errorPink,
-                      fontSize: 18,
+                      color: StudyRepsTheme.primaryPurpleLight,
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
               if (widget.aiFeedback != null) ...[
-                const SizedBox(height: 12),
-                Text(
-                  widget.aiFeedback!,
-                  style: TextStyle(
-                    color: StudyRepsTheme.textSecondary,
-                    fontSize: 14,
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: StudyRepsTheme.primaryPurple.withOpacity(0.3),
+                    ),
                   ),
-                  textAlign: TextAlign.center,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Icon(
+                          Icons.insights_rounded,
+                          color: StudyRepsTheme.accentCyan,
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          widget.aiFeedback!,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.95),
+                            fontSize: 15,
+                            height: 1.4,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ],
