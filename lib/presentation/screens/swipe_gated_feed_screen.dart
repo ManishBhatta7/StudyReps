@@ -12,7 +12,7 @@ import '../../domain/models/video_model.dart';
 import '../../data/services/spaced_repetition_service.dart';
 import '../providers/adaptive_feed_provider.dart';
 import '../widgets/create_rep_dialog.dart';
-import '../widgets/gate_overlay.dart';
+import '../widgets/lock_overlay.dart';
 import '../widgets/mascot_reactor.dart';
 import '../widgets/video_tutorbot_sheet.dart';
 import '../widgets/comment_section.dart';
@@ -238,9 +238,11 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
   
   // Question gate state
   bool _showGate = false;
-  bool _isAnswered = false;
-  int? _selectedOption;
-  bool _showHint = false;
+  bool _isAnswered = false; // true when correct
+  bool _isChecking = false;
+  bool _isCorrect = false;
+  bool _isIncorrect = false;
+  String? _aiFeedback;
   
   // Interaction State
   late bool _isLiked;
@@ -367,23 +369,34 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
     }
   }
 
-  void _handleOptionTap(int index) {
+  Future<void> _handleAnswerSubmit(String answer) async {
+    if (_isChecking || _isAnswered) return;
+
     setState(() {
-      _selectedOption = index;
-      _showHint = false;
+      _isChecking = true;
+      _isCorrect = false;
+      _isIncorrect = false;
+      _aiFeedback = null;
     });
-    
-    final correctIndex = widget.video.question?.options?.indexOf(
-      widget.video.question!.correctAnswer
-    ) ?? 0;
-    
-    if (index == correctIndex) {
-      // CORRECT!
-      _handleCorrectAnswer();
-    } else {
-      // WRONG - Shake and show hint
-      _handleWrongAnswer();
-    }
+
+    // MOCK VALIDATION LOGIC
+    await Future.delayed(const Duration(milliseconds: 1500)); // Simulate API delay
+
+    if (!mounted) return;
+
+    final isCorrect = answer.trim().toLowerCase() ==
+        (widget.video.question?.correctAnswer.trim().toLowerCase() ?? '');
+
+    setState(() {
+      _isChecking = false;
+      if (isCorrect) {
+        _isCorrect = true;
+        _handleCorrectAnswer();
+      } else {
+        _isIncorrect = true;
+        _handleWrongAnswer();
+      }
+    });
   }
 
   void _handleCorrectAnswer() {
@@ -398,9 +411,6 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
       dwellTimeMs: _dwellStopwatch.elapsedMilliseconds,
       quality: _attemptCount <= 1 ? 5 : 3, // Perfect if first try
     );
-    
-    // Show success animation
-    _showSuccessOverlay();
     
     // After delay, unlock and advance
     Future.delayed(const Duration(milliseconds: 1500), () {
@@ -423,16 +433,20 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
       quality: 1, // Poor recall
     );
     
+    // Provide some mock AI feedback based on the answer
+    setState(() {
+      _aiFeedback = "Not quite. Think about the core principles related to ${widget.video.subject}. Try reviewing the clip again.";
+    });
+    
     // Shake animation
     _shakeController.forward().then((_) => _shakeController.reset());
-    
-    // Show hint
-    setState(() => _showHint = true);
   }
 
-  void _showSuccessOverlay() {
-    // Replace gate content with success
-    setState(() {});
+  void _handleTryAgain() {
+    setState(() {
+      _isIncorrect = false;
+      _aiFeedback = null;
+    });
   }
   
   Future<void> _toggleLike() async {
@@ -908,16 +922,17 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
   }
 
   Widget _buildQuestionGate() {
-    final question = widget.video.question;
-    if (question == null) return const SizedBox();
+    if (widget.video.question == null) return const SizedBox();
 
-    return GateOverlay(
-      question: question,
-      isAnswered: _isAnswered,
-      showHint: _showHint,
-      selectedOption: _selectedOption,
-      onOptionSelected: (index) => _isAnswered ? null : _handleOptionTap(index),
-      shakeAnimation: _shakeController,
+    return LockOverlay(
+      video: widget.video,
+      isChecking: _isChecking,
+      isCorrect: _isCorrect,
+      isIncorrect: _isIncorrect,
+      aiFeedback: _aiFeedback,
+      onCorrectAnswer: _handleCorrectAnswer,
+      onSubmit: _handleAnswerSubmit,
+      onTryAgain: _handleTryAgain,
     );
   }
 }
