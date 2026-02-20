@@ -84,7 +84,7 @@
         "phase": 4,
         "title": "Build Achievements system",
         "description": "Add achievements and badges for milestones in the app.",
-        "status": "todo",
+        "status": "done",
         "slug": "achievements"
     }
 ]

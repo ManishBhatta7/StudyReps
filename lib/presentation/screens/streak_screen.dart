@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/theme/study_reps_theme.dart';
+import '../../domain/models/achievement_model.dart';
+import '../providers/achievement_provider.dart';
 import '../providers/streak_provider.dart';
 
 /// Streak Screen
@@ -13,6 +15,7 @@ class StreakScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final streakAsync = ref.watch(streakProvider);
+    final achAsync = ref.watch(achievementProvider);
 
     return Scaffold(
       backgroundColor: StudyRepsTheme.bgPrimary,
@@ -47,7 +50,11 @@ class StreakScreen extends ConsumerWidget {
                 const SizedBox(height: 32),
                 
                 // Achievements
-                _buildAchievements(),
+                achAsync.when(
+                  data: (achievements) => _buildAchievements(achievements),
+                  loading: () => const CircularProgressIndicator(),
+                  error: (e, _) => const SizedBox(),
+                ),
                 
                 const SizedBox(height: 100),
               ],
@@ -315,7 +322,9 @@ class StreakScreen extends ConsumerWidget {
     ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1);
   }
 
-  Widget _buildAchievements() {
+  Widget _buildAchievements(List<AchievementModel> achievements) {
+    final lockedCount = achievements.where((a) => !a.isUnlocked).length;
+    
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -342,7 +351,7 @@ class StreakScreen extends ConsumerWidget {
                   Icon(Icons.lock_outline_rounded, size: 14, color: StudyRepsTheme.textMuted),
                   const SizedBox(width: 4),
                   Text(
-                    'Locked',
+                    'Unlocked ${achievements.length - lockedCount}/${achievements.length}',
                     style: TextStyle(
                       color: StudyRepsTheme.textMuted,
                       fontSize: 12,
@@ -355,24 +364,35 @@ class StreakScreen extends ConsumerWidget {
           
           const SizedBox(height: 20),
           
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildBadge('First Rep', '🥉', true, '1/1'),
-              _buildBadge('Week Warrior', '🛡️', true, '7/7'),
-              _buildBadge('Century Club', '🏆', false, '15/100'),
-            ],
+          Wrap(
+            spacing: 16,
+            runSpacing: 24,
+            alignment: WrapAlignment.center,
+            children: achievements.map((ach) {
+              return SizedBox(
+                width: 80,
+                child: _buildBadge(
+                  ach.title, 
+                  ach.icon, 
+                  ach.isUnlocked, 
+                  ach.isUnlocked ? 'Unlocked' : '${(ach.progress * 100).toInt()}%'
+                ),
+              );
+            }).toList(),
           ),
           
           const SizedBox(height: 16),
           
-          Text(
-            'Keep it up! 5 more days for \'Streak Master\' badge',
-            style: TextStyle(
-              color: StudyRepsTheme.textMuted,
-              fontSize: 12,
+          if (lockedCount > 0)
+            Center(
+              child: Text(
+                'Keep it up! $lockedCount more badges to unlock',
+                style: TextStyle(
+                  color: StudyRepsTheme.textMuted,
+                  fontSize: 12,
+                ),
+              ),
             ),
-          ),
         ],
       ),
     ).animate().fadeIn(delay: 450.ms).slideY(begin: 0.1);
@@ -409,9 +429,12 @@ class StreakScreen extends ConsumerWidget {
         const SizedBox(height: 8),
         Text(
           title,
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: unlocked ? StudyRepsTheme.textPrimary : StudyRepsTheme.textMuted,
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: FontWeight.w600,
           ),
         ),
