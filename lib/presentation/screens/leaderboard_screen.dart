@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/theme/study_reps_theme.dart';
+import '../../domain/models/leaderboard_model.dart';
+import '../providers/leaderboard_provider.dart';
 
 /// Leaderboard Screen
 /// 
@@ -16,21 +18,6 @@ class LeaderboardScreen extends ConsumerStatefulWidget {
 class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   String _selectedTab = 'Weekly';
   String _selectedSubject = 'Science';
-  
-  final List<Map<String, dynamic>> _topUsers = [
-    {'rank': 2, 'name': 'Maria Garcia', 'xp': 10200, 'avatar': '🧠'},
-    {'rank': 1, 'name': 'Alex Chen', 'xp': 12500, 'avatar': '🏆'},
-    {'rank': 3, 'name': 'David Lee', 'xp': 9800, 'avatar': '💡'},
-  ];
-  
-  final List<Map<String, dynamic>> _leaderboard = [
-    {'rank': 4, 'name': 'Emily Davis', 'xp': 9150, 'trend': 'up'},
-    {'rank': 5, 'name': 'Chris Wilson', 'xp': 8900, 'trend': 'down'},
-    {'rank': 6, 'name': 'Jessica Kim', 'xp': 8400, 'trend': 'up'},
-    {'rank': 7, 'name': 'Ryan Patel', 'xp': 7800, 'trend': 'same'},
-    {'rank': 8, 'name': 'Dan Georgin', 'xp': 7700, 'trend': 'up'},
-    {'rank': 9, 'name': 'David Lee', 'xp': 6800, 'trend': 'down'},
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -66,8 +53,27 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
             
             const SizedBox(height: 24),
             
+            // Dynamic Content
+            Expanded(
+              child: _buildDynamicContent(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDynamicContent() {
+    final leaderAsync = ref.watch(leaderboardProvider(_selectedTab));
+
+    return leaderAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text("Error loading leaderboard: $e")),
+      data: (state) {
+        return Column(
+          children: [
             // Podium
-            _buildPodium(),
+            _buildPodium(state.podium),
             
             const SizedBox(height: 20),
             
@@ -77,17 +83,18 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
             const SizedBox(height: 12),
             
             // Your Position
-            _buildYourPosition(),
+            if (state.currentUser != null) 
+              _buildYourPosition(state.currentUser!),
             
             const SizedBox(height: 8),
             
             // Rankings List
             Expanded(
-              child: _buildRankingsList(),
+              child: _buildRankingsList(state.list),
             ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -132,29 +139,34 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
     ).animate().fadeIn();
   }
 
-  Widget _buildPodium() {
+  Widget _buildPodium(List<LeaderboardEntry> podiumData) {
+    if (podiumData.isEmpty) return const SizedBox.shrink();
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         // 2nd Place
-        _buildPodiumUser(_topUsers[0], 65, Colors.grey.shade400),
+        if (podiumData.length > 0)
+          _buildPodiumUser(podiumData[0], 65, Colors.grey.shade400),
         
         const SizedBox(width: 16),
         
         // 1st Place
-        _buildPodiumUser(_topUsers[1], 85, Colors.amber),
+        if (podiumData.length > 1)
+          _buildPodiumUser(podiumData[1], 85, Colors.amber),
         
         const SizedBox(width: 16),
         
         // 3rd Place
-        _buildPodiumUser(_topUsers[2], 50, Colors.brown.shade300),
+        if (podiumData.length > 2)
+          _buildPodiumUser(podiumData[2], 50, Colors.brown.shade300),
       ],
     ).animate().fadeIn(delay: 150.ms).slideY(begin: 0.15);
   }
 
-  Widget _buildPodiumUser(Map<String, dynamic> user, double height, Color color) {
-    final isFirst = user['rank'] == 1;
+  Widget _buildPodiumUser(LeaderboardEntry user, double height, Color color) {
+    final isFirst = user.rank == 1;
     
     return Column(
       children: [
@@ -176,11 +188,13 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
             color: StudyRepsTheme.bgSecondary,
           ),
           child: Center(
-            child: Icon(
-              Icons.person_rounded,
-              size: isFirst ? 30 : 24,
-              color: StudyRepsTheme.textMuted,
-            ),
+            child: user.avatar != null && user.avatar!.isNotEmpty
+              ? Text(user.avatar!, style: TextStyle(fontSize: isFirst ? 30 : 24))
+              : Icon(
+                  Icons.person_rounded,
+                  size: isFirst ? 30 : 24,
+                  color: StudyRepsTheme.textMuted,
+                ),
           ),
         ),
         
@@ -190,7 +204,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
         SizedBox(
           width: 80,
           child: Text(
-            user['name'],
+            user.name,
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: StudyRepsTheme.textPrimary,
@@ -204,7 +218,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
         
         // XP
         Text(
-          '${_formatNumber(user['xp'])} XP',
+          '${_formatNumber(user.xp)} XP',
           style: TextStyle(
             color: StudyRepsTheme.primaryIndigo,
             fontWeight: FontWeight.w600,
@@ -232,7 +246,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           ),
           child: Center(
             child: Text(
-              '${user['rank']}',
+              '${user.rank}',
               style: TextStyle(
                 color: StudyRepsTheme.primaryIndigo,
                 fontWeight: FontWeight.w800,
@@ -293,7 +307,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
     ).animate().fadeIn(delay: 300.ms);
   }
 
-  Widget _buildYourPosition() {
+  Widget _buildYourPosition(LeaderboardEntry user) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(14),
@@ -324,7 +338,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           // Info
           Expanded(
             child: Text(
-              'You: #47 - 4,250 XP',
+              'You: #${user.rank} - ${_formatNumber(user.xp)} XP',
               style: const TextStyle(
                 color: StudyRepsTheme.textPrimary,
                 fontWeight: FontWeight.w600,
@@ -335,7 +349,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           
           // XP
           Text(
-            '4,250 XP',
+            '${_formatNumber(user.xp)} XP',
             style: TextStyle(
               color: StudyRepsTheme.primaryIndigoLight,
               fontWeight: FontWeight.w700,
@@ -347,8 +361,10 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           
           // Trend
           Icon(
-            Icons.arrow_upward_rounded,
-            color: StudyRepsTheme.successGreen,
+            user.trend == 'up' ? Icons.arrow_upward_rounded : 
+            user.trend == 'down' ? Icons.arrow_downward_rounded : Icons.remove_rounded,
+            color: user.trend == 'up' ? StudyRepsTheme.successGreen : 
+                   user.trend == 'down' ? StudyRepsTheme.errorPink : StudyRepsTheme.textMuted,
             size: 18,
           ),
         ],
@@ -356,23 +372,22 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
     ).animate().fadeIn(delay: 350.ms).slideX(begin: -0.05);
   }
 
-  Widget _buildRankingsList() {
+  Widget _buildRankingsList(List<LeaderboardEntry> leaderboardData) {
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-      itemCount: _leaderboard.length,
+      itemCount: leaderboardData.length,
       itemBuilder: (context, index) {
-        final user = _leaderboard[index];
+        final user = leaderboardData[index];
         return _buildRankingItem(user, index);
       },
     );
   }
 
-  Widget _buildRankingItem(Map<String, dynamic> user, int listIndex) {
-    final trend = user['trend'] as String;
+  Widget _buildRankingItem(LeaderboardEntry user, int listIndex) {
     IconData trendIcon;
     Color trendColor;
     
-    switch (trend) {
+    switch (user.trend) {
       case 'up':
         trendIcon = Icons.arrow_upward_rounded;
         trendColor = StudyRepsTheme.successGreen;
@@ -400,7 +415,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           SizedBox(
             width: 32,
             child: Text(
-              '#${user['rank']}',
+              '#${user.rank}',
               style: const TextStyle(
                 color: StudyRepsTheme.textSecondary,
                 fontWeight: FontWeight.w600,
@@ -417,10 +432,14 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               shape: BoxShape.circle,
               color: StudyRepsTheme.bgTertiary,
             ),
-            child: Icon(
-              Icons.person_rounded,
-              color: StudyRepsTheme.textMuted,
-              size: 20,
+            child: Center(
+              child: user.avatar != null && user.avatar!.isNotEmpty
+                ? Text(user.avatar!, style: const TextStyle(fontSize: 20))
+                : Icon(
+                    Icons.person_rounded,
+                    color: StudyRepsTheme.textMuted,
+                    size: 20,
+                  ),
             ),
           ),
           
@@ -429,7 +448,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           // Name
           Expanded(
             child: Text(
-              user['name'],
+              user.name,
               style: const TextStyle(
                 color: StudyRepsTheme.textPrimary,
                 fontWeight: FontWeight.w500,
@@ -440,7 +459,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           
           // XP
           Text(
-            '${_formatNumber(user['xp'])} XP',
+            '${_formatNumber(user.xp)} XP',
             style: TextStyle(
               color: StudyRepsTheme.primaryIndigoLight,
               fontWeight: FontWeight.w600,

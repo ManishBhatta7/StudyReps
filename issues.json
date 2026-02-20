@@ -76,7 +76,7 @@
         "phase": 4,
         "title": "Build Leaderboards",
         "description": "Create a leaderboard tab to show top users by XP or streaks.",
-        "status": "todo",
+        "status": "done",
         "slug": "leaderboards"
     },
     {
