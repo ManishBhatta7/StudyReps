@@ -5,6 +5,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/models/learning_record_model.dart';
 import 'spaced_repetition_service.dart';
+import 'streak_service.dart';
+import 'xp_service.dart';
+import 'achievement_service.dart';
 
 // Provider for easy access
 final syncServiceProvider = Provider<SyncService>((ref) {
@@ -24,10 +27,12 @@ class SyncService {
     // Check every 2 minutes
     _timer = Timer.periodic(const Duration(minutes: 2), (_) {
       syncPendingReps();
+      syncGamification();
     });
     
     // Also trigger immediately
     syncPendingReps();
+    syncGamification();
   }
 
   void dispose() {
@@ -110,6 +115,36 @@ class SyncService {
       debugPrint('❌ SyncService: Error $e');
     } finally {
       _isSyncing = false;
+    }
+  }
+
+  Future<void> syncGamification() async {
+    final session = _supabase.auth.currentSession;
+    if (session == null) return;
+
+    try {
+      final userId = session.user.id;
+      final streak = await StreakService.getStreakRecord(userId);
+      final xp = await XpService.getXpRecord(userId);
+      final achievements = await AchievementService.getAchievements(userId);
+
+      final response = await _supabase.functions.invoke(
+        'sync-gamification',
+        body: {
+          'userId': userId,
+          'streak': streak.toJson(),
+          'xp': xp.toJson(),
+          'achievements': achievements.map((a) => a.toJson()).toList(),
+        },
+      );
+
+      if (response.status == 200 || response.status == 201) {
+        debugPrint('✅ SyncService: Gamification sync complete.');
+      } else {
+        debugPrint('❌ SyncService: Gamification sync failed ${response.status} ${response.data}');
+      }
+    } catch (e) {
+      debugPrint('❌ SyncService: Gamification Exception: $e');
     }
   }
 }
