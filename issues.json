@@ -1,90 +1,90 @@
 [
-  {
-    "id": 1,
-    "phase": 2,
-    "title": "Implement mock correct/incorrect validation",
-    "description": "Add logic to the video lock screen to validate user answers using a mocked correct/incorrect validation function.",
-    "status": "todo",
-    "slug": "mock-validation"
-  },
-  {
-    "id": 2,
-    "phase": 2,
-    "title": "Integrate Google Gemini API",
-    "description": "Connect the app to Google Gemini API to send user answers and receive AI evaluation and feedback.",
-    "status": "todo",
-    "slug": "gemini-integration"
-  },
-  {
-    "id": 3,
-    "phase": 2,
-    "title": "Build UI for AI coaching feedback",
-    "description": "Design and implement the UI overlay that displays the feedback received from the Gemini AI.",
-    "status": "todo",
-    "slug": "ai-feedback-ui"
-  },
-  {
-    "id": 4,
-    "phase": 3,
-    "title": "Set up Supabase Authentication",
-    "description": "Integrate Supabase Auth for Email/Password and Google Sign-in to manage user accounts.",
-    "status": "todo",
-    "slug": "supabase-auth"
-  },
-  {
-    "id": 5,
-    "phase": 3,
-    "title": "Fetch videos from Supabase",
-    "description": "Replace mock video data with real API calls to Supabase `videos` table.",
-    "status": "todo",
-    "slug": "fetch-videos"
-  },
-  {
-    "id": 6,
-    "phase": 3,
-    "title": "Track user reps in database",
-    "description": "Save user attempts and AI feedback to the `user_reps` table in Supabase.",
-    "status": "todo",
-    "slug": "track-user-reps"
-  },
-  {
-    "id": 7,
-    "phase": 3,
-    "title": "Implement progress persistence",
-    "description": "Ensure user progress is synced and persisted properly across sessions.",
-    "status": "todo",
-    "slug": "progress-persistence"
-  },
-  {
-    "id": 8,
-    "phase": 4,
-    "title": "Implement streak system",
-    "description": "Add logic and UI to track daily user engagement streaks.",
-    "status": "todo",
-    "slug": "streak-system"
-  },
-  {
-    "id": 9,
-    "phase": 4,
-    "title": "XP and leveling system",
-    "description": "Award XP for completed reps and implement a leveling system based on cumulative XP.",
-    "status": "todo",
-    "slug": "xp-levels"
-  },
-  {
-    "id": 10,
-    "phase": 4,
-    "title": "Build Leaderboards",
-    "description": "Create a leaderboard tab to show top users by XP or streaks.",
-    "status": "todo",
-    "slug": "leaderboards"
-  },
-  {
-    "id": 11,
-    "phase": 4,
-    "title": "Build Achievements system",
-    "description": "Add achievements and badges for milestones in the app.",
-    "status": "todo",
-    "slug": "achievements"
-  }
+    {
+        "id": 1,
+        "phase": 2,
+        "title": "Implement mock correct/incorrect validation",
+        "description": "Add logic to the video lock screen to validate user answers using a mocked correct/incorrect validation function.",
+        "status": "todo",
+        "slug": "mock-validation"
+    },
+    {
+        "id": 2,
+        "phase": 2,
+        "title": "Integrate Google Gemini API",
+        "description": "Connect the app to Google Gemini API to send user answers and receive AI evaluation and feedback.",
+        "status": "todo",
+        "slug": "gemini-integration"
+    },
+    {
+        "id": 3,
+        "phase": 2,
+        "title": "Build UI for AI coaching feedback",
+        "description": "Design and implement the UI overlay that displays the feedback received from the Gemini AI.",
+        "status": "todo",
+        "slug": "ai-feedback-ui"
+    },
+    {
+        "id": 4,
+        "phase": 3,
+        "title": "Set up Supabase Authentication",
+        "description": "Integrate Supabase Auth for Email/Password and Google Sign-in to manage user accounts.",
+        "status": "done",
+        "slug": "supabase-auth"
+    },
+    {
+        "id": 5,
+        "phase": 3,
+        "title": "Fetch videos from Supabase",
+        "description": "Replace mock video data with real API calls to Supabase `videos` table.",
+        "status": "done",
+        "slug": "fetch-videos"
+    },
+    {
+        "id": 6,
+        "phase": 3,
+        "title": "Track user reps in database",
+        "description": "Save user attempts and AI feedback to the `user_reps` table in Supabase.",
+        "status": "done",
+        "slug": "track-user-reps"
+    },
+    {
+        "id": 7,
+        "phase": 3,
+        "title": "Implement progress persistence",
+        "description": "Ensure user progress is synced and persisted properly across sessions.",
+        "status": "done",
+        "slug": "progress-persistence"
+    },
+    {
+        "id": 8,
+        "phase": 4,
+        "title": "Implement streak system",
+        "description": "Add logic and UI to track daily user engagement streaks.",
+        "status": "todo",
+        "slug": "streak-system"
+    },
+    {
+        "id": 9,
+        "phase": 4,
+        "title": "XP and leveling system",
+        "description": "Award XP for completed reps and implement a leveling system based on cumulative XP.",
+        "status": "todo",
+        "slug": "xp-levels"
+    },
+    {
+        "id": 10,
+        "phase": 4,
+        "title": "Build Leaderboards",
+        "description": "Create a leaderboard tab to show top users by XP or streaks.",
+        "status": "todo",
+        "slug": "leaderboards"
+    },
+    {
+        "id": 11,
+        "phase": 4,
+        "title": "Build Achievements system",
+        "description": "Add achievements and badges for milestones in the app.",
+        "status": "todo",
+        "slug": "achievements"
+    }
 ]
