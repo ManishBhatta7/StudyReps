@@ -12,6 +12,7 @@ import '../../domain/models/video_model.dart';
 import '../../data/services/spaced_repetition_service.dart';
 import '../providers/adaptive_feed_provider.dart';
 import '../../data/services/gemini_coach_service.dart';
+import '../providers/streak_provider.dart';
 import '../widgets/create_rep_dialog.dart';
 import '../widgets/lock_overlay.dart';
 import '../widgets/mascot_reactor.dart';
@@ -423,6 +424,9 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
       dwellTimeMs: _dwellStopwatch.elapsedMilliseconds,
       quality: _attemptCount <= 1 ? 5 : 3, // Perfect if first try
     );
+
+    // Track the streak & rep completion
+    ref.read(streakProvider.notifier).logRep();
     
     // After delay, unlock and advance
     Future.delayed(const Duration(milliseconds: 1500), () {

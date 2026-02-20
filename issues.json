@@ -60,7 +60,7 @@
         "phase": 4,
         "title": "Implement streak system",
         "description": "Add logic and UI to track daily user engagement streaks.",
-        "status": "todo",
+        "status": "done",
         "slug": "streak-system"
     },
     {

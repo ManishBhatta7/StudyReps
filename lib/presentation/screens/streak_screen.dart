@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/theme/study_reps_theme.dart';
+import '../providers/streak_provider.dart';
 
 /// Streak Screen
 /// 
@@ -11,6 +12,8 @@ class StreakScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final streakAsync = ref.watch(streakProvider);
+
     return Scaffold(
       backgroundColor: StudyRepsTheme.bgPrimary,
       appBar: AppBar(
@@ -18,38 +21,44 @@ class StreakScreen extends ConsumerWidget {
         title: const Text('StudyReps Streak'),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            
-            // Streak Hero
-            _buildStreakHero(),
-            
-            const SizedBox(height: 32),
-            
-            // Calendar
-            _buildCalendar(),
-            
-            const SizedBox(height: 32),
-            
-            // Daily Progress
-            _buildDailyProgress(),
-            
-            const SizedBox(height: 32),
-            
-            // Achievements
-            _buildAchievements(),
-            
-            const SizedBox(height: 100),
-          ],
-        ),
+      body: streakAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Error: $e')),
+        data: (streakData) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                
+                // Streak Hero
+                _buildStreakHero(streakData.currentStreak),
+                
+                const SizedBox(height: 32),
+                
+                // Calendar
+                _buildCalendar(streakData.completedDays),
+                
+                const SizedBox(height: 32),
+                
+                // Daily Progress
+                _buildDailyProgress(streakData.todayReps),
+                
+                const SizedBox(height: 32),
+                
+                // Achievements
+                _buildAchievements(),
+                
+                const SizedBox(height: 100),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildStreakHero() {
+  Widget _buildStreakHero(int currentStreak) {
     return Column(
       children: [
         // Fire Icon
@@ -65,10 +74,10 @@ class StreakScreen extends ConsumerWidget {
               ],
             ),
           ),
-          child: const Center(
+          child: Center(
             child: Text(
-              '🔥',
-              style: TextStyle(fontSize: 60),
+              currentStreak > 0 ? '🔥' : '🧊',
+              style: const TextStyle(fontSize: 60),
             ),
           ),
         )
@@ -78,9 +87,9 @@ class StreakScreen extends ConsumerWidget {
         const SizedBox(height: 16),
         
         // Streak Count
-        const Text(
-          '15 Day Streak!',
-          style: TextStyle(
+        Text(
+          '$currentStreak Day Streak!',
+          style: const TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.w800,
             color: StudyRepsTheme.textPrimary,
@@ -90,7 +99,9 @@ class StreakScreen extends ConsumerWidget {
         const SizedBox(height: 8),
         
         Text(
-          'Keep the flame burning! You\'re doing great.',
+          currentStreak > 0 
+            ? 'Keep the flame burning! You\'re doing great.'
+            : 'Get started with a rep to ignite your flame!',
           style: TextStyle(
             color: StudyRepsTheme.textSecondary,
             fontSize: 14,
@@ -100,7 +111,17 @@ class StreakScreen extends ConsumerWidget {
     ).animate().fadeIn().scale(begin: const Offset(0.9, 0.9));
   }
 
-  Widget _buildCalendar() {
+  Widget _buildCalendar(List<DateTime> completedDays) {
+    final now = DateTime.now();
+    // A simplified map of days in current month to completion status
+    final int daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+    final Set<int> completedDaysThisMonth = completedDays
+        .where((d) => d.year == now.year && d.month == now.month)
+        .map((d) => d.day)
+        .toSet();
+
+    const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -115,9 +136,9 @@ class StreakScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Icon(Icons.chevron_left_rounded, color: StudyRepsTheme.textMuted),
-              const Text(
-                'OCTOBER',
-                style: TextStyle(
+              Text(
+                monthNames[now.month - 1],
+                style: const TextStyle(
                   color: StudyRepsTheme.textPrimary,
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
@@ -139,27 +160,29 @@ class StreakScreen extends ConsumerWidget {
               mainAxisSpacing: 8,
               crossAxisSpacing: 8,
             ),
-            itemCount: 30,
+            itemCount: daysInMonth,
             itemBuilder: (context, index) {
               final day = index + 1;
-              final isCompleted = day <= 15; // First 15 days completed
-              final isToday = day == 15;
+              final isCompleted = completedDaysThisMonth.contains(day);
+              final isToday = day == now.day;
               
               return Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isToday 
+                  color: isToday && isCompleted
                       ? StudyRepsTheme.primaryIndigo 
-                      : isCompleted 
+                      : isCompleted
                           ? StudyRepsTheme.primaryIndigo.withOpacity(0.2)
-                          : Colors.transparent,
+                          : isToday
+                              ? StudyRepsTheme.borderSubtle
+                              : Colors.transparent,
                   border: isCompleted && !isToday
                       ? null
                       : Border.all(color: StudyRepsTheme.borderSubtle),
                 ),
                 child: Center(
                   child: isCompleted && !isToday
-                      ? Icon(
+                      ? const Icon(
                           Icons.check_rounded,
                           color: StudyRepsTheme.primaryIndigo,
                           size: 16,
@@ -167,7 +190,7 @@ class StreakScreen extends ConsumerWidget {
                       : Text(
                           '$day',
                           style: TextStyle(
-                            color: isToday 
+                            color: isToday && isCompleted
                                 ? Colors.white 
                                 : StudyRepsTheme.textMuted,
                             fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
@@ -195,7 +218,10 @@ class StreakScreen extends ConsumerWidget {
     ).animate().fadeIn(delay: 150.ms).slideY(begin: 0.1);
   }
 
-  Widget _buildDailyProgress() {
+  Widget _buildDailyProgress(int todayReps) {
+    const int dailyGoal = 10;
+    final double progress = todayReps / dailyGoal;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -227,10 +253,10 @@ class StreakScreen extends ConsumerWidget {
                   width: 120,
                   height: 120,
                   child: CircularProgressIndicator(
-                    value: 0.8,
+                    value: progress > 1.0 ? 1.0 : progress,
                     strokeWidth: 10,
                     backgroundColor: StudyRepsTheme.bgTertiary,
-                    valueColor: AlwaysStoppedAnimation(StudyRepsTheme.primaryIndigo),
+                    valueColor: const AlwaysStoppedAnimation(StudyRepsTheme.primaryIndigo),
                     strokeCap: StrokeCap.round,
                   ),
                 ),
@@ -240,17 +266,17 @@ class StreakScreen extends ConsumerWidget {
                     RichText(
                       text: TextSpan(
                         children: [
-                          const TextSpan(
-                            text: '8',
-                            style: TextStyle(
+                          TextSpan(
+                            text: '$todayReps',
+                            style: const TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.w800,
                               color: StudyRepsTheme.textPrimary,
                             ),
                           ),
                           TextSpan(
-                            text: '/10',
-                            style: TextStyle(
+                            text: '/$dailyGoal',
+                            style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w600,
                               color: StudyRepsTheme.primaryIndigo,
@@ -275,7 +301,9 @@ class StreakScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           
           Text(
-            'Almost there! 2 more reps to hit your daily goal.',
+            todayReps >= dailyGoal 
+              ? 'Goal achieved! You are on fire! 🔥'
+              : 'Almost there! ${dailyGoal - todayReps} more reps to hit your daily goal.',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: StudyRepsTheme.textSecondary,
