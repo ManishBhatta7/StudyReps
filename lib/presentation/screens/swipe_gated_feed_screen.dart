@@ -11,6 +11,7 @@ import '../providers/video_feed_provider.dart';
 import '../../domain/models/video_model.dart';
 import '../../data/services/spaced_repetition_service.dart';
 import '../providers/adaptive_feed_provider.dart';
+import '../../data/services/gemini_coach_service.dart';
 import '../widgets/create_rep_dialog.dart';
 import '../widgets/lock_overlay.dart';
 import '../widgets/mascot_reactor.dart';
@@ -379,24 +380,35 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
       _aiFeedback = null;
     });
 
-    // MOCK VALIDATION LOGIC
-    await Future.delayed(const Duration(milliseconds: 1500)); // Simulate API delay
+    try {
+      final result = await GeminiCoachService.validateAnswer(
+        userAnswer: answer,
+        correctAnswer: widget.video.question?.correctAnswer ?? '',
+        questionPrompt: widget.video.question?.prompt ?? '',
+      );
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    final isCorrect = answer.trim().toLowerCase() ==
-        (widget.video.question?.correctAnswer.trim().toLowerCase() ?? '');
-
-    setState(() {
-      _isChecking = false;
-      if (isCorrect) {
-        _isCorrect = true;
-        _handleCorrectAnswer();
-      } else {
+      setState(() {
+        _isChecking = false;
+        if (result.isCorrect) {
+          _isCorrect = true;
+          _handleCorrectAnswer();
+        } else {
+          _isIncorrect = true;
+          _aiFeedback = result.feedback;
+          _handleWrongAnswer();
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isChecking = false;
         _isIncorrect = true;
+        _aiFeedback = "Failed to connect to AI Coach. Try again.";
         _handleWrongAnswer();
-      }
-    });
+      });
+    }
   }
 
   void _handleCorrectAnswer() {
@@ -433,10 +445,13 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
       quality: 1, // Poor recall
     );
     
-    // Provide some mock AI feedback based on the answer
-    setState(() {
-      _aiFeedback = "Not quite. Think about the core principles related to ${widget.video.subject}. Try reviewing the clip again.";
-    });
+    // _aiFeedback is already set in _handleAnswerSubmit from the API.
+    // Except if it isn't set.
+    if (_aiFeedback == null) {
+      setState(() {
+        _aiFeedback = "Not quite. Think about the core principles related to ${widget.video.subject}. Try reviewing the clip again.";
+      });
+    }
     
     // Shake animation
     _shakeController.forward().then((_) => _shakeController.reset());
