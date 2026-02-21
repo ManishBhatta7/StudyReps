@@ -65,11 +65,12 @@ class _LockOverlayState extends State<LockOverlay> {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
                 // Lock Icon with Animation
                 _buildLockIcon(),
                 
@@ -142,11 +143,28 @@ class _LockOverlayState extends State<LockOverlay> {
 
   Widget _buildQuestionCard() {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
       decoration: BoxDecoration(
-        color: StudyRepsTheme.bgGlass,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: StudyRepsTheme.borderSubtle),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withOpacity(0.15),
+            Colors.white.withOpacity(0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.2),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 30,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -174,7 +192,9 @@ class _LockOverlayState extends State<LockOverlay> {
           Text(
             widget.video.question.prompt,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: StudyRepsTheme.textPrimary,
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+              height: 1.2,
             ),
             textAlign: TextAlign.center,
           ),
@@ -233,29 +253,39 @@ class _LockOverlayState extends State<LockOverlay> {
               onTap: widget.isChecking ? null : () {
                 setState(() => _selectedOption = option);
               },
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
                 decoration: BoxDecoration(
                   color: isSelected 
-                      ? StudyRepsTheme.primaryPurple.withOpacity(0.3)
-                      : StudyRepsTheme.bgGlass,
-                  borderRadius: BorderRadius.circular(16),
+                      ? StudyRepsTheme.primaryPurple.withOpacity(0.25)
+                      : Colors.black.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isSelected 
-                        ? StudyRepsTheme.primaryPurple 
-                        : StudyRepsTheme.borderSubtle,
-                    width: isSelected ? 2 : 1,
+                        ? StudyRepsTheme.primaryPurpleLight 
+                        : Colors.white.withOpacity(0.1),
+                    width: isSelected ? 2 : 1.5,
                   ),
+                  boxShadow: isSelected ? [
+                    BoxShadow(
+                      color: StudyRepsTheme.primaryPurple.withOpacity(0.4),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    )
+                  ] : [],
                 ),
-                child: Text(
-                  option,
+                child: AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 200),
                   style: TextStyle(
-                    color: StudyRepsTheme.textPrimary,
-                    fontSize: 16,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    color: isSelected ? Colors.white : Colors.white70,
+                    fontSize: isSelected ? 17 : 16,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    letterSpacing: 0.3,
                   ),
                   textAlign: TextAlign.center,
+                  child: Text(option),
                 ),
               ),
             ),
@@ -293,15 +323,28 @@ class _LockOverlayState extends State<LockOverlay> {
   Widget _buildSubmitButton() {
     return SizedBox(
       width: double.infinity,
-      child: ElevatedButton(
-        onPressed: widget.isChecking ? null : _handleSubmit,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: StudyRepsTheme.primaryPurple,
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: widget.isChecking ? null : StudyRepsTheme.primaryGradient,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: widget.isChecking ? null : [
+            BoxShadow(
+              color: StudyRepsTheme.primaryPurple.withOpacity(0.4),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
+        child: ElevatedButton(
+          onPressed: widget.isChecking ? null : _handleSubmit,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: widget.isChecking ? StudyRepsTheme.bgGlass : Colors.transparent,
+            shadowColor: Colors.transparent,
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
         child: widget.isChecking
             ? const SizedBox(
                 width: 24,
@@ -311,13 +354,27 @@ class _LockOverlayState extends State<LockOverlay> {
                   color: Colors.white,
                 ),
               )
-            : const Text(
-                'Submit Rep',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Submit Rep',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ],
               ),
+        ),
       ),
     );
   }
