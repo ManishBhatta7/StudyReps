@@ -93,7 +93,8 @@ class _LockOverlayState extends State<LockOverlay> {
                   _buildIncorrectFeedback()
                 else
                   _buildSubmitButton(),
-              ],
+                ],
+              ),
             ),
           ),
         ),
