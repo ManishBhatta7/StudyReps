@@ -78,7 +78,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (_isSignUp) {
          _showSnackBar('Account created! Please check your email.', isError: false);
       }
-      _skipLogin();
     } else {
       final error = ref.read(authErrorProvider);
       if (error != null) {
@@ -97,10 +96,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final success = await authController.signInWithGoogle();
       
       if (success && mounted) {
-        // On web, a redirect happens here. The app will reload with
-        // the session already active, caught by the auth listener in main.dart.
-        // This code path executes mainly on mobile.
-        _skipLogin();
+        // App will reload with the session already active, caught by auth listener in main.dart.
       } else if (mounted) {
         final error = ref.read(authErrorProvider);
         if (error != null) {

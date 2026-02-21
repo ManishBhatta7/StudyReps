@@ -53,7 +53,7 @@ class SupabaseAuthRepository implements AuthRepository {
 
       if (response.user == null) {
         debugPrint('❌ AuthRepo: Sign in failed - No user returned');
-        throw RepositoryException(message: 'Sign in failed: No user returned');
+        throw RepositoryException(message: 'Invalid credentials or email not confirmed.');
       }
 
       debugPrint('✅ AuthRepo: Sign in successful! User ID: ${response.user!.id}');
@@ -89,8 +89,8 @@ class SupabaseAuthRepository implements AuthRepository {
       );
 
       if (response.user == null) {
-        debugPrint('❌ AuthRepo: Sign up failed - No user returned');
-        throw RepositoryException(message: 'Sign up failed: No user returned');
+        debugPrint('⚠️ AuthRepo: Sign up successful, but awaiting email confirmation or email already exists.');
+        throw RepositoryException(message: 'Please check your email to verify your account.');
       }
 
       debugPrint('✅ AuthRepo: Sign up successful! User ID: ${response.user!.id}');

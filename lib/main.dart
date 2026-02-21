@@ -157,8 +157,29 @@ class _AppRootState extends State<AppRoot> {
       debugShowCheckedModeBanner: false,
       theme: StudyRepsTheme.darkTheme,
       themeMode: ThemeMode.dark,
-      // Create global navigation key if needed, or rely on internal routing
-      home: _isAuthenticated ? const MainNavigationShell() : const LoginScreen(),
+      home: Consumer(
+        builder: (context, ref, child) {
+          final authState = ref.watch(authStateStreamProvider);
+          
+          return authState.when(
+            data: (user) {
+              if (user != null) {
+                return const MainNavigationShell();
+              }
+              return const LoginScreen();
+            },
+            loading: () {
+              if (_isAuthenticated) {
+                 return const MainNavigationShell();
+              }
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            },
+            error: (e, st) => const LoginScreen(),
+          );
+        },
+      ),
     );
   }
 }
