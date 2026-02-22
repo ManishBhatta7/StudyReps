@@ -7,6 +7,7 @@ import '../../presentation/providers/stats_provider.dart';
 import '../../domain/models/video_model.dart';
 import '../providers/video_feed_provider.dart';
 import '../../presentation/providers/xp_provider.dart';
+import 'squads_screen.dart';
 
 /// Profile Stats Screen
 /// 
@@ -66,6 +67,13 @@ class ProfileStatsScreen extends ConsumerWidget {
               loading: () => _buildStatsLoading(),
               error: (err, _) => _buildErrorCard("Could not load stats"),
             ),
+
+            const SizedBox(height: 24),
+            
+            // Study Squads Hub Card
+            _buildSquadsHubCard(context),
+            
+            const SizedBox(height: 24),
             
             // My Created Reps (Categorized)
             _buildMyRepsSection(ref),
@@ -352,6 +360,76 @@ class ProfileStatsScreen extends ConsumerWidget {
         ],
       ),
     ).animate().fadeIn(delay: (150 + index * 80).ms).scale(begin: const Offset(0.9, 0.9));
+  }
+
+  Widget _buildSquadsHubCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SquadsScreen()),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              StudyRepsTheme.primaryIndigo.withOpacity(0.8),
+              StudyRepsTheme.primaryPurple.withOpacity(0.8),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: StudyRepsTheme.primaryPurple.withOpacity(0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.groups_rounded, color: Colors.white, size: 28),
+            ),
+            const SizedBox(width: 16),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Study Squads',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Join forces and conquer goals together!',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: Colors.white54),
+          ],
+        ),
+      ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
+    );
   }
 
   Widget _buildMyRepsSection(WidgetRef ref) {

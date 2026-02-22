@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../domain/models/xp_model.dart';
 import '../../core/constants/app_constants.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class XpService {
   static const String boxName = 'xp_box';
@@ -17,6 +18,26 @@ class XpService {
     if (existingJson != null) {
       return XpModel.fromJson(Map<String, dynamic>.from(existingJson));
     } else {
+      // Try fetching from Supabase if not found locally
+      try {
+         final response = await Supabase.instance.client
+            .from('user_xp')
+            .select('*')
+            .eq('user_id', userId)
+            .maybeSingle();
+
+         if (response != null) {
+             final record = XpModel(
+                totalXp: response['total_xp'],
+                currentLevel: response['current_level'],
+                xpForNextLevel: response['xp_for_next_level'],
+             );
+             await box.put(key, record.toJson());
+             return record;
+         }
+      } catch (e) {
+         // ignore
+      }
       return const XpModel(totalXp: 0, currentLevel: 1, xpForNextLevel: 100);
     }
   }
@@ -45,6 +66,20 @@ class XpService {
     );
 
     await box.put(key, newRecord.toJson());
+
+    // Sync to Supabase
+    try {
+        await Supabase.instance.client.from('user_xp').upsert({
+            'user_id': userId,
+            'total_xp': newTotalXp,
+            'current_level': newLevel,
+            'xp_for_next_level': nextLevelXp,
+            'synced_at': DateTime.now().toIso8601String(),
+        });
+    } catch (e) {
+        // fail silently for offline support
+    }
+
     return newRecord;
   }
 }

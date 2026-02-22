@@ -77,6 +77,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (success && mounted) {
       if (_isSignUp) {
          _showSnackBar('Account created! Please check your email.', isError: false);
+         // You could also auto-login some users here if email confirmation is disabled
+         // For now, if we assume they need to verify, we don't skip.
+      } else {
+         _skipLogin();
       }
     } else {
       final error = ref.read(authErrorProvider);
@@ -96,7 +100,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final success = await authController.signInWithGoogle();
       
       if (success && mounted) {
-        // App will reload with the session already active, caught by auth listener in main.dart.
+        _skipLogin();
       } else if (mounted) {
         final error = ref.read(authErrorProvider);
         if (error != null) {

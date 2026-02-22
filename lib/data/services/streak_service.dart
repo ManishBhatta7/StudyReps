@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../../domain/models/streak_model.dart';
 import '../../core/constants/app_constants.dart';
 import 'package:clock/clock.dart'; // helpful if we want to mock time later, else just DateTime.now()
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class StreakService {
   static const String boxName = 'streak_box';
@@ -14,11 +15,33 @@ class StreakService {
     final existingJson = box.get(key);
 
     if (existingJson != null) {
-      // Need to cast the dynamic list to List<DateTime> if json parser doesn't perfectly do it, 
-      // but freezed handles it via fromJson
       final model = StreakModel.fromJson(Map<String, dynamic>.from(existingJson));
       return _checkAndResetDaily(model);
     } else {
+      // Try to fetch from Supabase
+      try {
+         final response = await Supabase.instance.client
+           .from('user_streaks')
+           .select('*')
+           .eq('user_id', userId)
+           .maybeSingle();
+
+         if (response != null) {
+             final completedDaysRaw = response['completed_days'] as List<dynamic>? ?? [];
+             final record = StreakModel(
+                currentStreak: response['current_streak'] ?? 0,
+                maxStreak: response['max_streak'] ?? 0,
+                todayReps: response['today_reps'] ?? 0,
+                lastRepDate: response['last_rep_date'] != null ? DateTime.parse(response['last_rep_date']) : null,
+                completedDays: completedDaysRaw.map((e) => DateTime.parse(e.toString())).toList(),
+             );
+             await box.put(key, record.toJson());
+             return _checkAndResetDaily(record);
+         }
+      } catch (e) {
+         // ignore
+      }
+
       return const StreakModel();
     }
   }
@@ -60,6 +83,22 @@ class StreakService {
     );
 
     await box.put(key, newRecord.toJson());
+
+    // Sync to Supabase
+    try {
+        await Supabase.instance.client.from('user_streaks').upsert({
+            'user_id': userId,
+            'current_streak': newCurrentStreak,
+            'max_streak': newMaxStreak,
+            'today_reps': newTodayReps,
+            'last_rep_date': now.toIso8601String(),
+            'completed_days': newCompletedDays.map((e) => e.toIso8601String()).toList(),
+            'synced_at': now.toIso8601String(),
+        });
+    } catch(e) {
+        // Fail silently for offline
+    }
+
     return newRecord;
   }
 
