@@ -7,6 +7,7 @@ import '../../presentation/providers/stats_provider.dart';
 import '../../domain/models/video_model.dart';
 import '../providers/video_feed_provider.dart';
 import '../../presentation/providers/xp_provider.dart';
+import '../../presentation/providers/auth_provider.dart';
 import 'squads_screen.dart';
 
 /// Profile Stats Screen
@@ -20,6 +21,7 @@ class ProfileStatsScreen extends ConsumerWidget {
     final dashboardStatsAsync = ref.watch(dashboardStatsProvider);
     final tsrHealthAsync = ref.watch(tsrHealthProvider);
     final xpAsync = ref.watch(xpProvider);
+    final user = ref.watch(currentDomainUserProvider);
 
     return Scaffold(
       backgroundColor: StudyRepsTheme.bgPrimary,
@@ -45,9 +47,9 @@ class ProfileStatsScreen extends ConsumerWidget {
             
             // Avatar & Name
             xpAsync.when(
-              data: (xp) => _buildProfileHeader(xp.currentLevel, xp.totalXp, xp.xpForNextLevel),
+              data: (xp) => _buildProfileHeader(xp.currentLevel, xp.totalXp, xp.xpForNextLevel, user),
               loading: () => const CircularProgressIndicator(),
-              error: (_, __) => _buildProfileHeader(1, 0, 100),
+              error: (_, __) => _buildProfileHeader(1, 0, 100, user),
             ),
             
             const SizedBox(height: 24),
@@ -90,7 +92,10 @@ class ProfileStatsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildProfileHeader(int level, int xp, int nextLevelXp) {
+  Widget _buildProfileHeader(int level, int xp, int nextLevelXp, user) {
+    final displayName = user?.fullName ?? user?.name ?? 'Student';
+    final initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : '?';
+
     return Column(
       children: [
         // Avatar
@@ -114,25 +119,40 @@ class ProfileStatsScreen extends ConsumerWidget {
           child: CircleAvatar(
             radius: 47,
             backgroundColor: StudyRepsTheme.bgSecondary,
-            child: Icon(
-              Icons.person_rounded,
-              size: 50,
-              color: StudyRepsTheme.textMuted,
-            ),
+            backgroundImage: user?.avatarUrl != null ? NetworkImage(user!.avatarUrl!) : null,
+            child: user?.avatarUrl == null ? Text(
+              initial,
+              style: TextStyle(
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+                color: StudyRepsTheme.textMuted,
+              ),
+            ) : null,
           ),
         ),
         
         const SizedBox(height: 16),
         
         // Username
-        const Text(
-          '@StudentPro',
-          style: TextStyle(
+        Text(
+          displayName,
+          style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w700,
             color: StudyRepsTheme.textPrimary,
           ),
         ),
+        
+        if (user?.email != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            user!.email!,
+            style: TextStyle(
+              fontSize: 14,
+              color: StudyRepsTheme.textMuted,
+            ),
+          ),
+        ],
         
         const SizedBox(height: 8),
         
