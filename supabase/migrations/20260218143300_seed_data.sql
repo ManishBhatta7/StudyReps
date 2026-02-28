@@ -18,7 +18,7 @@ INSERT INTO public.educational_content (
 ) VALUES 
 (
   'physics_newton_apple',
-  'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
+  'assets/videos/sample.mp4',
   8,
   '{
     "id": "q_gravity_1",
@@ -41,7 +41,7 @@ INSERT INTO public.educational_content (
 ),
 (
   'chem_periodic_table',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+  'assets/videos/sample.mp4',
   10,
   '{
     "id": "q_chem_1",
@@ -64,7 +64,7 @@ INSERT INTO public.educational_content (
 ),
 (
   'bio_cell_division',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+  'assets/videos/sample.mp4',
   15,
   '{
     "id": "q_bio_1",
@@ -87,7 +87,7 @@ INSERT INTO public.educational_content (
 ),
 (
   'math_pythagoras',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+  'assets/videos/sample.mp4',
   12,
   '{
     "id": "q_math_1",
@@ -110,7 +110,7 @@ INSERT INTO public.educational_content (
 ),
 (
   'physics_thermo',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+  'assets/videos/sample.mp4',
   20,
   '{
     "id": "q_thermo_1",

@@ -93,7 +93,6 @@ class SourceChip extends StatelessWidget {
       case SourceType.essay:
         return RetainLearnTheme.sourceEssay;
       case SourceType.document:
-      default:
         return RetainLearnTheme.textMedium;
     }
   }
@@ -113,7 +112,6 @@ class SourceChip extends StatelessWidget {
       case SourceType.essay:
         return Icons.edit_document;
       case SourceType.document:
-      default:
         return Icons.description;
     }
   }

@@ -10,7 +10,7 @@ class ForceChapterVideos {
   static List<VideoModel> getVideos() => [
     const VideoModel(
       id: 'physics_newton_apple',
-      videoUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
+      videoUrl: 'assets/videos/sample.mp4',
       lockTimestamp: 8,
       title: 'Newton\'s Law of Gravitation',
       subject: 'Physics',
@@ -32,7 +32,7 @@ class ForceChapterVideos {
     ),
     const VideoModel(
       id: 'chem_periodic_table',
-      videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', 
+      videoUrl: 'assets/videos/sample.mp4', 
       lockTimestamp: 10,
       title: 'The Periodic Table: Trends',
       subject: 'Chemistry',
@@ -54,7 +54,7 @@ class ForceChapterVideos {
     ),
     const VideoModel(
       id: 'bio_cell_division',
-      videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+      videoUrl: 'assets/videos/sample.mp4',
       lockTimestamp: 15,
       title: 'Mitosis vs Meiosis',
       subject: 'Biology',
@@ -76,7 +76,7 @@ class ForceChapterVideos {
     ),
     const VideoModel(
       id: 'math_pythagoras',
-      videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+      videoUrl: 'assets/videos/sample.mp4',
       lockTimestamp: 12,
       title: 'Pythagorean Theorem Visualized',
       subject: 'Mathematics',
@@ -98,7 +98,7 @@ class ForceChapterVideos {
     ),
     const VideoModel(
       id: 'physics_thermo',
-      videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+      videoUrl: 'assets/videos/sample.mp4',
       lockTimestamp: 20,
       title: 'Thermodynamics: Entropy',
       subject: 'Physics',

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/leaderboard_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -62,7 +63,7 @@ final leaderboardProvider = FutureProvider.family<LeaderboardState, String>((ref
       }
     }
   } catch (e) {
-    print("Leaderboard error: $e");
+    debugPrint("Leaderboard error: $e");
     // Fallback if Supabase fails
   }
 
@@ -121,3 +122,4 @@ final leaderboardProvider = FutureProvider.family<LeaderboardState, String>((ref
     currentUser: me,
   );
 });
+

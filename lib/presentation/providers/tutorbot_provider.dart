@@ -58,9 +58,9 @@ class TutorbotController extends StateNotifier<TutorbotState> {
       // First time — add welcome message
       final welcome = ChatMessage(
         id: 'welcome_$videoId',
-        text: "👋 Hi! I'm your study buddy for **\"${video.title}\"**.\n\n"
-            "Ask me anything about this video — want examples, clarification, "
-            "or a deeper dive into a specific concept?",
+        text: "👋 Hey! Main hoon tumhara study buddy for **\"${video.title}\"**.\n\n"
+            "Mujhse kuch bhi poocho is video ke baare mein — examples chahiye, "
+            "koi concept samajhna hai, ya deeper dive karna hai? Let's go! 🚀",
         isBot: true,
         timestamp: DateTime.now(),
         videoId: videoId,
@@ -230,12 +230,13 @@ class TutorbotController extends StateNotifier<TutorbotState> {
         .join('\n');
 
     final visionPrompt = '''
-You are an expert tutor with vision capabilities in "StudyReps" — an educational video app.
+You are an expert female tutor with vision capabilities in "StudyReps" — an educational video app for Indian students.
 
 ═══ VIDEO CONTEXT ═══
 - Title: "${video.title}"
 - Subject: "${video.subject}"
 - Topic: "${video.topicId.isNotEmpty ? video.topicId : 'general'}"
+- Current Focus Question: "${video.question?.prompt ?? 'General topic exploration'}"
 
 ═══ RECENT CONVERSATION ═══
 $conversationHistory
@@ -243,62 +244,77 @@ $conversationHistory
 ═══ TASK ═══
 The student has shared an image. Their message: "$userPrompt"
 
-═══ INSTRUCTIONS ═══
+═══ LANGUAGE INSTRUCTIONS ═══
+You MUST respond in **Hinglish** — a natural mix of Hindi and English using ONLY Roman/Latin script.
+NEVER use Devanagari/Hindi script. ALL Hindi words must be written in English letters.
+**CRITICAL**: You are a **FEMALE** tutor. You MUST use **female pronouns** in Hindi/Hinglish when referring to yourself (e.g. use "main bataati hoon", "main dekhti hoon"). NEVER use male pronouns like "dekhta hoon" or "bataata hoon".
+Example: "Mujhe lagta hai yeh diagram theek hai, ab main tumhe next step samjhaati hoon."
+
+═══ TEACHING INSTRUCTIONS ═══
 1. Analyze the image carefully — it could be a math problem, diagram, textbook page, handwritten notes, or question paper
-2. If it's a problem/equation: solve it step-by-step, explaining the reasoning
+2. If it's a problem/equation: solve it step-by-step in Hinglish, explaining the reasoning
 3. If it's a diagram: explain what it shows and how it relates to the concept
 4. If it's handwritten notes: help organize and clarify them
 5. If it's a question paper: help the student understand and solve the questions
-6. Connect your analysis to the video topic ("${video.title}") when relevant
+6. Connect your analysis to the video topic ("${video.title}") and the "Current Focus Question" when relevant
 7. Use **bold** for key terms and format formulas clearly
 8. Keep the response concise (4-6 sentences) but thorough
-9. Be encouraging — the student is making an effort by sharing their work!
+9. Be encouraging, like a supportive senior sister — the student is making an effort by sharing their work!
 ''';
 
     final url = Uri.parse(
       '${AppConstants.geminiBaseUrl}/models/${AppConstants.geminiModel}:generateContent?key=$apiKey',
     );
 
+    final requestBody = <String, dynamic>{
+      'contents': [
+        {
+          'parts': [
+            {'text': visionPrompt},
+            {
+              'inline_data': {
+                'mime_type': mimeType,
+                'data': base64Image,
+              }
+            },
+          ]
+        }
+      ],
+      'generationConfig': {
+        'temperature': 0.7,
+        'maxOutputTokens': 600,
+        'topP': 0.95,
+        'topK': 40,
+      },
+      'safetySettings': [
+        {
+          'category': 'HARM_CATEGORY_HARASSMENT',
+          'threshold': 'BLOCK_ONLY_HIGH',
+        },
+        {
+          'category': 'HARM_CATEGORY_HATE_SPEECH',
+          'threshold': 'BLOCK_ONLY_HIGH',
+        },
+      ],
+    };
+
+    // Enable thinking mode for deeper analysis
+    if (AppConstants.enableThinking) {
+      (requestBody['generationConfig'] as Map<String, dynamic>)['thinkingConfig'] = {
+        'thinkingBudget': AppConstants.thinkingBudget,
+      };
+    }
+
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'contents': [
-          {
-            'parts': [
-              {'text': visionPrompt},
-              {
-                'inline_data': {
-                  'mime_type': mimeType,
-                  'data': base64Image,
-                }
-              },
-            ]
-          }
-        ],
-        'generationConfig': {
-          'temperature': 0.7,
-          'maxOutputTokens': 600,
-          'topP': 0.95,
-          'topK': 40,
-        },
-        'safetySettings': [
-          {
-            'category': 'HARM_CATEGORY_HARASSMENT',
-            'threshold': 'BLOCK_ONLY_HIGH',
-          },
-          {
-            'category': 'HARM_CATEGORY_HATE_SPEECH',
-            'threshold': 'BLOCK_ONLY_HIGH',
-          },
-        ],
-      }),
+      body: jsonEncode(requestBody),
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final text = data['candidates']?[0]?['content']?['parts']?[0]?['text'];
-      return text?.toString().trim() ??
+      final text = _extractTextFromResponse(data);
+      return text ??
           "I could see the image but couldn't fully analyze it. Can you tell me what you'd like help with? 🤔";
     }
 
@@ -337,14 +353,16 @@ The student has shared an image. Their message: "$userPrompt"
     final gradeLevel = ChatPersistenceService.getLearnerProfile('grade_level') ?? 'unknown';
 
     final contextPrompt = '''
-You are an expert, Socratic tutor embedded in "StudyReps" — a short-form educational video app.
+You are an expert, Socratic female tutor embedded in "StudyReps" — a short-form educational video app for Indian students.
 
 ═══ VIDEO CONTEXT ═══
 - Title: "${video.title}"
 - Subject: "${video.subject}"
 - Topic: "${video.topicId.isNotEmpty ? video.topicId : 'general'}"
 - Concept Cluster: "${video.conceptCluster.isNotEmpty ? video.conceptCluster : 'general'}"
-- Transcript: "${video.transcript.isNotEmpty ? video.transcript : 'No transcript available — infer from title and subject.'}"
+- Current Focus Question: "${video.question?.prompt ?? 'General topic exploration'}"
+- Core Concept / Explanation: "${video.question?.explanation ?? 'Help the student understand the video topic.'}"
+- Transcript: "${video.transcript.isNotEmpty ? video.transcript : 'No transcript available — use the Title, Subject, and Focus Question to infer the exact context.'}"
 
 ═══ LEARNER PROFILE ═══
 - Learning Style: $learningStyle
@@ -357,19 +375,30 @@ $conversationHistory
 ═══ NEW QUESTION ═══
 Student: "$userQuestion"
 
-═══ INSTRUCTIONS ═══
-1. Give a thorough, helpful answer (4-8 sentences)
+═══ LANGUAGE & TONE INSTRUCTIONS ═══
+You MUST respond in **Hinglish** — a natural mix of Hindi and English using ONLY Roman/Latin script (NEVER use Devanagari/Hindi script like हिन्दी).
+**CRITICAL**: You are a **FEMALE** tutor. You MUST use **female pronouns** in Hindi/Hinglish when referring to yourself (e.g. use "main bataati hoon", "main samjhaati hoon", "main karti hoon"). NEVER use male pronouns (like "batata hoon" or "karta hoon").
+
+Examples of Hinglish:
+- "Yeh bahut important concept hai, let me explain karti hoon."
+- "Isme basically kya hota hai ki force mass times acceleration hota hai."
+- "Socho agar tum ek ball throw karte ho toh uska trajectory parabolic hoga, main tumhe next step samjhaati hoon."
+- "Isko samajhne ke liye pehle hum basic formula dekhte hain."
+
+═══ TEACHING INSTRUCTIONS ═══
+1. Give a thorough, helpful answer (4-8 sentences) in Hinglish
 2. Use analogies and real-world examples relevant to an Indian ICSE/CBSE student
 3. If the student seems confused, break it down into simpler steps
 4. If the student asks for an explanation, provide a detailed one with examples
 5. If the student understands well, challenge them with a follow-up question (Socratic method)
 6. When referencing formulas, use clear formatting with **bold** for key terms
 7. Use emoji sparingly (1-2 max) for engagement
-8. Reference the video content and past conversation when relevant
+8. Formulate your answer carefully around the specific "Current Focus Question" of the video, as that is what the student is actively struggling with.
 9. If you detect the student struggling with a concept, note it
-10. Keep responses conversational, encouraging, and educational
+10. Keep responses conversational, encouraging, and educational — like a friendly, supportive senior sister helping out
 11. If showing steps, number them clearly
 12. Always provide a complete answer — never say you can't help with the topic
+13. NEVER use Devanagari script. ALL Hindi words must be in Roman letters.
 ''';
 
     final url = Uri.parse(
@@ -380,34 +409,43 @@ Student: "$userQuestion"
     debugPrint('📝 Question: $userQuestion');
 
     try {
+      final requestBody = <String, dynamic>{
+        'contents': [
+          {
+            'parts': [
+              {'text': contextPrompt}
+            ]
+          }
+        ],
+        'generationConfig': {
+          'temperature': 0.8,
+          'maxOutputTokens': 800,
+          'topP': 0.95,
+          'topK': 40,
+        },
+        'safetySettings': [
+          {
+            'category': 'HARM_CATEGORY_HARASSMENT',
+            'threshold': 'BLOCK_ONLY_HIGH',
+          },
+          {
+            'category': 'HARM_CATEGORY_HATE_SPEECH',
+            'threshold': 'BLOCK_ONLY_HIGH',
+          },
+        ],
+      };
+
+      // Enable thinking mode for deeper Socratic reasoning
+      if (AppConstants.enableThinking) {
+        (requestBody['generationConfig'] as Map<String, dynamic>)['thinkingConfig'] = {
+          'thinkingBudget': AppConstants.thinkingBudget,
+        };
+      }
+
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'contents': [
-            {
-              'parts': [
-                {'text': contextPrompt}
-              ]
-            }
-          ],
-          'generationConfig': {
-            'temperature': 0.8,
-            'maxOutputTokens': 800,
-            'topP': 0.95,
-            'topK': 40,
-          },
-          'safetySettings': [
-            {
-              'category': 'HARM_CATEGORY_HARASSMENT',
-              'threshold': 'BLOCK_ONLY_HIGH',
-            },
-            {
-              'category': 'HARM_CATEGORY_HATE_SPEECH',
-              'threshold': 'BLOCK_ONLY_HIGH',
-            },
-          ],
-        }),
+        body: jsonEncode(requestBody),
       ).timeout(const Duration(seconds: 30));
 
       debugPrint('📡 Response status: ${response.statusCode}');
@@ -415,17 +453,16 @@ Student: "$userQuestion"
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final text = data['candidates']?[0]?['content']?['parts']?[0]?['text'];
-        final resultText = text?.toString().trim() ??
+        final resultText = _extractTextFromResponse(data) ??
             "I understood your question but couldn't generate a clear response. Can you rephrase? 🤔";
 
         // Check if the student might be struggling (simple heuristic)
         final lowerQuestion = userQuestion.toLowerCase();
         if (lowerQuestion.contains("don't understand") ||
-            lowerQuestion.contains("confused") ||
-            lowerQuestion.contains("what does") ||
-            lowerQuestion.contains("help") ||
-            lowerQuestion.contains("explain again")) {
+            lowerQuestion.contains('confused') ||
+            lowerQuestion.contains('what does') ||
+            lowerQuestion.contains('help') ||
+            lowerQuestion.contains('explain again')) {
           ChatPersistenceService.recordStruggleTopic(
             video.topicId.isNotEmpty ? video.topicId : video.subject,
             video.id,
@@ -457,6 +494,29 @@ Student: "$userQuestion"
       debugPrint('❌ Network error: $e');
       rethrow;
     }
+  }
+
+  /// Extract the actual text response from Gemini API response.
+  /// With thinking mode enabled, the model returns multiple parts:
+  /// - Parts with 'thought: true' contain internal reasoning (hidden from user)
+  /// - Parts with regular 'text' contain the actual response
+  /// This method finds and returns only the actual response text.
+  static String? _extractTextFromResponse(Map<String, dynamic> data) {
+    final candidates = data['candidates'] as List?;
+    if (candidates == null || candidates.isEmpty) return null;
+
+    final parts = candidates[0]['content']?['parts'] as List?;
+    if (parts == null || parts.isEmpty) return null;
+
+    // Walk parts in reverse to find the last non-thinking text
+    for (final part in parts.reversed) {
+      if (part['text'] != null && part['thought'] != true) {
+        return part['text'].toString().trim();
+      }
+    }
+
+    // Fallback: return the last part's text regardless
+    return parts.last['text']?.toString().trim();
   }
 }
 

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,7 +9,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../../core/theme/study_reps_theme.dart';
 import '../../data/services/chat_persistence_service.dart';
+import '../../data/services/elevenlabs_tts_service.dart';
 import '../../data/services/screen_capture.dart' as screen_capture;
+import '../../data/services/web_audio_player.dart';
+import '../../data/services/web_tts.dart';
 import '../../domain/models/video_model.dart';
 import '../providers/tutorbot_provider.dart';
 
@@ -24,10 +26,11 @@ import '../providers/tutorbot_provider.dart';
 /// - Markdown rendering for rich responses
 class VideoTutorbotSheet extends StatelessWidget {
   final VideoModel video;
+  final Uint8List? initialImage;
 
-  const VideoTutorbotSheet({super.key, required this.video});
+  const VideoTutorbotSheet({super.key, required this.video, this.initialImage});
 
-  static void show(BuildContext context, VideoModel video) {
+  static void show(BuildContext context, VideoModel video, {Uint8List? initialImage}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -38,6 +41,7 @@ class VideoTutorbotSheet extends StatelessWidget {
         maxChildSize: 0.92,
         builder: (context, scrollController) => _TutorbotContent(
           video: video,
+          initialImage: initialImage,
           scrollController: scrollController,
         ),
       ),
@@ -46,15 +50,16 @@ class VideoTutorbotSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _TutorbotContent(video: video);
+    return _TutorbotContent(video: video, initialImage: initialImage);
   }
 }
 
 class _TutorbotContent extends ConsumerStatefulWidget {
   final VideoModel video;
+  final Uint8List? initialImage;
   final ScrollController? scrollController;
 
-  const _TutorbotContent({required this.video, this.scrollController});
+  const _TutorbotContent({required this.video, this.initialImage, this.scrollController});
 
   @override
   ConsumerState<_TutorbotContent> createState() => _TutorbotContentState();
@@ -93,76 +98,107 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     );
+
+    // If an initial screenshot is passed from the pencil tool, send it instantly
+    if (widget.initialImage != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(tutorbotControllerProvider(widget.video).notifier).sendImageMessage(
+          imageBytes: widget.initialImage!,
+          mimeType: 'image/png',
+          userPrompt: 'I captured this from the video. Help me understand it.',
+        );
+        _scrollToBottom();
+      });
+    }
   }
 
-  /// Initialize TTS engine for voice feedback
+  /// Initialize TTS engine
+  /// Priority: ElevenLabs (Ruhaan voice) > Browser Web Speech API > flutter_tts
   Future<void> _initTts() async {
     try {
-      await _tts.setLanguage('en-US');
-      await _tts.setSpeechRate(0.5);
-      await _tts.setVolume(1.0);
-      await _tts.setPitch(1.0);
-      _tts.setCompletionHandler(() {
-        if (mounted) {
-          setState(() {
-            _isSpeaking = false;
-            _speakingMessageId = null;
-          });
-        }
-      });
-      _tts.setCancelHandler(() {
-        if (mounted) {
-          setState(() {
-            _isSpeaking = false;
-            _speakingMessageId = null;
-          });
-        }
-      });
-      debugPrint('🔊 TTS initialized');
+      if (ElevenLabsTtsService.isConfigured) {
+        debugPrint('🔊 ElevenLabs TTS configured (Ruhaan voice)');
+      }
+      
+      if (kIsWeb && WebTtsService.isSupported) {
+        final voices = await WebTtsService.getAvailableVoices();
+        debugPrint('🔊 Web TTS: ${voices.length} voices (fallback)');
+      } else {
+        await _tts.setLanguage('en-IN');
+        await _tts.setSpeechRate(0.45);
+        await _tts.setVolume(1.0);
+        await _tts.setPitch(1.15);
+        _tts.setCompletionHandler(() {
+          if (mounted) setState(() { _isSpeaking = false; _speakingMessageId = null; });
+        });
+        _tts.setCancelHandler(() {
+          if (mounted) setState(() { _isSpeaking = false; _speakingMessageId = null; });
+        });
+        debugPrint('🔊 flutter_tts initialized (fallback)');
+      }
     } catch (e) {
       debugPrint('🔊 TTS init error: $e');
     }
   }
 
   /// Speak a message aloud or stop speaking
+  /// Tries ElevenLabs first, then browser TTS, then flutter_tts
   Future<void> _toggleSpeak(ChatMessage msg) async {
     try {
       if (_isSpeaking && _speakingMessageId == msg.id) {
-        // Currently speaking this message — stop it
-        await _tts.stop();
-        setState(() {
-          _isSpeaking = false;
-          _speakingMessageId = null;
-        });
+        // Stop current playback
+        if (kIsWeb) await WebAudioPlayer.stop();
+        if (kIsWeb && WebTtsService.isSupported) await WebTtsService.stop();
+        if (!kIsWeb) await _tts.stop();
+        setState(() { _isSpeaking = false; _speakingMessageId = null; });
         return;
       }
 
-      // Stop any ongoing speech first
-      if (_isSpeaking) await _tts.stop();
+      // Stop any ongoing speech
+      if (_isSpeaking) {
+        if (kIsWeb) await WebAudioPlayer.stop();
+        if (kIsWeb && WebTtsService.isSupported) await WebTtsService.stop();
+        if (!kIsWeb) await _tts.stop();
+      }
 
       // Strip markdown formatting for cleaner speech
       final cleanText = msg.text
-          .replaceAll(RegExp(r'\*\*(.+?)\*\*'), r'\1') // bold
-          .replaceAll(RegExp(r'\*(.+?)\*'), r'\1')     // italic
-          .replaceAll(RegExp(r'`(.+?)`'), r'\1')       // code
-          .replaceAll(RegExp(r'#{1,6}\s'), '')          // headings
-          .replaceAll(RegExp(r'\[(.+?)\]\(.+?\)'), r'\1') // links
-          .replaceAll(RegExp(r'[\n\r]+'), '. ')         // newlines to pauses
-          .replaceAll(RegExp(r'\s+'), ' ')              // multiple spaces
+          .replaceAll(RegExp(r'\*\*(.+?)\*\*'), r'\1')
+          .replaceAll(RegExp(r'\*(.+?)\*'), r'\1')
+          .replaceAll(RegExp(r'`(.+?)`'), r'\1')
+          .replaceAll(RegExp(r'#{1,6}\s'), '')
+          .replaceAll(RegExp(r'\[(.+?)\]\(.+?\)'), r'\1')
+          .replaceAll(RegExp(r'[\n\r]+'), '. ')
+          .replaceAll(RegExp(r'\s+'), ' ')
           .trim();
 
-      setState(() {
-        _isSpeaking = true;
-        _speakingMessageId = msg.id;
-      });
+      setState(() { _isSpeaking = true; _speakingMessageId = msg.id; });
 
+      void onDone() {
+        if (mounted) setState(() { _isSpeaking = false; _speakingMessageId = null; });
+      }
+
+      // ── Try ElevenLabs first (best quality) ──
+      if (ElevenLabsTtsService.isConfigured && kIsWeb) {
+        final audioBytes = await ElevenLabsTtsService.textToSpeech(cleanText);
+        if (audioBytes != null && audioBytes.isNotEmpty) {
+          await WebAudioPlayer.playBytes(audioBytes, onComplete: onDone);
+          return; // Success!
+        }
+        debugPrint('🔊 ElevenLabs failed, falling back...');
+      }
+
+      // ── Fallback: Browser Web Speech API ──
+      if (kIsWeb && WebTtsService.isSupported) {
+        await WebTtsService.speak(cleanText, rate: 0.9, pitch: 1.05, onComplete: onDone);
+        return;
+      }
+
+      // ── Fallback: flutter_tts (mobile/desktop) ──
       await _tts.speak(cleanText);
     } catch (e) {
       debugPrint('🔊 TTS speak error: $e');
-      setState(() {
-        _isSpeaking = false;
-        _speakingMessageId = null;
-      });
+      setState(() { _isSpeaking = false; _speakingMessageId = null; });
     }
   }
 
@@ -443,6 +479,19 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
     final chatState = ref.watch(tutorbotControllerProvider(widget.video));
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
 
+    // Auto-TTS logic: speak the latest bot message if it just arrived
+    ref.listen<TutorbotState>(tutorbotControllerProvider(widget.video), (previous, next) {
+      if (!next.isLoading && previous?.isLoading == true) {
+        // Just finished loading a response
+        if (next.messages.isNotEmpty) {
+          final lastMsg = next.messages.last;
+          if (lastMsg.isBot && lastMsg.id != _speakingMessageId) {
+             _toggleSpeak(lastMsg); // Auto-speak the new message
+          }
+        }
+      }
+    });
+
     return Container(
       decoration: BoxDecoration(
         color: StudyRepsTheme.bgPrimary,
@@ -638,7 +687,7 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
       ('📸 Scan', Icons.camera_alt_rounded,
           () => setState(() => _showVisionOptions = true)),
       ('🎤 Voice', Icons.mic_rounded, _toggleListening),
-      ('Explain', Icons.lightbulb_outline_rounded,
+      ('Ask AI', Icons.lightbulb_outline_rounded,
           () => _sendMessage('Explain this concept in simple terms')),
       ('Quiz me', Icons.quiz_outlined,
           () => _sendMessage('Quiz me on this video')),

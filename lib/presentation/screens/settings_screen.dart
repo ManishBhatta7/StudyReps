@@ -1,4 +1,6 @@
+import 'dart:ui'; // Required for ImageFilter.blur() in BackdropFilter widgets
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -16,8 +18,12 @@ final dailyGoalProvider = StateProvider<int>((ref) => 10);
 final streakReminderTimeProvider = StateProvider<String>((ref) => '09:00 AM');
 
 /// Settings Screen
-/// 
-/// User preferences, account settings, and app configuration
+///
+/// An expert-level Flutter UI demonstrating:
+/// - Deep Glassmorphism (BackdropFilter)
+/// - Accessibility (Semantics)
+/// - Performance (const widgets, minimal rebuilds)
+/// - Custom implicit animations
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -25,344 +31,438 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: StudyRepsTheme.bgPrimary,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded, color: StudyRepsTheme.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Settings',
-          style: TextStyle(
-            color: StudyRepsTheme.textPrimary,
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Profile Section
-            _buildProfileSection(context),
-            
-            const SizedBox(height: 24),
-            
-            // Learning Preferences
-            _buildSectionHeader('Learning Preferences'),
-            _buildSettingsCard([
-              _SettingToggle(
-                icon: Icons.lock_clock_rounded,
-                title: 'Auto Lock',
-                subtitle: 'Pause videos at lock points',
-                provider: autoLockEnabledProvider,
-              ),
-              _SettingsSlider(
-                icon: Icons.flag_rounded,
-                title: 'Daily Goal',
-                provider: dailyGoalProvider,
-                min: 5,
-                max: 50,
-              ),
-              _SettingOption(
-                icon: Icons.alarm_rounded,
-                title: 'Reminder Time',
-                value: ref.watch(streakReminderTimeProvider),
-                onTap: () => _showTimePicker(context, ref),
-              ),
-            ]),
-            
-            const SizedBox(height: 24),
-            
-            // Playback Settings
-            _buildSectionHeader('Playback'),
-            _buildSettingsCard([
-              _SettingToggle(
-                icon: Icons.play_circle_outlined,
-                title: 'Auto-play Videos',
-                subtitle: 'Play next video automatically',
-                provider: autoPlayVideosProvider,
-              ),
-              _SettingToggle(
-                icon: Icons.surround_sound_rounded,
-                title: 'Sound Effects',
-                subtitle: 'UI sounds and feedback',
-                provider: soundEffectsEnabledProvider,
-              ),
-              _SettingToggle(
-                icon: Icons.vibration_rounded,
-                title: 'Haptic Feedback',
-                subtitle: 'Vibrate on interactions',
-                provider: hapticFeedbackEnabledProvider,
-              ),
-            ]),
-            
-            const SizedBox(height: 24),
-            
-            // Appearance
-            _buildSectionHeader('Appearance'),
-            _buildSettingsCard([
-              _SettingToggle(
-                icon: Icons.dark_mode_rounded,
-                title: 'Dark Mode',
-                subtitle: 'Always on for the best experience',
-                provider: darkModeEnabledProvider,
-              ),
-            ]),
-            
-            const SizedBox(height: 24),
-            
-            // Notifications
-            _buildSectionHeader('Notifications'),
-            _buildSettingsCard([
-              _SettingToggle(
-                icon: Icons.notifications_active_rounded,
-                title: 'Push Notifications',
-                subtitle: 'Streak reminders & updates',
-                provider: notificationsEnabledProvider,
-              ),
-            ]),
-            
-            const SizedBox(height: 24),
-            
-            // Account
-            _buildSectionHeader('Account'),
-            _buildSettingsCard([
-              _SettingNavItem(
-                icon: Icons.person_rounded,
-                title: 'Edit Profile',
-                onTap: () {},
-              ),
-              _SettingNavItem(
-                icon: Icons.lock_outline_rounded,
-                title: 'Change Password',
-                onTap: () {},
-              ),
-              _SettingNavItem(
-                icon: Icons.help_outline_rounded,
-                title: 'Help & Support',
-                onTap: () {},
-              ),
-              _SettingNavItem(
-                icon: Icons.info_outline_rounded,
-                title: 'About',
-                onTap: () {},
-              ),
-            ]),
-            
-            const SizedBox(height: 32),
-            
-            // Logout Button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () async {
-                    await Supabase.instance.client.auth.signOut();
-                    if (context.mounted) {
-                      Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-                         MaterialPageRoute(builder: (_) => const LoginScreen()),
-                         (route) => false,
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.logout_rounded, color: StudyRepsTheme.errorPink),
-                  label: const Text(
-                    'Log Out',
-                    style: TextStyle(
-                      color: StudyRepsTheme.errorPink,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: StudyRepsTheme.errorPink),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // App Version
-            Center(
-              child: Text(
-                'StudyReps v1.0.0',
-                style: TextStyle(
-                  color: StudyRepsTheme.textMuted,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-            
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProfileSection(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            StudyRepsTheme.primaryIndigo.withOpacity(0.2),
-            StudyRepsTheme.bgSecondary,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: StudyRepsTheme.borderSubtle),
-      ),
-      child: Row(
+      extendBodyBehindAppBar: true,
+      appBar: const _GlassAppBar(title: 'Settings'),
+      body: Stack(
         children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: StudyRepsTheme.primaryIndigo, width: 2),
+          // Background ambient glows
+          Positioned(
+            top: -100,
+            left: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: StudyRepsTheme.primaryIndigo.withOpacity(0.15),
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+                child: const SizedBox.shrink(),
+              ),
             ),
-            child: const CircleAvatar(
-              backgroundColor: StudyRepsTheme.bgTertiary,
-              child: Icon(Icons.person_rounded, color: StudyRepsTheme.textSecondary, size: 30),
+          ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+           .scaleXY(begin: 1.0, end: 1.2, duration: 4.seconds, curve: Curves.easeInOut),
+          
+          Positioned(
+            bottom: 100,
+            right: -50,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: StudyRepsTheme.accentCyan.withOpacity(0.1),
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
+                child: const SizedBox.shrink(),
+              ),
             ),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+
+          // Main scrollable content
+          SafeArea(
+            bottom: false,
+            child: ListView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.only(top: 16, bottom: 40),
               children: [
-                const Text(
-                  '@StudentPro',
-                  style: TextStyle(
-                    color: StudyRepsTheme.textPrimary,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 18,
+                const _ProfileSection(),
+                const SizedBox(height: 24),
+
+                _buildSectionHeader('Learning Preferences'),
+                _GlassSettingsCard(
+                  children: [
+                    _SettingToggle(
+                      icon: Icons.lock_clock_rounded,
+                      title: 'Auto Lock',
+                      subtitle: 'Pause videos at lock points',
+                      provider: autoLockEnabledProvider,
+                    ),
+                    const _Divider(),
+                    _SettingsSlider(
+                      icon: Icons.flag_rounded,
+                      title: 'Daily Goal',
+                      provider: dailyGoalProvider,
+                      min: 5,
+                      max: 50,
+                    ),
+                    const _Divider(),
+                    _SettingOption(
+                      icon: Icons.alarm_rounded,
+                      title: 'Reminder Time',
+                      valueProvider: streakReminderTimeProvider,
+                      onTap: () => _showTimePicker(context, ref),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                _buildSectionHeader('Playback'),
+                _GlassSettingsCard(
+                  children: [
+                    _SettingToggle(
+                      icon: Icons.play_circle_outlined,
+                      title: 'Auto-play Videos',
+                      subtitle: 'Play next video automatically',
+                      provider: autoPlayVideosProvider,
+                    ),
+                    const _Divider(),
+                    _SettingToggle(
+                      icon: Icons.surround_sound_rounded,
+                      title: 'Sound Effects',
+                      subtitle: 'UI sounds and feedback',
+                      provider: soundEffectsEnabledProvider,
+                    ),
+                    const _Divider(),
+                    _SettingToggle(
+                      icon: Icons.vibration_rounded,
+                      title: 'Haptic Feedback',
+                      subtitle: 'Vibrate on interactions',
+                      provider: hapticFeedbackEnabledProvider,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                _buildSectionHeader('Appearance'),
+                _GlassSettingsCard(
+                  children: [
+                    _SettingToggle(
+                      icon: Icons.dark_mode_rounded,
+                      title: 'Dark Mode',
+                      subtitle: 'Always on for the best experience',
+                      provider: darkModeEnabledProvider,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                _buildSectionHeader('Notifications'),
+                _GlassSettingsCard(
+                  children: [
+                    _SettingToggle(
+                      icon: Icons.notifications_active_rounded,
+                      title: 'Push Notifications',
+                      subtitle: 'Streak reminders & updates',
+                      provider: notificationsEnabledProvider,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                _buildSectionHeader('Account'),
+                _GlassSettingsCard(
+                  children: [
+                    _SettingNavItem(
+                      icon: Icons.person_rounded,
+                      title: 'Edit Profile',
+                      onTap: () {},
+                    ),
+                    const _Divider(),
+                    _SettingNavItem(
+                      icon: Icons.lock_outline_rounded,
+                      title: 'Change Password',
+                      onTap: () {},
+                    ),
+                    const _Divider(),
+                    _SettingNavItem(
+                      icon: Icons.help_outline_rounded,
+                      title: 'Help & Support',
+                      onTap: () {},
+                    ),
+                    const _Divider(),
+                    _SettingNavItem(
+                      icon: Icons.info_outline_rounded,
+                      title: 'About',
+                      onTap: () {},
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+
+                // Logout Button
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Semantics(
+                    button: true,
+                    label: 'Log out of your account',
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        await Supabase.instance.client.auth.signOut();
+                        if (context.mounted) {
+                          Navigator.of(context, rootNavigator: true)
+                              .pushAndRemoveUntil(
+                            MaterialPageRoute(
+                                builder: (_) => const LoginScreen()),
+                            (route) => false,
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.logout_rounded,
+                          color: StudyRepsTheme.errorPink),
+                      label: const Text(
+                        'Log Out',
+                        style: TextStyle(
+                          color: StudyRepsTheme.errorPink,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                            color: StudyRepsTheme.errorPink.withOpacity(0.5)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ).copyWith(
+                        overlayColor: WidgetStateProperty.all(
+                            StudyRepsTheme.errorPink.withOpacity(0.1)),
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'student@example.com',
-                  style: TextStyle(
-                    color: StudyRepsTheme.textMuted,
-                    fontSize: 13,
+                const SizedBox(height: 24),
+
+                // App Version
+                Semantics(
+                  label: 'App version 1.0.0',
+                  child: const Center(
+                    child: Text(
+                      'StudyReps v1.0.0',
+                      style: TextStyle(
+                        color: StudyRepsTheme.textMuted,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: StudyRepsTheme.primaryIndigo,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Text(
-              'PRO',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 11,
-              ),
-            ),
-          ),
         ],
       ),
-    ).animate().fadeIn().slideY(begin: -0.1);
+    );
   }
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Text(
-        title,
-        style: TextStyle(
-          color: StudyRepsTheme.textMuted,
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.5,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Semantics(
+        header: true,
+        child: Text(
+          title.toUpperCase(),
+          style: const TextStyle(
+            color: StudyRepsTheme.textMuted,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
+          ),
         ),
       ),
-    );
-  }
-
-  Widget _buildSettingsCard(List<Widget> children) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: BoxDecoration(
-        color: StudyRepsTheme.bgSecondary,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: StudyRepsTheme.borderSubtle),
-      ),
-      child: Column(
-        children: children.asMap().entries.map((entry) {
-          final isLast = entry.key == children.length - 1;
-          return Column(
-            children: [
-              entry.value,
-              if (!isLast)
-                Divider(
-                  color: StudyRepsTheme.borderSubtle,
-                  height: 1,
-                  indent: 56,
-                ),
-            ],
-          );
-        }).toList(),
-      ),
-    );
+    ).animate().fadeIn(delay: 50.ms).slideX(begin: 0.05);
   }
 
   void _showTimePicker(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: StudyRepsTheme.bgSecondary,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Set Reminder Time',
-              style: TextStyle(
-                color: StudyRepsTheme.textPrimary,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => const _TimePickerSheet(),
+    );
+  }
+}
+
+/// Glassmorphic App Bar
+class _GlassAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final String title;
+
+  const _GlassAppBar({required this.title});
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: AppBar(
+          backgroundColor: StudyRepsTheme.bgPrimary.withOpacity(0.7),
+          elevation: 0,
+          leading: Semantics(
+            button: true,
+            label: 'Go back',
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                  color: StudyRepsTheme.textPrimary, size: 20),
+              onPressed: () => Navigator.pop(context),
             ),
-            const SizedBox(height: 24),
-            ...['08:00 AM', '09:00 AM', '10:00 AM', '12:00 PM', '06:00 PM', '08:00 PM'].map(
-              (time) => ListTile(
-                title: Text(time, style: const TextStyle(color: StudyRepsTheme.textPrimary)),
-                trailing: ref.watch(streakReminderTimeProvider) == time
-                    ? Icon(Icons.check_circle_rounded, color: StudyRepsTheme.primaryIndigo)
-                    : null,
-                onTap: () {
-                  ref.read(streakReminderTimeProvider.notifier).state = time;
-                  Navigator.pop(context);
-                },
-              ),
+          ),
+          title: Text(
+            title,
+            style: const TextStyle(
+              color: StudyRepsTheme.textPrimary,
+              fontWeight: FontWeight.w700,
+              fontSize: 20,
             ),
-            const SizedBox(height: 20),
-          ],
+          ),
+          centerTitle: true,
         ),
       ),
     );
   }
 }
 
+/// Profile Section with Glassmorphism
+class _ProfileSection extends StatelessWidget {
+  const _ProfileSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Your profile: Student Pro',
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: StudyRepsTheme.bgSecondary.withOpacity(0.6),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: StudyRepsTheme.borderSubtle.withOpacity(0.5)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            )
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  colors: [StudyRepsTheme.primaryIndigo, StudyRepsTheme.accentCyan],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: StudyRepsTheme.primaryIndigo.withOpacity(0.3),
+                    blurRadius: 12,
+                    spreadRadius: 2,
+                  )
+                ],
+              ),
+              padding: const EdgeInsets.all(2), // Gradient border width
+              child: Container(
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: StudyRepsTheme.bgTertiary,
+                ),
+                child: const Icon(Icons.person_rounded,
+                    color: StudyRepsTheme.textPrimary, size: 32),
+              ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '@StudentPro',
+                    style: TextStyle(
+                      color: StudyRepsTheme.textPrimary,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 20,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'student@example.com',
+                    style: TextStyle(
+                      color: StudyRepsTheme.textSecondary.withOpacity(0.9),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: StudyRepsTheme.primaryGradient,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                      color: StudyRepsTheme.primaryIndigo.withOpacity(0.4),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4))
+                ],
+              ),
+              child: const Text(
+                'PRO',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutBack),
+    );
+  }
+}
+
+/// Glassmorphic Card Container for settings groups
+class _GlassSettingsCard extends StatelessWidget {
+  final List<Widget> children;
+
+  const _GlassSettingsCard({required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: StudyRepsTheme.bgSecondary.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: StudyRepsTheme.borderSubtle.withOpacity(0.5)),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: children,
+          ),
+        ),
+      ),
+    ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.05);
+  }
+}
+
+/// Setting Toggle (Switch) Item
 class _SettingToggle extends ConsumerWidget {
   final IconData icon;
   final String title;
@@ -379,45 +479,62 @@ class _SettingToggle extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isEnabled = ref.watch(provider);
-    
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: StudyRepsTheme.primaryIndigo.withOpacity(0.15),
-          borderRadius: BorderRadius.circular(10),
+
+    return Semantics(
+      toggled: isEnabled,
+      label: '$title. $subtitle',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => ref.read(provider.notifier).state = !isEnabled,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Row(
+              children: [
+                _IconBox(icon: icon, isActive: isEnabled),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: StudyRepsTheme.textPrimary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          color: StudyRepsTheme.textMuted,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch.adaptive(
+                  value: isEnabled,
+                  onChanged: (value) =>
+                      ref.read(provider.notifier).state = value,
+                  activeColor: StudyRepsTheme.primaryIndigoLight,
+                  activeTrackColor: StudyRepsTheme.primaryIndigo.withOpacity(0.4),
+                  inactiveThumbColor: StudyRepsTheme.textSecondary,
+                  inactiveTrackColor: StudyRepsTheme.bgTertiary,
+                ),
+              ],
+            ),
+          ),
         ),
-        child: Icon(icon, color: StudyRepsTheme.primaryIndigo, size: 20),
-      ),
-      title: Text(
-        title,
-        style: const TextStyle(
-          color: StudyRepsTheme.textPrimary,
-          fontWeight: FontWeight.w600,
-          fontSize: 15,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(
-          color: StudyRepsTheme.textMuted,
-          fontSize: 12,
-        ),
-      ),
-      trailing: Switch(
-        value: isEnabled,
-        onChanged: (value) => ref.read(provider.notifier).state = value,
-        activeColor: StudyRepsTheme.primaryIndigo,
-        activeTrackColor: StudyRepsTheme.primaryIndigo.withOpacity(0.3),
-        inactiveThumbColor: StudyRepsTheme.textMuted,
-        inactiveTrackColor: StudyRepsTheme.bgTertiary,
       ),
     );
   }
 }
 
+/// Custom Slider Setting for numeric preferences
 class _SettingsSlider extends ConsumerWidget {
   final IconData icon;
   final String title;
@@ -436,127 +553,138 @@ class _SettingsSlider extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final value = ref.watch(provider);
-    
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: StudyRepsTheme.primaryIndigo.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: StudyRepsTheme.primaryIndigo, size: 20),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    color: StudyRepsTheme.textPrimary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
+
+    return Semantics(
+      slider: true,
+      value: '$value',
+      label: title,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const _IconBox(icon: Icons.flag_rounded, isActive: true),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      color: StudyRepsTheme.textPrimary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: StudyRepsTheme.primaryIndigo,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '$value reps',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: StudyRepsTheme.primaryIndigo.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: StudyRepsTheme.primaryIndigo.withOpacity(0.3)),
+                  ),
+                  child: Text(
+                    '$value reps',
+                    style: const TextStyle(
+                      color: StudyRepsTheme.primaryIndigoLight,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            SliderTheme(
+              data: SliderThemeData(
+                activeTrackColor: StudyRepsTheme.primaryIndigo,
+                inactiveTrackColor: StudyRepsTheme.bgTertiary,
+                thumbColor: StudyRepsTheme.textPrimary,
+                overlayColor: StudyRepsTheme.primaryIndigo.withOpacity(0.2),
+                trackHeight: 4,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          SliderTheme(
-            data: SliderThemeData(
-              activeTrackColor: StudyRepsTheme.primaryIndigo,
-              inactiveTrackColor: StudyRepsTheme.bgTertiary,
-              thumbColor: StudyRepsTheme.primaryIndigo,
-              overlayColor: StudyRepsTheme.primaryIndigo.withOpacity(0.2),
-              trackHeight: 6,
+              child: Slider(
+                value: value.toDouble(),
+                min: min.toDouble(),
+                max: max.toDouble(),
+                divisions: (max - min) ~/ 5,
+                onChanged: (newValue) =>
+                    ref.read(provider.notifier).state = newValue.round(),
+              ),
             ),
-            child: Slider(
-              value: value.toDouble(),
-              min: min.toDouble(),
-              max: max.toDouble(),
-              divisions: (max - min) ~/ 5,
-              onChanged: (newValue) => ref.read(provider.notifier).state = newValue.round(),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-class _SettingOption extends StatelessWidget {
+/// A generic Setting Item that displays a value and can be tapped (e.g., Time Picker)
+class _SettingOption extends ConsumerWidget {
   final IconData icon;
   final String title;
-  final String value;
+  final StateProvider<String> valueProvider;
   final VoidCallback onTap;
 
   const _SettingOption({
     required this.icon,
     required this.title,
-    required this.value,
+    required this.valueProvider,
     required this.onTap,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: StudyRepsTheme.primaryIndigo.withOpacity(0.15),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(icon, color: StudyRepsTheme.primaryIndigo, size: 20),
-      ),
-      title: Text(
-        title,
-        style: const TextStyle(
-          color: StudyRepsTheme.textPrimary,
-          fontWeight: FontWeight.w600,
-          fontSize: 15,
-        ),
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            value,
-            style: TextStyle(
-              color: StudyRepsTheme.textMuted,
-              fontSize: 14,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final value = ref.watch(valueProvider);
+    
+    return Semantics(
+      button: true,
+      label: '$title, current value is $value',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Row(
+              children: [
+                _IconBox(icon: icon, isActive: true),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      color: StudyRepsTheme.textPrimary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: StudyRepsTheme.textSecondary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(Icons.chevron_right_rounded,
+                    color: StudyRepsTheme.textMuted, size: 20),
+              ],
             ),
           ),
-          const SizedBox(width: 8),
-          Icon(Icons.chevron_right_rounded, color: StudyRepsTheme.textMuted),
-        ],
+        ),
       ),
-      onTap: onTap,
     );
   }
 }
 
+/// A Navigation Item for settings (e.g., Edit Profile, About)
 class _SettingNavItem extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -570,27 +698,158 @@ class _SettingNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: StudyRepsTheme.bgTertiary,
-          borderRadius: BorderRadius.circular(10),
+    return Semantics(
+      button: true,
+      label: title,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Row(
+              children: [
+                _IconBox(icon: icon, isActive: false),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      color: StudyRepsTheme.textPrimary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded,
+                    color: StudyRepsTheme.textMuted, size: 20),
+              ],
+            ),
+          ),
         ),
-        child: Icon(icon, color: StudyRepsTheme.textSecondary, size: 20),
       ),
-      title: Text(
-        title,
-        style: const TextStyle(
-          color: StudyRepsTheme.textPrimary,
-          fontWeight: FontWeight.w500,
-          fontSize: 15,
+    );
+  }
+}
+
+/// Small reusable widget for the consistent icon boxes
+class _IconBox extends StatelessWidget {
+  final IconData icon;
+  final bool isActive;
+
+  const _IconBox({required this.icon, required this.isActive});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: isActive
+            ? StudyRepsTheme.primaryIndigo.withOpacity(0.15)
+            : StudyRepsTheme.bgTertiary.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isActive
+              ? StudyRepsTheme.primaryIndigo.withOpacity(0.3)
+              : Colors.transparent,
         ),
       ),
-      trailing: Icon(Icons.chevron_right_rounded, color: StudyRepsTheme.textMuted),
-      onTap: onTap,
+      child: Icon(
+        icon,
+        color: isActive ? StudyRepsTheme.primaryIndigoLight : StudyRepsTheme.textSecondary,
+        size: 20,
+      ),
+    );
+  }
+}
+
+/// Custom Divider
+class _Divider extends StatelessWidget {
+  const _Divider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Divider(
+      color: StudyRepsTheme.borderSubtle.withOpacity(0.3),
+      height: 1,
+      indent: 76,
+    );
+  }
+}
+
+/// Modern Time Picker Bottom Sheet
+class _TimePickerSheet extends ConsumerWidget {
+  const _TimePickerSheet();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      decoration: BoxDecoration(
+        color: StudyRepsTheme.bgSecondary,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 12),
+          // Drag handle
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: StudyRepsTheme.borderSubtle,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Set Reminder Time',
+            style: TextStyle(
+              color: StudyRepsTheme.textPrimary,
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Flexible(
+            child: ListView(
+              shrinkWrap: true,
+              physics: const BouncingScrollPhysics(),
+              children: [
+                '08:00 AM',
+                '09:00 AM',
+                '10:00 AM',
+                '12:00 PM',
+                '06:00 PM',
+                '08:00 PM'
+              ].map((time) {
+                final isSelected = ref.watch(streakReminderTimeProvider) == time;
+                return ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 4),
+                  title: Text(
+                    time,
+                    style: TextStyle(
+                      color: isSelected ? StudyRepsTheme.textPrimary : StudyRepsTheme.textSecondary,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      fontSize: 16,
+                    ),
+                  ),
+                  trailing: isSelected
+                      ? const Icon(Icons.check_circle_rounded, color: StudyRepsTheme.primaryIndigo)
+                      : null,
+                  onTap: () {
+                    ref.read(streakReminderTimeProvider.notifier).state = time;
+                    Navigator.pop(context);
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
     );
   }
 }

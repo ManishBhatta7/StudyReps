@@ -19,6 +19,9 @@ import '../widgets/lock_overlay.dart';
 import '../widgets/mascot_reactor.dart';
 import '../widgets/video_tutorbot_sheet.dart';
 import '../widgets/comment_section.dart';
+import '../widgets/pencil_canvas_overlay.dart';
+import 'dart:typed_data';
+import '../../data/services/video_frame_capture.dart';
 
 import 'drill_screen.dart';
 
@@ -162,7 +165,7 @@ class _SwipeGatedFeedScreenState extends ConsumerState<SwipeGatedFeedScreen> {
                   });
                 },
                 itemBuilder: (context, index) {
-                  return SwipeGatedVideoItem(
+                  return HorizontalMatrixItem(
                     video: _videos[index],
                     isActive: _currentPage == index,
                     onLockTriggered: _lockFeed,
@@ -267,8 +270,29 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
   bool _isPlaying = true; // defaulting to true as we auto-play
   IconData _overlayIcon = Icons.pause;
 
+  // Drawing & Video Frame Capture State
+  bool _isDrawingMode = false;
+  Uint8List? _frozenVideoFrame;
+
+  Future<void> _startDrawingMode() async {
+    // First, pause the video
+    _controller?.pause();
+    
+    // On web, capture the current video frame directly from the HTML <video> element
+    Uint8List? frame;
+    if (kIsWeb) {
+      frame = await captureVideoFrame();
+    }
+    setState(() {
+      _isDrawingMode = true;
+      _frozenVideoFrame = frame;
+      _isPlaying = false;
+      _showPlayPauseOverlay = false;
+    });
+  }
+
   void _togglePlayPause() {
-    if (_showGate) return; // Don't toggle if gate is active
+    if (_showGate || _isDrawingMode) return; // Don't toggle if gate or drawing is active
 
     setState(() {
       if (_controller!.value.isPlaying) {
@@ -356,14 +380,14 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
 
   void _handleLoopComplete() {
     _loopCount++;
-    // print('🔄 Loop $_loopCount completed');
+    // debugPrint('🔄 Loop $_loopCount completed');
     
     if (_loopCount >= _maxLoops && !_isAnswered) {
       // LOCK THE FEED
       _controller!.pause();
       setState(() => _showGate = true);
       widget.onLockTriggered();
-      // print('🔒 GATE LOCKED - Answer required!');
+      // debugPrint('🔒 GATE LOCKED - Answer required!');
     } else if (!_isAnswered) {
       // Restart for next loop
       _controller!.seekTo(Duration.zero);
@@ -545,7 +569,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black, // Specific black background for video
+      color: Colors.black,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -557,7 +581,16 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
               child: Center(
                 child: AspectRatio(
                   aspectRatio: _controller!.value.aspectRatio,
-                  child: VideoPlayer(_controller!),
+                  // When in drawing mode and we captured a frame, show it as a
+                  // static Image instead of the HTML video (so the user sees what was frozen).
+                  // Otherwise, show the live VideoPlayer.
+                  child: (_isDrawingMode && _frozenVideoFrame != null)
+                      ? Image.memory(
+                          _frozenVideoFrame!,
+                          fit: BoxFit.cover,
+                          gaplessPlayback: true,
+                        )
+                      : VideoPlayer(_controller!),
                 ),
               ),
             )
@@ -664,6 +697,30 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
           // THE QUESTION GATE
           if (_showGate)
             _buildQuestionGate(),
+
+          // THE DRAWING OVERLAY
+          if (_isDrawingMode)
+            PencilCanvasOverlay(
+              onCancel: () {
+                setState(() {
+                    _isDrawingMode = false;
+                    _frozenVideoFrame = null;
+                });
+              },
+              onDone: () {
+                // Directly send the captured video frame to the Tutorbot.
+                // No need for Screenshot package — we already have the raw
+                // video pixels from the HTML <video> element.
+                final image = _frozenVideoFrame;
+                setState(() {
+                   _isDrawingMode = false;
+                   _frozenVideoFrame = null;
+                });
+                if (mounted) {
+                  VideoTutorbotSheet.show(context, widget.video, initialImage: image);
+                }
+              },
+            ),
         ],
       ),
     );
@@ -792,11 +849,11 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Tutorbot
+          // Ask AI (Triggers Drawing/Screenshot mode before opening Bot)
           _buildActionButton(
-            icon: Icons.smart_toy_outlined,
-            label: 'Coach',
-            onTap: () => VideoTutorbotSheet.show(context, widget.video),
+            icon: Icons.auto_awesome,
+            label: 'Ask AI',
+            onTap: _startDrawingMode,
           ),
           const SizedBox(height: 20),
           
@@ -959,3 +1016,249 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
     );
   }
 }
+
+/// A 2D Matrix Item that wraps the Main Video, Study Drawer, and Deep Dive Videos
+class HorizontalMatrixItem extends StatefulWidget {
+  final VideoModel video;
+  final bool isActive;
+  final VoidCallback onLockTriggered;
+  final VoidCallback onUnlockAndAdvance;
+
+  const HorizontalMatrixItem({
+    super.key,
+    required this.video,
+    required this.isActive,
+    required this.onLockTriggered,
+    required this.onUnlockAndAdvance,
+  });
+
+  @override
+  State<HorizontalMatrixItem> createState() => _HorizontalMatrixItemState();
+}
+
+class _HorizontalMatrixItemState extends State<HorizontalMatrixItem> {
+  late PageController _horizontalController;
+  int _currentHorizontalPage = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _horizontalController = PageController(initialPage: 1);
+  }
+
+  @override
+  void dispose() {
+    _horizontalController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    bool isCenterActive = widget.isActive && _currentHorizontalPage == 1;
+
+    return PageView.builder(
+      controller: _horizontalController,
+      scrollDirection: Axis.horizontal,
+      onPageChanged: (index) {
+        setState(() {
+          _currentHorizontalPage = index;
+        });
+      },
+      itemCount: 4, // 0: Drawer, 1: Main, 2-3: Deep Dives (Mock)
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          return StudyDrawerPane(video: widget.video);
+        } else if (index == 1) {
+          return SwipeGatedVideoItem(
+            video: widget.video,
+            isActive: isCenterActive,
+            onLockTriggered: widget.onLockTriggered,
+            onUnlockAndAdvance: widget.onUnlockAndAdvance,
+          );
+        } else {
+          return DeepDiveVideoItem(
+            originalVideo: widget.video,
+            deepDiveIndex: index - 1, // 1, 2...
+            isActive: widget.isActive && _currentHorizontalPage == index,
+          );
+        }
+      },
+    );
+  }
+}
+
+class StudyDrawerPane extends StatelessWidget {
+  final VideoModel video;
+  
+  const StudyDrawerPane({super.key, required this.video});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: StudyRepsTheme.bgPrimary,
+      padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.menu_book_rounded, color: StudyRepsTheme.primaryPurple, size: 28),
+              const SizedBox(width: 12),
+              Text(
+                'Study Drawer',
+                style: StudyRepsTheme.darkTheme.textTheme.headlineSmall,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Resources for: ${video.title}',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+          const SizedBox(height: 32),
+          
+          _buildResourceCard(
+            icon: Icons.picture_as_pdf_rounded,
+            title: 'Topic Notes (PDF)',
+            subtitle: 'Read the summary notes',
+            color: StudyRepsTheme.errorPink,
+            onTap: () {
+               ScaffoldMessenger.of(context).showSnackBar(
+                 const SnackBar(content: Text('Opening PDF Notes... (Mock)')),
+               );
+            },
+          ),
+          const SizedBox(height: 16),
+          
+          _buildResourceCard(
+            icon: Icons.history_edu_rounded,
+            title: 'Past Year Questions',
+            subtitle: 'Practice previous exam patterns',
+            color: Colors.amber,
+            onTap: () {
+               ScaffoldMessenger.of(context).showSnackBar(
+                 const SnackBar(content: Text('Loading PYQs... (Mock)')),
+               );
+            },
+          ),
+          const SizedBox(height: 16),
+          
+          _buildResourceCard(
+            icon: Icons.chat_bubble_outline_rounded,
+            title: 'Class Discussion',
+            subtitle: 'Join the comment section',
+            color: StudyRepsTheme.accentCyan,
+            onTap: () => CommentSection.show(context, video.id),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResourceCard({
+    required IconData icon, 
+    required String title, 
+    required String subtitle, 
+    required Color color,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text(subtitle, style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: color),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class DeepDiveVideoItem extends StatelessWidget {
+  final VideoModel originalVideo;
+  final int deepDiveIndex;
+  final bool isActive;
+
+  const DeepDiveVideoItem({
+    super.key,
+    required this.originalVideo,
+    required this.deepDiveIndex,
+    required this.isActive,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Determine the subject or next part for the deep dive tile
+    final partName = deepDiveIndex == 1 ? 'Part 2' : 'Part 3';
+    
+    final mockVideo = originalVideo.copyWith(
+      id: '${originalVideo.id}_deepdive_$deepDiveIndex',
+      title: 'Deep Dive $partName:\n${originalVideo.title}',
+      isLiked: false,
+      likesCount: originalVideo.likesCount ~/ 2, 
+    );
+
+    return Stack(
+      children: [
+        SwipeGatedVideoItem(
+          video: mockVideo,
+          isActive: isActive,
+          onLockTriggered: () {}, 
+          onUnlockAndAdvance: () {}, 
+        ),
+        Positioned(
+          top: 70,
+          left: 16,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: StudyRepsTheme.bgPrimary.withOpacity(0.85),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: StudyRepsTheme.primaryPurple, width: 1.5),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.explore_rounded, color: StudyRepsTheme.primaryPurple, size: 18),
+                const SizedBox(width: 6),
+                Text(
+                  'Deep Dive • $partName',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+

@@ -1088,6 +1088,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
+  screenshot:
+    dependency: "direct main"
+    description:
+      name: screenshot
+      sha256: "63817697a7835e6ce82add4228e15d233b74d42975c143ad8cfe07009fab866b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -1369,10 +1377,10 @@ packages:
     dependency: transitive
     description:
       name: url_launcher
-      sha256: "9d06212b1362abc2f0f0d78e6f09f726608c74e3b9462e8368bb03314aa8d603"
+      sha256: f6a7e5c4835bb4e3026a04793a4199ca2d14c739ec378fdfe23fc8075d0439f8
       url: "https://pub.dev"
     source: hosted
-    version: "6.3.1"
+    version: "6.3.2"
   url_launcher_android:
     dependency: transitive
     description:
@@ -1518,7 +1526,7 @@ packages:
     source: hosted
     version: "1.2.0"
   web:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: web
       sha256: "868d88a33d8a87b18ffc05f9f030ba328ffefba92d6c127917a2ba740f9cfe4a"
@@ -1545,34 +1553,34 @@ packages:
     dependency: transitive
     description:
       name: webview_flutter
-      sha256: "889a0a678e7c793c308c68739996227c9661590605e70b1f6cf6b9a6634f7aec"
+      sha256: a3da219916aba44947d3a5478b1927876a09781174b5a2b67fa5be0555154bf9
       url: "https://pub.dev"
     source: hosted
-    version: "4.10.0"
+    version: "4.13.1"
   webview_flutter_android:
     dependency: transitive
     description:
       name: webview_flutter_android
-      sha256: "512c26ccc5b8a571fd5d13ec994b7509f142ff6faf85835e243dde3538fdc713"
+      sha256: "2a03df01df2fd30b075d1e7f24c28aee593f2e5d5ac4c3c4283c5eda63717b24"
       url: "https://pub.dev"
     source: hosted
-    version: "4.3.2"
+    version: "4.10.13"
   webview_flutter_platform_interface:
     dependency: transitive
     description:
       name: webview_flutter_platform_interface
-      sha256: "7cb32b21825bd65569665c32bb00a34ded5779786d6201f5350979d2d529940d"
+      sha256: "63d26ee3aca7256a83ccb576a50272edd7cfc80573a4305caa98985feb493ee0"
       url: "https://pub.dev"
     source: hosted
-    version: "2.13.0"
+    version: "2.14.0"
   webview_flutter_wkwebview:
     dependency: transitive
     description:
       name: webview_flutter_wkwebview
-      sha256: a3d461fe3467014e05f3ac4962e5fdde2a4bf44c561cb53e9ae5c586600fdbc3
+      sha256: "108bd85d0ff20bff1e8b52a040f5c19b6b9fc4a78fdf3160534ff5a11a82e267"
       url: "https://pub.dev"
     source: hosted
-    version: "3.22.0"
+    version: "3.23.7"
   win32:
     dependency: transitive
     description:
@@ -1617,18 +1625,18 @@ packages:
     dependency: "direct main"
     description:
       name: youtube_player_iframe
-      sha256: "66020f7756accfb22b3297565d845f9bef14249c730dd51e1ec648fa155fb24a"
+      sha256: "6690da91591d14b32a6884eb6ae270ea4cc946a748d577d89d18cde565be689f"
       url: "https://pub.dev"
     source: hosted
-    version: "5.2.1"
+    version: "5.2.2"
   youtube_player_iframe_web:
     dependency: transitive
     description:
       name: youtube_player_iframe_web
-      sha256: "05222a228937932e7ee7a6171e8020fee4cd23d1c7bf6b4128c569484338c593"
+      sha256: "333901d008634f2ea67ef27aba8d597567e4ff45f393290b948a739654ab6dca"
       url: "https://pub.dev"
     source: hosted
-    version: "3.1.1"
+    version: "3.1.2"
 sdks:
-  dart: ">=3.8.0-0 <4.0.0"
-  flutter: ">=3.24.0"
+  dart: ">=3.9.0 <4.0.0"
+  flutter: ">=3.35.0"

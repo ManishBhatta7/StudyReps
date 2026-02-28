@@ -198,7 +198,7 @@ class RetainLearnTheme {
       ),
 
       // Card Theme (Paper Style)
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: paperWhite,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -319,7 +319,7 @@ class RetainLearnTheme {
       ),
 
       // Dialog Theme
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: paperWhite,
         elevation: 8,
         shape: RoundedRectangleBorder(

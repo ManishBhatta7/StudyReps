@@ -20,6 +20,16 @@ class AppConstants {
   static String get geminiApiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
   static const String geminiModel = 'gemini-2.5-flash';
   static const String geminiBaseUrl = 'https://generativelanguage.googleapis.com/v1beta';
+
+  // Thinking Mode Configuration
+  // Gemini 2.5 Flash supports native thinking — enable it for deeper reasoning
+  static const bool enableThinking = true;
+  static const int thinkingBudget = 1024; // Token budget for internal reasoning
+
+  // ElevenLabs TTS Configuration
+  static String get elevenLabsApiKey => dotenv.env['ELEVENLABS_API_KEY'] ?? '';
+  static const String elevenLabsVoiceId = 'Xb7hH8MSUJpSbSDYk0k2'; // Alice - Clear, Engaging Educator (Free Tier Compatible)
+  static const String elevenLabsBaseUrl = 'https://api.elevenlabs.io/v1';
   
   // Gemini Prompt Templates
   static const String coachPrompt = '''

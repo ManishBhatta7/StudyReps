@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/xp_model.dart';
 import '../../data/services/xp_service.dart';
@@ -22,7 +23,7 @@ class XpNotifier extends AsyncNotifier<XpModel> {
       state = AsyncValue.data(newRecord);
     } catch (e, st) {
       // ignore
-      print("Failed to add XP: $e");
+      debugPrint("Failed to add XP: $e");
     }
   }
 }
@@ -30,3 +31,4 @@ class XpNotifier extends AsyncNotifier<XpModel> {
 final xpProvider = AsyncNotifierProvider<XpNotifier, XpModel>(
   () => XpNotifier(),
 );
+
