@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -58,8 +57,8 @@ class TutorbotController extends StateNotifier<TutorbotState> {
       // First time — add welcome message
       final welcome = ChatMessage(
         id: 'welcome_$videoId',
-        text: "👋 Hey! Main hoon tumhara study buddy for **\"${video.title}\"**.\n\n"
-            "Mujhse kuch bhi poocho is video ke baare mein — examples chahiye, "
+        text: '👋 Hey! Main hoon tumhara study buddy for **"${video.title}"**.\n\n'
+            'Mujhse kuch bhi poocho is video ke baare mein — examples chahiye, '
             "koi concept samajhna hai, ya deeper dive karna hai? Let's go! 🚀",
         isBot: true,
         timestamp: DateTime.now(),
@@ -218,7 +217,7 @@ class TutorbotController extends StateNotifier<TutorbotState> {
   }) async {
     final apiKey = AppConstants.geminiApiKey;
     if (apiKey.isEmpty || apiKey == 'YOUR_GEMINI_API_KEY') {
-      return "⚠️ API key not configured. Please set your Gemini API key in the .env file.";
+      return '⚠️ API key not configured. Please set your Gemini API key in the .env file.';
     }
 
     // Build context from conversation history
@@ -235,8 +234,8 @@ You are an expert female tutor with vision capabilities in "StudyReps" — an ed
 ═══ VIDEO CONTEXT ═══
 - Title: "${video.title}"
 - Subject: "${video.subject}"
-- Topic: "${video.topicId.isNotEmpty ? video.topicId : 'general'}"
-- Current Focus Question: "${video.question?.prompt ?? 'General topic exploration'}"
+- Topic: "${video.topicId.isNotEmpty ? video.topicId.replaceAll('_', ' ') : 'general'}"
+- Current Focus Question: "${video.question.prompt}"
 
 ═══ RECENT CONVERSATION ═══
 $conversationHistory
@@ -258,8 +257,10 @@ Example: "Mujhe lagta hai yeh diagram theek hai, ab main tumhe next step samjhaa
 5. If it's a question paper: help the student understand and solve the questions
 6. Connect your analysis to the video topic ("${video.title}") and the "Current Focus Question" when relevant
 7. Use **bold** for key terms and format formulas clearly
-8. Keep the response concise (4-6 sentences) but thorough
+8. Keep the response concise (4-6 sentences) but thorough.
 9. Be encouraging, like a supportive senior sister — the student is making an effort by sharing their work!
+10. If the student implies they want you to just read the text (like a screen reader), accurately transcribe or read the text from the image without unnecessary explanations.
+11. Never output raw technical variable names or IDs in your text (e.g., instead of "gravity_basics", say "Gravity Basics"); always use human-readable formats.
 ''';
 
     final url = Uri.parse(
@@ -280,7 +281,7 @@ Example: "Mujhe lagta hai yeh diagram theek hai, ab main tumhe next step samjhaa
           ]
         }
       ],
-      'generationConfig': {
+      'generationConfig': <String, dynamic>{
         'temperature': 0.7,
         'maxOutputTokens': 600,
         'topP': 0.95,
@@ -319,7 +320,7 @@ Example: "Mujhe lagta hai yeh diagram theek hai, ab main tumhe next step samjhaa
     }
 
     if (response.statusCode == 429) {
-      return "⏳ Too many requests! Please wait a moment and try again.";
+      return '⏳ Too many requests! Please wait a moment and try again.';
     }
 
     throw Exception('Gemini Vision API error: ${response.statusCode}');
@@ -331,8 +332,8 @@ Example: "Mujhe lagta hai yeh diagram theek hai, ab main tumhe next step samjhaa
     debugPrint('🔑 Gemini API key length: ${apiKey.length}, starts with: ${apiKey.substring(0, 10)}...');
     
     if (apiKey.isEmpty || apiKey == 'YOUR_GEMINI_API_KEY') {
-      return "⚠️ API key not configured. Please set your Gemini API key in the .env file.\n\n"
-          "Add `GEMINI_API_KEY=your_key_here` to your .env file.";
+      return '⚠️ API key not configured. Please set your Gemini API key in the .env file.\n\n'
+          'Add `GEMINI_API_KEY=your_key_here` to your .env file.';
     }
 
     // Build conversation history from context window (last N messages)
@@ -358,10 +359,10 @@ You are an expert, Socratic female tutor embedded in "StudyReps" — a short-for
 ═══ VIDEO CONTEXT ═══
 - Title: "${video.title}"
 - Subject: "${video.subject}"
-- Topic: "${video.topicId.isNotEmpty ? video.topicId : 'general'}"
-- Concept Cluster: "${video.conceptCluster.isNotEmpty ? video.conceptCluster : 'general'}"
-- Current Focus Question: "${video.question?.prompt ?? 'General topic exploration'}"
-- Core Concept / Explanation: "${video.question?.explanation ?? 'Help the student understand the video topic.'}"
+- Topic: "${video.topicId.isNotEmpty ? video.topicId.replaceAll('_', ' ') : 'general'}"
+- Concept Cluster: "${video.conceptCluster.isNotEmpty ? video.conceptCluster.replaceAll('_', ' ') : 'general'}"
+- Current Focus Question: "${video.question.prompt}"
+- Core Concept / Explanation: "${video.question.explanation}"
 - Transcript: "${video.transcript.isNotEmpty ? video.transcript : 'No transcript available — use the Title, Subject, and Focus Question to infer the exact context.'}"
 
 ═══ LEARNER PROFILE ═══
@@ -386,19 +387,15 @@ Examples of Hinglish:
 - "Isko samajhne ke liye pehle hum basic formula dekhte hain."
 
 ═══ TEACHING INSTRUCTIONS ═══
-1. Give a thorough, helpful answer (4-8 sentences) in Hinglish
-2. Use analogies and real-world examples relevant to an Indian ICSE/CBSE student
-3. If the student seems confused, break it down into simpler steps
-4. If the student asks for an explanation, provide a detailed one with examples
-5. If the student understands well, challenge them with a follow-up question (Socratic method)
-6. When referencing formulas, use clear formatting with **bold** for key terms
-7. Use emoji sparingly (1-2 max) for engagement
-8. Formulate your answer carefully around the specific "Current Focus Question" of the video, as that is what the student is actively struggling with.
-9. If you detect the student struggling with a concept, note it
-10. Keep responses conversational, encouraging, and educational — like a friendly, supportive senior sister helping out
-11. If showing steps, number them clearly
-12. Always provide a complete answer — never say you can't help with the topic
-13. NEVER use Devanagari script. ALL Hindi words must be in Roman letters.
+1. Provide your ENTIRE response as ONE single, continuous paragraph message. Do NOT use bullet points, line breaks, or multiple chunks.
+2. Directly answer the question by clearly explaining the core syllabus concept. Do NOT include generic fluff, greetings, or irrelevant conversational filler.
+3. Keep it strictly relevant to the syllabus and the topic at hand.
+4. Use clear analogies and real-world examples relevant to an Indian ICSE/CBSE student.
+5. If referencing formulas, clearly dictate them in words (since this will be read out loud). Do not use complex mathematical formatting.
+6. Formulate your answer carefully around the specific "Current Focus Question" of the video to help them specifically pass the gate.
+7. Keep responses conversational, encouraging, and educational — like a friendly, supportive senior sister.
+8. NEVER use Devanagari script. ALL Hindi words must be strictly in Roman letters.
+9. Never output raw technical variable names or IDs in your text.
 ''';
 
     final url = Uri.parse(
@@ -417,9 +414,9 @@ Examples of Hinglish:
             ]
           }
         ],
-        'generationConfig': {
+        'generationConfig': <String, dynamic>{
           'temperature': 0.8,
-          'maxOutputTokens': 800,
+          'maxOutputTokens': 4000,
           'topP': 0.95,
           'topK': 40,
         },
@@ -477,22 +474,22 @@ Examples of Hinglish:
       }
 
       if (response.statusCode == 403) {
-        return "⚠️ API key may be invalid or expired. Please verify your Gemini API key in the .env file.";
+        return '⚠️ API key may be invalid or expired. Please verify your Gemini API key in the .env file.';
       }
 
       if (response.statusCode == 400) {
         debugPrint('❌ Bad request body: ${response.body}');
-        return "⚠️ Request error. The question might be too long. Try a shorter question!";
+        return '⚠️ Request error. The question might be too long. Try a shorter question!';
       }
 
       // For any other error, return a helpful message instead of throwing
       debugPrint('❌ Gemini API error ${response.statusCode}: ${response.body}');
-      return "⚠️ API returned status ${response.statusCode}. Please check your internet connection and try again.";
+      return '⚠️ API returned status ${response.statusCode}. Please check your internet connection and try again.';
     } on TimeoutException {
-      return "⏳ Request timed out. Please check your internet connection and try again.";
+      return '⏳ Request timed out. Please check your internet connection and try again.';
     } catch (e) {
       debugPrint('❌ Network error: $e');
-      rethrow;
+      return "Whoops, looks like I lost connection! Make sure your internet is working and let's try that again. 🔌";
     }
   }
 

@@ -135,7 +135,7 @@ class MetricCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: RetainLearnTheme.grayBorder),
+        side: const BorderSide(color: RetainLearnTheme.grayBorder),
       ),
       child: InkWell(
         onTap: onTap,

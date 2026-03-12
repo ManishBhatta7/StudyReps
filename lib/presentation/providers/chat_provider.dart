@@ -83,10 +83,10 @@ class ChatNotifier extends StateNotifier<ChatState> {
       final repository = ref.read(geminiRepositoryProvider);
       
       // Create a placeholder for the bot response
-      final botMsgId = "bot_${DateTime.now().millisecondsSinceEpoch}";
+      final botMsgId = 'bot_${DateTime.now().millisecondsSinceEpoch}';
       final botMsgPlaceholder = ChatMessage(
         id: botMsgId,
-        content: "",
+        content: '',
         isUser: false,
         isStreaming: true,
         timestamp: DateTime.now(),
@@ -102,7 +102,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
         contextIds: contextIds,
       );
 
-      String accumulatedText = "";
+      String accumulatedText = '';
 
       await for (final chunk in stream) {
         accumulatedText += chunk;

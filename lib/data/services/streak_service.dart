@@ -1,8 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../domain/models/streak_model.dart';
-import '../../core/constants/app_constants.dart';
-import 'package:clock/clock.dart'; // helpful if we want to mock time later, else just DateTime.now()
+// helpful if we want to mock time later, else just DateTime.now()
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class StreakService {

@@ -133,7 +133,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const MainNavigationShell(),
+        pageBuilder: (_, __, ___) => const MainNavigationShell(initialIndex: 1),
         transitionDuration: const Duration(milliseconds: 500),
         transitionsBuilder: (_, animation, __, child) {
           return FadeTransition(opacity: animation, child: child);
@@ -285,7 +285,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           _isSignUp 
               ? 'Join thousands of learners getting their reps in'
               : 'Ready to get your reps in?',
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             color: StudyRepsTheme.textSecondary,
           ),
@@ -345,7 +345,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {},
-                    child: Text(
+                    child: const Text(
                       'Forgot Password?',
                       style: TextStyle(
                         color: StudyRepsTheme.primaryIndigo,
@@ -400,13 +400,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 children: [
                   Text(
                     _isSignUp ? 'Already have an account?' : "Don't have an account?",
-                    style: TextStyle(color: StudyRepsTheme.textSecondary),
+                    style: const TextStyle(color: StudyRepsTheme.textSecondary),
                   ),
                   TextButton(
                     onPressed: () => setState(() => _isSignUp = !_isSignUp),
                     child: Text(
                       _isSignUp ? 'Log In' : 'Sign Up',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: StudyRepsTheme.primaryIndigo,
                         fontWeight: FontWeight.w700,
                       ),
@@ -433,7 +433,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             color: StudyRepsTheme.textSecondary,
             fontSize: 13,
             fontWeight: FontWeight.w600,
@@ -471,7 +471,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               hintText: 'Enter your $label',
-              hintStyle: TextStyle(color: StudyRepsTheme.textMuted),
+              hintStyle: const TextStyle(color: StudyRepsTheme.textMuted),
             ),
           ),
         ),
@@ -483,11 +483,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Column(
       children: [
         // Divider
-        Row(
+        const Row(
           children: [
             Expanded(child: Divider(color: StudyRepsTheme.borderSubtle)),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 'or continue with',
                 style: TextStyle(
@@ -587,7 +587,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         onPressed: onPressed ?? () {},
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 14),
-          side: BorderSide(color: StudyRepsTheme.borderSubtle),
+          side: const BorderSide(color: StudyRepsTheme.borderSubtle),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -615,7 +615,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Center(
       child: TextButton(
         onPressed: _skipLogin,
-        child: Row(
+        child: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
@@ -625,7 +625,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(width: 4),
+            SizedBox(width: 4),
             Icon(
               Icons.arrow_forward_rounded,
               color: StudyRepsTheme.textMuted,

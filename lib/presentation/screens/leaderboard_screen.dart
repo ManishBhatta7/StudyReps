@@ -68,7 +68,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
 
     return leaderAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text("Error loading leaderboard: $e")),
+      error: (e, _) => Center(child: Text('Error loading leaderboard: $e')),
       data: (state) {
         return Column(
           children: [
@@ -147,7 +147,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         // 2nd Place
-        if (podiumData.length > 0)
+        if (podiumData.isNotEmpty)
           _buildPodiumUser(podiumData[0], 65, Colors.grey.shade400),
         
         const SizedBox(width: 16),
@@ -219,7 +219,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
         // XP
         Text(
           '${_formatNumber(user.xp)} XP',
-          style: TextStyle(
+          style: const TextStyle(
             color: StudyRepsTheme.primaryIndigo,
             fontWeight: FontWeight.w600,
             fontSize: 11,
@@ -247,7 +247,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           child: Center(
             child: Text(
               '${user.rank}',
-              style: TextStyle(
+              style: const TextStyle(
                 color: StudyRepsTheme.primaryIndigo,
                 fontWeight: FontWeight.w800,
                 fontSize: 22,
@@ -350,7 +350,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           // XP
           Text(
             '${_formatNumber(user.xp)} XP',
-            style: TextStyle(
+            style: const TextStyle(
               color: StudyRepsTheme.primaryIndigoLight,
               fontWeight: FontWeight.w700,
               fontSize: 14,
@@ -428,14 +428,14 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           Container(
             width: 36,
             height: 36,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
               color: StudyRepsTheme.bgTertiary,
             ),
             child: Center(
               child: user.avatar != null && user.avatar!.isNotEmpty
                 ? Text(user.avatar!, style: const TextStyle(fontSize: 20))
-                : Icon(
+                : const Icon(
                     Icons.person_rounded,
                     color: StudyRepsTheme.textMuted,
                     size: 20,
@@ -460,7 +460,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           // XP
           Text(
             '${_formatNumber(user.xp)} XP',
-            style: TextStyle(
+            style: const TextStyle(
               color: StudyRepsTheme.primaryIndigoLight,
               fontWeight: FontWeight.w600,
               fontSize: 13,

@@ -21,9 +21,9 @@ class XpNotifier extends AsyncNotifier<XpModel> {
     try {
       final newRecord = await XpService.addXp(authState.id, xp: xp, isStreakBonus: isStreakBonus);
       state = AsyncValue.data(newRecord);
-    } catch (e, st) {
+    } catch (e) {
       // ignore
-      debugPrint("Failed to add XP: $e");
+      debugPrint('Failed to add XP: $e');
     }
   }
 }

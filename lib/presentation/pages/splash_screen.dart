@@ -50,7 +50,7 @@ class SplashScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
+            const Text(
               'Your Intelligent Notebook',
               style: TextStyle(
                 fontSize: 14,
@@ -60,7 +60,7 @@ class SplashScreen extends StatelessWidget {
             const SizedBox(height: 48),
             
             // Loading Indicator
-            SizedBox(
+            const SizedBox(
               width: 40,
               height: 40,
               child: CircularProgressIndicator(
@@ -69,7 +69,7 @@ class SplashScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               'Loading...',
               style: TextStyle(
                 fontSize: 13,

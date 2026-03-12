@@ -20,7 +20,12 @@ import '../providers/video_feed_provider.dart';
 /// Implements a floating glassmorphic bottom navigation bar
 /// for a premium user experience.
 class MainNavigationShell extends ConsumerStatefulWidget {
-  const MainNavigationShell({super.key});
+  final int initialIndex;
+
+  const MainNavigationShell({
+    super.key,
+    this.initialIndex = 0,
+  });
 
   @override
   ConsumerState<MainNavigationShell> createState() =>
@@ -28,7 +33,13 @@ class MainNavigationShell extends ConsumerStatefulWidget {
 }
 
 class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
-  int _currentIndex = 0;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+  }
 
   final List<Widget> _screens = const [
     SwipeGatedFeedScreen(),
@@ -262,7 +273,7 @@ class _CreateRepSheetState extends ConsumerState<_CreateRepSheet> {
                   ).animate().fadeIn().slideY(begin: 0.1),
 
                   const SizedBox(height: 8),
-                  Text(
+                  const Text(
                     'Upload content and let AI generate study reps',
                     style: TextStyle(
                       color: StudyRepsTheme.textSecondary,
@@ -289,12 +300,12 @@ class _CreateRepSheetState extends ConsumerState<_CreateRepSheet> {
                             spreadRadius: 2,
                           )
                         ]),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.auto_awesome_rounded,
+                        Icon(Icons.auto_awesome_rounded,
                             color: StudyRepsTheme.accentCyan, size: 16),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         Text(
                           'Powered by Gemini AI',
                           style: TextStyle(
@@ -492,9 +503,9 @@ class _CreateRepSheetState extends ConsumerState<_CreateRepSheet> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: StudyRepsTheme.bgSecondary,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: SafeArea(
           child: Column(
@@ -665,7 +676,7 @@ class _CreateOption extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(
+                const Icon(
                   Icons.chevron_right_rounded,
                   color: StudyRepsTheme.textMuted,
                   size: 24,

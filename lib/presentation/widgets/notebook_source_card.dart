@@ -90,7 +90,7 @@ class NotebookSourceCard extends StatelessWidget {
 
   SourceTypeColors get _colors {
     return NotebookTheme.sourceTypeColors[type.name] ?? 
-      SourceTypeColors(
+      const SourceTypeColors(
         primary: NotebookTheme.gray500,
         background: NotebookTheme.gray100,
         border: NotebookTheme.gray300,
@@ -195,9 +195,9 @@ class NotebookSourceCard extends StatelessWidget {
             borderRadius: NotebookTheme.borderRadiusXl,
             border: Border(
               left: BorderSide(color: colors.border, width: 4),
-              top: BorderSide(color: NotebookTheme.gray100, width: 1),
-              right: BorderSide(color: NotebookTheme.gray100, width: 1),
-              bottom: BorderSide(color: NotebookTheme.gray100, width: 1),
+              top: const BorderSide(color: NotebookTheme.gray100, width: 1),
+              right: const BorderSide(color: NotebookTheme.gray100, width: 1),
+              bottom: const BorderSide(color: NotebookTheme.gray100, width: 1),
             ),
           ),
           child: Row(
@@ -262,7 +262,7 @@ class NotebookSourceCard extends StatelessWidget {
                           if (meta != null)
                             Text(
                               meta!,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: NotebookTheme.gray400,
                               ),
@@ -278,7 +278,7 @@ class NotebookSourceCard extends StatelessWidget {
               
               // Chevron indicator
               if (onTap != null)
-                Icon(
+                const Icon(
                   Icons.chevron_right,
                   size: 20,
                   color: NotebookTheme.gray300,
@@ -407,7 +407,7 @@ class NotebookMetricCard extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 value,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w600,
                   color: NotebookTheme.gray900,
@@ -416,7 +416,7 @@ class NotebookMetricCard extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 label,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 13,
                   color: NotebookTheme.gray500,
                 ),

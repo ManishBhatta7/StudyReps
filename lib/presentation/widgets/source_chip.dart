@@ -65,7 +65,7 @@ class SourceChip extends StatelessWidget {
               const SizedBox(width: 4),
               GestureDetector(
                 onTap: onRemove,
-                child: Icon(
+                child: const Icon(
                   Icons.close,
                   size: 14,
                   color: RetainLearnTheme.textLight,

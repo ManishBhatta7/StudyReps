@@ -69,9 +69,9 @@ Future<Uint8List?> captureScreen() async {
 
 void _cleanupStream(web.MediaStream stream, web.HTMLVideoElement video) {
   try {
-    final tracks = stream.getTracks();
-    for (var i = 0; i < tracks.length; i++) {
-      tracks.toDart[i].stop();
+    final tracks = stream.getTracks().toDart;
+    for (final track in tracks) {
+      track.stop();
     }
     video.srcObject = null;
     video.remove();

@@ -178,7 +178,7 @@ class _LockOverlayState extends State<LockOverlay> {
             ),
             child: Text(
               widget.video.subject.toUpperCase(),
-              style: TextStyle(
+              style: const TextStyle(
                 color: StudyRepsTheme.primaryPurpleLight,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -206,7 +206,7 @@ class _LockOverlayState extends State<LockOverlay> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   Icons.lightbulb_outline,
                   color: StudyRepsTheme.accentCyan,
                   size: 16,
@@ -214,7 +214,7 @@ class _LockOverlayState extends State<LockOverlay> {
                 const SizedBox(width: 8),
                 Text(
                   widget.video.question.hint,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: StudyRepsTheme.textMuted,
                     fontSize: 13,
                     fontStyle: FontStyle.italic,
@@ -310,11 +310,11 @@ class _LockOverlayState extends State<LockOverlay> {
           fontSize: 18,
         ),
         textAlign: TextAlign.center,
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           hintText: 'Type your answer...',
           hintStyle: TextStyle(color: StudyRepsTheme.textMuted),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(20),
+          contentPadding: EdgeInsets.all(20),
         ),
         onSubmitted: (_) => _handleSubmit(),
       ),
@@ -355,10 +355,10 @@ class _LockOverlayState extends State<LockOverlay> {
                   color: Colors.white,
                 ),
               )
-            : Row(
+            : const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     'Submit Rep',
                     style: TextStyle(
                       fontSize: 18,
@@ -367,8 +367,8 @@ class _LockOverlayState extends State<LockOverlay> {
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  const Icon(
+                  SizedBox(width: 8),
+                  Icon(
                     Icons.arrow_forward_rounded,
                     color: Colors.white,
                     size: 20,
@@ -390,14 +390,14 @@ class _LockOverlayState extends State<LockOverlay> {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: StudyRepsTheme.successGreen),
           ),
-          child: Row(
+          child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.check_circle_rounded,
                 color: StudyRepsTheme.successGreen,
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Text(
                 'CORRECT! 🎉',
                 style: TextStyle(
@@ -410,7 +410,7 @@ class _LockOverlayState extends State<LockOverlay> {
           ),
         ),
         const SizedBox(height: 16),
-        Text(
+        const Text(
           'Video resuming...',
           style: TextStyle(
             color: StudyRepsTheme.textMuted,
@@ -433,14 +433,14 @@ class _LockOverlayState extends State<LockOverlay> {
           ),
           child: Column(
             children: [
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
                     Icons.auto_awesome_rounded,
                     color: StudyRepsTheme.primaryPurpleLight,
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Text(
                     'AI Coach Feedback',
                     style: TextStyle(
@@ -465,8 +465,8 @@ class _LockOverlayState extends State<LockOverlay> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
+                      const Padding(
+                        padding: EdgeInsets.only(top: 2),
                         child: Icon(
                           Icons.insights_rounded,
                           color: StudyRepsTheme.accentCyan,

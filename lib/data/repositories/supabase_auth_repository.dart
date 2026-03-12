@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 // Import supabase_flutter but hide the User type to avoid conflict with our domain User
 // AuthUser is automatically re-exported and available
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
-import 'package:gotrue/src/types/user.dart' as supabase;
+import 'package:gotrue/gotrue.dart' as supabase;
 
 import '../../domain/models/user.dart';
 import '../../domain/repositories/auth_repository.dart';

@@ -67,7 +67,7 @@ class _CreateAssignmentDialogState extends ConsumerState<CreateAssignmentDialog>
                       color: RetainLearnTheme.tealPrimary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.assignment_add,
                       color: RetainLearnTheme.tealPrimary,
                       size: 24,
@@ -150,7 +150,7 @@ class _CreateAssignmentDialogState extends ConsumerState<CreateAssignmentDialog>
                             builder: (context, child) {
                               return Theme(
                                 data: Theme.of(context).copyWith(
-                                  colorScheme: ColorScheme.light(
+                                  colorScheme: const ColorScheme.light(
                                     primary: RetainLearnTheme.tealPrimary,
                                     onPrimary: Colors.white,
                                     surface: RetainLearnTheme.paperWhite,
@@ -174,7 +174,7 @@ class _CreateAssignmentDialogState extends ConsumerState<CreateAssignmentDialog>
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.calendar_today_outlined, color: RetainLearnTheme.textLight),
+                              const Icon(Icons.calendar_today_outlined, color: RetainLearnTheme.textLight),
                               const SizedBox(width: 12),
                               Text(
                                 _dueDate == null 
@@ -201,7 +201,7 @@ class _CreateAssignmentDialogState extends ConsumerState<CreateAssignmentDialog>
                 children: [
                   TextButton(
                     onPressed: _isLoading ? null : () => Navigator.pop(context),
-                    child: Text(
+                    child: const Text(
                       'Cancel',
                       style: TextStyle(color: RetainLearnTheme.textMedium),
                     ),
@@ -234,21 +234,21 @@ class _CreateAssignmentDialogState extends ConsumerState<CreateAssignmentDialog>
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      labelStyle: TextStyle(color: RetainLearnTheme.textMedium),
+      labelStyle: const TextStyle(color: RetainLearnTheme.textMedium),
       prefixIcon: Icon(icon, color: RetainLearnTheme.textLight),
       filled: true,
       fillColor: RetainLearnTheme.paperOffWhite,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: RetainLearnTheme.grayBorder),
+        borderSide: const BorderSide(color: RetainLearnTheme.grayBorder),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: RetainLearnTheme.grayBorder),
+        borderSide: const BorderSide(color: RetainLearnTheme.grayBorder),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: RetainLearnTheme.tealPrimary, width: 2),
+        borderSide: const BorderSide(color: RetainLearnTheme.tealPrimary, width: 2),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     );
@@ -266,7 +266,7 @@ class _CreateAssignmentDialogState extends ConsumerState<CreateAssignmentDialog>
       controller: controller,
       keyboardType: keyboardType,
       maxLines: maxLines,
-      style: TextStyle(color: RetainLearnTheme.textDark, fontSize: 15),
+      style: const TextStyle(color: RetainLearnTheme.textDark, fontSize: 15),
       decoration: _inputDecoration(label, icon),
       validator: validator,
     );

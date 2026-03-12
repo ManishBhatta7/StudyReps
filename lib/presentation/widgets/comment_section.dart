@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/study_reps_theme.dart';
 import '../providers/comments_provider.dart';
 import '../../domain/models/comment_model.dart';
-import 'dart:async';
 
 /// Comment Section Widget
 ///
@@ -178,10 +177,10 @@ class _CommentSheetContentState extends ConsumerState<_CommentSheetContent> {
             child: SafeArea(
               child: Row(
                 children: [
-                  CircleAvatar(
+                  const CircleAvatar(
                     radius: 16,
                     backgroundColor: StudyRepsTheme.primaryPurple,
-                    child: const Text('Y', style: TextStyle(color: Colors.white, fontSize: 12)),
+                    child: Text('Y', style: TextStyle(color: Colors.white, fontSize: 12)),
                   ),
                   const SizedBox(width: 10),
                   Expanded(

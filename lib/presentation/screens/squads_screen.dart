@@ -96,7 +96,7 @@ class _SquadsScreenState extends ConsumerState<SquadsScreen> with SingleTickerPr
       error: (err, st) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
       data: (squads) {
         if (squads.isEmpty) {
-          return const Center(child: Text("No squads exist yet. Be the first to create one!", style: TextStyle(color: Colors.white70)));
+          return const Center(child: Text('No squads exist yet. Be the first to create one!', style: TextStyle(color: Colors.white70)));
         }
 
         return ListView.builder(
@@ -200,8 +200,10 @@ class _SquadsScreenState extends ConsumerState<SquadsScreen> with SingleTickerPr
                Navigator.pop(ctx);
                try {
                   await ref.read(squadControllerProvider).createSquad(nameCtrl.text.trim(), descCtrl.text.trim());
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Squad Created!')));
                } catch (e) {
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
                }
             }, 

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -167,7 +166,7 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [
+              gradient: const LinearGradient(colors: [
                 StudyRepsTheme.primaryPurple,
                 StudyRepsTheme.accentCyan,
               ]),
@@ -258,7 +257,7 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
             width: 200,
             child: LinearProgressIndicator(
               backgroundColor: Colors.white.withOpacity(0.1),
-              valueColor: AlwaysStoppedAnimation<Color>(
+              valueColor: const AlwaysStoppedAnimation<Color>(
                 StudyRepsTheme.primaryPurple,
               ),
             ),
@@ -352,7 +351,7 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [
+                  gradient: const LinearGradient(colors: [
                     StudyRepsTheme.primaryPurple,
                     StudyRepsTheme.accentCyan,
                   ]),
@@ -376,7 +375,7 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
                 ),
                 child: Text(
                   rep.subject,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: StudyRepsTheme.accentCyan,
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -414,7 +413,7 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.help_outline_rounded,
+                const Icon(Icons.help_outline_rounded,
                     color: StudyRepsTheme.accentCyan, size: 18),
                 const SizedBox(width: 10),
                 Expanded(

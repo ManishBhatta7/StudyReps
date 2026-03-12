@@ -63,7 +63,7 @@ final leaderboardProvider = FutureProvider.family<LeaderboardState, String>((ref
       }
     }
   } catch (e) {
-    debugPrint("Leaderboard error: $e");
+    debugPrint('Leaderboard error: $e');
     // Fallback if Supabase fails
   }
 

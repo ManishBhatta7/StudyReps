@@ -1,9 +1,11 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:video_player/video_player.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/study_reps_theme.dart';
+import 'main_navigation_shell.dart';
 import 'login_screen.dart';
 
 // Onboarding state providers
@@ -79,11 +81,56 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
     }
   }
 
-  void _completeOnboarding() {
+  void _completeOnboarding() async {
+    // 1. Mark onboarding as complete in SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('has_completed_onboarding', true);
+
+    // 2. Try to save preferences to Supabase if user is logged in
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        final name = ref.read(onboardingNameProvider);
+        final subjects = ref.read(onboardingSubjectsProvider);
+        final goal = ref.read(onboardingGoalProvider);
+        
+        await Supabase.instance.client.from('profiles').upsert({
+          'id': user.id,
+          'full_name': name.isNotEmpty ? name : null,
+          'preferred_subjects': subjects,
+          'daily_goal': goal,
+          'has_onboarded': true,
+        });
+        debugPrint('\u2705 Onboarding preferences saved to Supabase');
+      }
+    } catch (e) {
+      debugPrint('\u26a0\ufe0f Could not save onboarding prefs to Supabase: $e');
+      // Non-blocking — prefs are saved locally anyway
+    }
+
+    // 3. Navigate to login
+    if (!mounted) return;
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
         pageBuilder: (_, __, ___) => const LoginScreen(),
+        transitionDuration: const Duration(milliseconds: 500),
+        transitionsBuilder: (_, animation, __, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
+    );
+  }
+
+  void _skipOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('has_completed_onboarding', true);
+
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const MainNavigationShell(initialIndex: 1), // 1 is Discover tab
         transitionDuration: const Duration(milliseconds: 500),
         transitionsBuilder: (_, animation, __, child) {
           return FadeTransition(opacity: animation, child: child);
@@ -165,7 +212,7 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOut,
               ),
-              icon: Icon(Icons.arrow_back_ios_rounded, color: StudyRepsTheme.textSecondary),
+              icon: const Icon(Icons.arrow_back_ios_rounded, color: StudyRepsTheme.textSecondary),
             )
           else
             const SizedBox(width: 48),
@@ -191,8 +238,8 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
           
           // Skip
           TextButton(
-            onPressed: _completeOnboarding,
-            child: Text('Skip', style: TextStyle(color: StudyRepsTheme.textMuted)),
+            onPressed: _skipOnboarding,
+            child: const Text('Skip', style: TextStyle(color: StudyRepsTheme.textMuted)),
           ),
         ],
       ),
@@ -227,7 +274,7 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
           
           const SizedBox(height: 12),
           
-          Text(
+          const Text(
             "Let's personalize your experience",
             style: TextStyle(
               fontSize: 16,
@@ -252,11 +299,11 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
                 fontWeight: FontWeight.w600,
                 color: StudyRepsTheme.textPrimary,
               ),
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Enter your name',
                 hintStyle: TextStyle(color: StudyRepsTheme.textMuted, fontSize: 20),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+                contentPadding: EdgeInsets.symmetric(vertical: 20, horizontal: 24),
               ),
               onChanged: (v) => ref.read(onboardingNameProvider.notifier).state = v,
             ),
@@ -297,7 +344,7 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
           
           const SizedBox(height: 8),
           
-          Text(
+          const Text(
             'Pick at least 3 subjects',
             style: TextStyle(
               fontSize: 15,
@@ -371,7 +418,7 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
             const SizedBox(height: 12),
             Text(
               'Select ${3 - selectedSubjects.length} more',
-              style: TextStyle(color: StudyRepsTheme.textMuted, fontSize: 13),
+              style: const TextStyle(color: StudyRepsTheme.textMuted, fontSize: 13),
             ),
           ],
           
@@ -409,7 +456,7 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
           
           const SizedBox(height: 8),
           
-          Text(
+          const Text(
             'Set your daily rep goal',
             style: TextStyle(
               fontSize: 16,
@@ -437,7 +484,7 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.fitness_center_rounded, 
+                    const Icon(Icons.fitness_center_rounded, 
                         color: StudyRepsTheme.primaryIndigo, size: 32),
                     const SizedBox(width: 12),
                     Text(
@@ -450,7 +497,7 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
                     ),
                   ],
                 ),
-                Text(
+                const Text(
                   'reps per day',
                   style: TextStyle(
                     fontSize: 18,

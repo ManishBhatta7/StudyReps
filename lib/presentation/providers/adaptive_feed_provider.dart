@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/video_model.dart';
-import '../../domain/models/learning_record_model.dart';
 import '../../data/services/spaced_repetition_service.dart';
 import 'video_feed_provider.dart';
 

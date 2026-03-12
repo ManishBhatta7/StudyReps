@@ -91,11 +91,11 @@ class GateOverlay extends StatelessWidget {
               ),
 
               // COACH HINT BUBBLE (If Hint Active)
-              if (showHint && question.hint != null)
+              if (showHint)
                 Positioned(
                   top: -80,
                   right: -20, // Offset to right of mascot
-                  child: _buildHintBubble(question.hint!),
+                  child: _buildHintBubble(question.hint),
                 ),
             ],
           ),
@@ -188,16 +188,16 @@ class GateOverlay extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Header
-        Row(
+        const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.lock_rounded,
               color: StudyRepsTheme.primaryPurple,
               size: 20,
             ),
-            const SizedBox(width: 8),
-            const Text(
+            SizedBox(width: 8),
+            Text(
               'LOGIC GATE',
               style: TextStyle(
                 color: StudyRepsTheme.primaryPurple,
@@ -213,7 +213,7 @@ class GateOverlay extends StatelessWidget {
         
         // Question
         Text(
-          question.prompt ?? 'Answer this question:',
+          question.prompt,
           textAlign: TextAlign.center,
           style: const TextStyle(
             color: Colors.white,
@@ -306,7 +306,7 @@ class GateOverlay extends StatelessWidget {
                 ),
               ),
             );
-          }).toList(),
+          }),
       ],
     );
   }

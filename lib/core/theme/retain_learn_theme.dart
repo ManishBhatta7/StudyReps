@@ -315,7 +315,7 @@ class RetainLearnTheme {
           borderRadius: BorderRadius.circular(24),
           borderSide: const BorderSide(color: tealPrimary, width: 2),
         ),
-        hintStyle: TextStyle(color: textLight),
+        hintStyle: const TextStyle(color: textLight),
       ),
 
       // Dialog Theme

@@ -73,21 +73,21 @@ class LandingPage extends StatelessWidget {
           if (MediaQuery.of(context).size.width > 600) ...[
             TextButton(
               onPressed: () {},
-              child: Text(
+              child: const Text(
                 'Features',
                 style: TextStyle(color: RetainLearnTheme.textMedium),
               ),
             ),
             TextButton(
               onPressed: () {},
-              child: Text(
+              child: const Text(
                 'How it Works',
                 style: TextStyle(color: RetainLearnTheme.textMedium),
               ),
             ),
             TextButton(
               onPressed: () {},
-              child: Text(
+              child: const Text(
                 'Pricing',
                 style: TextStyle(color: RetainLearnTheme.textMedium),
               ),
@@ -149,7 +149,7 @@ class _HeroSection extends StatelessWidget {
               color: RetainLearnTheme.tealPrimary.withOpacity(0.2),
             ),
           ),
-          child: Row(
+          child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
@@ -157,7 +157,7 @@ class _HeroSection extends StatelessWidget {
                 size: 14,
                 color: RetainLearnTheme.tealPrimary,
               ),
-              const SizedBox(width: 6),
+              SizedBox(width: 6),
               Text(
                 'Next-Gen Adaptive Tutoring',
                 style: TextStyle(
@@ -223,7 +223,7 @@ class _HeroSection extends StatelessWidget {
             OutlinedButton(
               onPressed: () => GoRouter.of(context).go('/login'),
               style: OutlinedButton.styleFrom(
-                side: BorderSide(color: RetainLearnTheme.grayBorder),
+                side: const BorderSide(color: RetainLearnTheme.grayBorder),
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               ),
               child: const Text('Take The Quiz'),
@@ -261,7 +261,7 @@ class _HeroSection extends StatelessWidget {
                         color: RetainLearnTheme.tealSurface,
                         border: Border.all(color: Colors.white, width: 2),
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.person,
                         size: 16,
                         color: RetainLearnTheme.tealPrimary,
@@ -278,8 +278,8 @@ class _HeroSection extends StatelessWidget {
                   fontSize: 14,
                   color: RetainLearnTheme.textMedium,
                 ),
-                children: [
-                  const TextSpan(text: 'Joined by '),
+                children: const [
+                  TextSpan(text: 'Joined by '),
                   TextSpan(
                     text: '1,200+',
                     style: TextStyle(
@@ -287,7 +287,7 @@ class _HeroSection extends StatelessWidget {
                       color: RetainLearnTheme.textDark,
                     ),
                   ),
-                  const TextSpan(text: ' learners today'),
+                  TextSpan(text: ' learners today'),
                 ],
               ),
             ),
@@ -325,7 +325,7 @@ class _HeroSection extends StatelessWidget {
                       color: RetainLearnTheme.tealSurface,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.analytics,
                       color: RetainLearnTheme.tealPrimary,
                       size: 18,
@@ -343,7 +343,7 @@ class _HeroSection extends StatelessWidget {
                           color: RetainLearnTheme.textDark,
                         ),
                       ),
-                      Text(
+                      const Text(
                         'Assignment ID: #4421',
                         style: TextStyle(
                           fontSize: 12,
@@ -438,7 +438,7 @@ class _HeroSection extends StatelessWidget {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            Text(
+                            const Text(
                               'Content adapted for diagrams',
                               style: TextStyle(
                                 fontSize: 11,
@@ -502,7 +502,7 @@ class _FeaturesSection extends StatelessWidget {
                 ),
           ),
           const SizedBox(height: 8),
-          Text(
+          const Text(
             'Everything you need to excel in learning',
             style: TextStyle(color: RetainLearnTheme.textMedium),
           ),
@@ -545,7 +545,7 @@ class _FeaturesSection extends StatelessWidget {
                             const SizedBox(height: 4),
                             Text(
                               f.$3,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 13,
                                 color: RetainLearnTheme.textMedium,
                               ),
@@ -597,7 +597,7 @@ class _HowItWorksSection extends StatelessWidget {
                     Container(
                       width: 48,
                       height: 48,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: RetainLearnTheme.tealPrimary,
                         shape: BoxShape.circle,
                       ),
@@ -624,7 +624,7 @@ class _HowItWorksSection extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       s.$3,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
                         color: RetainLearnTheme.textMedium,
                       ),
@@ -648,7 +648,7 @@ class _CTASection extends StatelessWidget {
       margin: const EdgeInsets.all(24),
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
             RetainLearnTheme.tealPrimary,
             RetainLearnTheme.tealDark,
@@ -698,10 +698,10 @@ class _Footer extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       color: RetainLearnTheme.paperWhite,
-      child: Column(
+      child: const Column(
         children: [
           Divider(color: RetainLearnTheme.grayBorder),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Text(
             '© 2024 RetainLearn. Powered by Gemini AI.',
             style: TextStyle(

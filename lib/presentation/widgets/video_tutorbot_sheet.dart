@@ -208,12 +208,15 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
         onStatus: (status) {
           debugPrint('🎤 Speech status: $status');
           if (status == 'done' || status == 'notListening') {
-            if (mounted) {
+            if (mounted && _isListening) {
               setState(() => _isListening = false);
               _pulseController.stop();
               // Submit the recognized text if we have something
               if (_lastRecognized.isNotEmpty) {
-                _inputController.text = _lastRecognized;
+                final recognized = _lastRecognized;
+                _lastRecognized = '';
+                _inputController.clear();
+                _sendMessage(recognized);
               }
             }
           }
@@ -291,13 +294,13 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
     setState(() {
       _isListening = true;
       _lastRecognized = '';
-      _inputController.text = '';
+      _inputController.clear();
     });
     _pulseController.repeat(reverse: true);
 
     await _speech.listen(
       onResult: (result) {
-        if (mounted) {
+        if (mounted && _isListening) {
           setState(() {
             _lastRecognized = result.recognizedWords;
             _inputController.text = _lastRecognized;
@@ -314,9 +317,18 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
   }
 
   void _stopListening() async {
-    await _speech.stop();
-    _pulseController.stop();
+    if (!_isListening) return;
+
     setState(() => _isListening = false);
+    _pulseController.stop();
+    await _speech.stop();
+    
+    if (_lastRecognized.isNotEmpty) {
+      final recognized = _lastRecognized;
+      _lastRecognized = '';
+      _inputController.clear();
+      _sendMessage(recognized);
+    }
   }
 
   // ═════════════════════════════════
@@ -453,7 +465,7 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child:
-                Text('Cancel', style: TextStyle(color: StudyRepsTheme.textMuted)),
+                const Text('Cancel', style: TextStyle(color: StudyRepsTheme.textMuted)),
           ),
           TextButton(
             onPressed: () {
@@ -575,7 +587,7 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [
+              gradient: const LinearGradient(colors: [
                 StudyRepsTheme.primaryPurple,
                 StudyRepsTheme.accentCyan,
               ]),
@@ -611,9 +623,9 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: [
-                          const Color(0xFF4285F4),
-                          const Color(0xFF34A853),
+                        gradient: const LinearGradient(colors: [
+                          Color(0xFF4285F4),
+                          Color(0xFF34A853),
                         ]),
                         borderRadius: BorderRadius.circular(6),
                       ),
@@ -1397,8 +1409,16 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
               onTap: isLoading
                   ? null
                   : () {
-                      if (_isListening) _stopListening();
-                      _sendMessage(_inputController.text);
+                      final text = _inputController.text;
+                      if (_isListening) {
+                        setState(() => _isListening = false);
+                        _pulseController.stop();
+                        _speech.stop();
+                        _lastRecognized = '';
+                        _sendMessage(text);
+                      } else {
+                        _sendMessage(text);
+                      }
                     },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
@@ -1406,7 +1426,7 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
                 decoration: BoxDecoration(
                   gradient: isLoading
                       ? null
-                      : LinearGradient(colors: [
+                      : const LinearGradient(colors: [
                           StudyRepsTheme.primaryPurple,
                           StudyRepsTheme.accentCyan,
                         ]),

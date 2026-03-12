@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/physics.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
-import 'dart:ui';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -14,16 +13,11 @@ import '../providers/adaptive_feed_provider.dart';
 import '../../data/services/gemini_coach_service.dart';
 import '../providers/streak_provider.dart';
 import '../providers/xp_provider.dart';
-import '../widgets/create_rep_dialog.dart';
 import '../widgets/lock_overlay.dart';
 import '../widgets/mascot_reactor.dart';
 import '../widgets/video_tutorbot_sheet.dart';
 import '../widgets/comment_section.dart';
-import '../widgets/pencil_canvas_overlay.dart';
-import 'dart:typed_data';
-import '../../data/services/video_frame_capture.dart';
 
-import 'drill_screen.dart';
 
 /// Swipe-Gated Video Feed Screen
 /// Users cannot swipe until they answer the question correctly
@@ -47,7 +41,6 @@ class _SwipeGatedFeedScreenState extends ConsumerState<SwipeGatedFeedScreen> {
   bool _isLocked = false; // Can user swipe?
   
   List<VideoModel> _videos = [];
-  bool _feedLoaded = false;
 
   @override
   void initState() {
@@ -57,7 +50,6 @@ class _SwipeGatedFeedScreenState extends ConsumerState<SwipeGatedFeedScreen> {
     
     if (widget.initialVideos != null && widget.initialVideos!.isNotEmpty) {
       _videos = widget.initialVideos!;
-      _feedLoaded = true;
     } else {
       _loadAdaptiveFeed();
     }
@@ -68,7 +60,6 @@ class _SwipeGatedFeedScreenState extends ConsumerState<SwipeGatedFeedScreen> {
     if (mounted) {
       setState(() {
         _videos = feed;
-        _feedLoaded = true;
       });
     }
   }
@@ -98,17 +89,6 @@ class _SwipeGatedFeedScreenState extends ConsumerState<SwipeGatedFeedScreen> {
     }
   }
 
-  // Add new video from Creator Mode
-  void _addVideo(VideoModel newVideo) {
-    setState(() {
-      _videos.insert(0, newVideo); // Add to top
-      _currentPage = 0; // Jump to new video
-    });
-    // Need to jump after build
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _pageController.jumpToPage(0);
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +103,6 @@ class _SwipeGatedFeedScreenState extends ConsumerState<SwipeGatedFeedScreen> {
           if (_videos.isEmpty) {
             setState(() {
               _videos = feed;
-              _feedLoaded = true;
             });
             // If we just loaded fresh content, ensure we're at page 0
             if (_pageController.hasClients) {
@@ -270,29 +249,8 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
   bool _isPlaying = true; // defaulting to true as we auto-play
   IconData _overlayIcon = Icons.pause;
 
-  // Drawing & Video Frame Capture State
-  bool _isDrawingMode = false;
-  Uint8List? _frozenVideoFrame;
-
-  Future<void> _startDrawingMode() async {
-    // First, pause the video
-    _controller?.pause();
-    
-    // On web, capture the current video frame directly from the HTML <video> element
-    Uint8List? frame;
-    if (kIsWeb) {
-      frame = await captureVideoFrame();
-    }
-    setState(() {
-      _isDrawingMode = true;
-      _frozenVideoFrame = frame;
-      _isPlaying = false;
-      _showPlayPauseOverlay = false;
-    });
-  }
-
   void _togglePlayPause() {
-    if (_showGate || _isDrawingMode) return; // Don't toggle if gate or drawing is active
+    if (_showGate) return; // Don't toggle if gate is active
 
     setState(() {
       if (_controller!.value.isPlaying) {
@@ -409,8 +367,8 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
     try {
       final result = await GeminiCoachService.validateAnswer(
         userAnswer: answer,
-        correctAnswer: widget.video.question?.correctAnswer ?? '',
-        questionPrompt: widget.video.question?.prompt ?? '',
+        correctAnswer: widget.video.question.correctAnswer,
+        questionPrompt: widget.video.question.prompt,
       );
 
       if (!mounted) return;
@@ -431,7 +389,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
       setState(() {
         _isChecking = false;
         _isIncorrect = true;
-        _aiFeedback = "Failed to connect to AI Coach. Try again.";
+        _aiFeedback = 'Failed to connect to AI Coach. Try again.';
         _handleWrongAnswer();
       });
     }
@@ -481,7 +439,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
     // Except if it isn't set.
     if (_aiFeedback == null) {
       setState(() {
-        _aiFeedback = "Not quite. Think about the core principles related to ${widget.video.subject}. Try reviewing the clip again.";
+        _aiFeedback = 'Not quite. Think about the core principles related to ${widget.video.subject}. Try reviewing the clip again.';
       });
     }
     
@@ -518,6 +476,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
             _isLiked = !newStatus;
             _likesCount = _isLiked ? _likesCount + 1 : _likesCount - 1;
         });
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Failed to update like: $e')),
         );
@@ -581,16 +540,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
               child: Center(
                 child: AspectRatio(
                   aspectRatio: _controller!.value.aspectRatio,
-                  // When in drawing mode and we captured a frame, show it as a
-                  // static Image instead of the HTML video (so the user sees what was frozen).
-                  // Otherwise, show the live VideoPlayer.
-                  child: (_isDrawingMode && _frozenVideoFrame != null)
-                      ? Image.memory(
-                          _frozenVideoFrame!,
-                          fit: BoxFit.cover,
-                          gaplessPlayback: true,
-                        )
-                      : VideoPlayer(_controller!),
+                  child: VideoPlayer(_controller!),
                 ),
               ),
             )
@@ -697,30 +647,6 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
           // THE QUESTION GATE
           if (_showGate)
             _buildQuestionGate(),
-
-          // THE DRAWING OVERLAY
-          if (_isDrawingMode)
-            PencilCanvasOverlay(
-              onCancel: () {
-                setState(() {
-                    _isDrawingMode = false;
-                    _frozenVideoFrame = null;
-                });
-              },
-              onDone: () {
-                // Directly send the captured video frame to the Tutorbot.
-                // No need for Screenshot package — we already have the raw
-                // video pixels from the HTML <video> element.
-                final image = _frozenVideoFrame;
-                setState(() {
-                   _isDrawingMode = false;
-                   _frozenVideoFrame = null;
-                });
-                if (mounted) {
-                  VideoTutorbotSheet.show(context, widget.video, initialImage: image);
-                }
-              },
-            ),
         ],
       ),
     );
@@ -739,7 +665,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          const Icon(
             Icons.swipe_up_rounded,
             color: StudyRepsTheme.primaryPurple,
             size: 20,
@@ -773,7 +699,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                   colors: [StudyRepsTheme.primaryPurple, StudyRepsTheme.accentCyan],
                 ),
                 borderRadius: BorderRadius.circular(4),
@@ -849,11 +775,15 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Ask AI (Triggers Drawing/Screenshot mode before opening Bot)
+          // AI Coach (Replaces Ask AI + drawing logic)
           _buildActionButton(
-            icon: Icons.auto_awesome,
-            label: 'Ask AI',
-            onTap: _startDrawingMode,
+            icon: Icons.psychology_rounded,
+            label: 'Coach',
+            onTap: () {
+              if (mounted) {
+                VideoTutorbotSheet.show(context, widget.video);
+              }
+            },
           ),
           const SizedBox(height: 20),
           
@@ -875,15 +805,33 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
           _buildSaveButton(),
            const SizedBox(height: 20),
            
-           // Share (Mock)
+           // Share
            _buildActionButton(
             icon: Icons.share_rounded,
             label: 'Share',
-            onTap: () {
+            onTap: () async {
               ref.read(videosRepositoryProvider).logShare(widget.video.id, platform: 'link');
+              final shareText = '💪 Check out "${widget.video.title}" on StudyReps!\n\n'
+                  'Learn through micro-struggles — one rep at a time.\n'
+                  'https://studyreps.app/video/${widget.video.id}';
+              // Use clipboard as universal fallback (works on web + mobile)
+              await Clipboard.setData(ClipboardData(text: shareText));
+              if (!mounted) return;
+              
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Sharing link copied! (Mock)')),
-              );
+                SnackBar(
+                    content: const Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.greenAccent, size: 20),
+                        SizedBox(width: 8),
+                        Expanded(child: Text('Share link copied! Paste it anywhere 🚀')),
+                      ],
+                    ),
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: Colors.grey[900],
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                );
             },
           ),
         ],
@@ -933,7 +881,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
                     _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
                     color: _isLiked ? StudyRepsTheme.errorPink : Colors.white,
                     size: 32,
-                    shadows: [
+                    shadows: const [
                         Shadow(color: Colors.black54, offset: Offset(0, 2), blurRadius: 6),
                     ],
                 ).animate(target: _isLiked ? 1 : 0).scale(begin: const Offset(0.8, 0.8), end: const Offset(1.2, 1.2), duration: 200.ms).then().scale(begin: const Offset(1.2, 1.2), end: const Offset(1.0, 1.0), duration: 100.ms),
@@ -1002,8 +950,6 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
   }
 
   Widget _buildQuestionGate() {
-    if (widget.video.question == null) return const SizedBox();
-
     return LockOverlay(
       video: widget.video,
       isChecking: _isChecking,

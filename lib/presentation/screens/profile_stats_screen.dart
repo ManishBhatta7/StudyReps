@@ -31,7 +31,7 @@ class ProfileStatsScreen extends ConsumerWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.settings_outlined, color: StudyRepsTheme.textSecondary),
+            icon: const Icon(Icons.settings_outlined, color: StudyRepsTheme.textSecondary),
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const SettingsScreen()),
@@ -57,8 +57,8 @@ class ProfileStatsScreen extends ConsumerWidget {
             // TSR Health Score (New)
             tsrHealthAsync.when(
               data: (health) => _buildHealthScore(health),
-              loading: () => _buildLoadingCard("Calculating Health Score..."),
-              error: (err, _) => _buildErrorCard("Could not load health score"),
+              loading: () => _buildLoadingCard('Calculating Health Score...'),
+              error: (err, _) => _buildErrorCard('Could not load health score'),
             ),
 
             const SizedBox(height: 24),
@@ -67,7 +67,7 @@ class ProfileStatsScreen extends ConsumerWidget {
             dashboardStatsAsync.when(
               data: (stats) => _buildStatsGrid(stats),
               loading: () => _buildStatsLoading(),
-              error: (err, _) => _buildErrorCard("Could not load stats"),
+              error: (err, _) => _buildErrorCard('Could not load stats'),
             ),
 
             const SizedBox(height: 24),
@@ -122,7 +122,7 @@ class ProfileStatsScreen extends ConsumerWidget {
             backgroundImage: user?.avatarUrl != null ? NetworkImage(user!.avatarUrl!) : null,
             child: user?.avatarUrl == null ? Text(
               initial,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 40,
                 fontWeight: FontWeight.bold,
                 color: StudyRepsTheme.textMuted,
@@ -147,7 +147,7 @@ class ProfileStatsScreen extends ConsumerWidget {
           const SizedBox(height: 4),
           Text(
             user!.email!,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
               color: StudyRepsTheme.textMuted,
             ),
@@ -201,8 +201,11 @@ class ProfileStatsScreen extends ConsumerWidget {
 
   Widget _buildHealthScore(TSRHealthStats health) {
     Color scoreColor = StudyRepsTheme.successGreen;
-    if (health.score < 50) scoreColor = StudyRepsTheme.errorPink;
-    else if (health.score < 80) scoreColor = Colors.orange;
+    if (health.score < 50) {
+      scoreColor = StudyRepsTheme.errorPink;
+    } else if (health.score < 80) {
+      scoreColor = Colors.orange;
+    }
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -216,7 +219,7 @@ class ProfileStatsScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 'TSR Health Score',
                 style: TextStyle(
                   color: StudyRepsTheme.textSecondary,
@@ -269,7 +272,7 @@ class ProfileStatsScreen extends ConsumerWidget {
           Text(
             health.advice,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               color: StudyRepsTheme.textMuted,
               fontSize: 14,
               fontStyle: FontStyle.italic,
@@ -311,7 +314,7 @@ class ProfileStatsScreen extends ConsumerWidget {
               children: [
                   const CircularProgressIndicator(),
                   const SizedBox(height: 16),
-                  Text(message, style: TextStyle(color: StudyRepsTheme.textMuted)),
+                  Text(message, style: const TextStyle(color: StudyRepsTheme.textMuted)),
               ],
           ),
       );
@@ -320,9 +323,9 @@ class ProfileStatsScreen extends ConsumerWidget {
   Widget _buildStatsLoading() {
       return Row(
           children: [
-              Expanded(child: _buildLoadingCard("...")),
+              Expanded(child: _buildLoadingCard('...')),
               const SizedBox(width: 12),
-              Expanded(child: _buildLoadingCard("...")),
+              Expanded(child: _buildLoadingCard('...')),
           ],
       );
   }
@@ -336,7 +339,7 @@ class ProfileStatsScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: StudyRepsTheme.errorPink.withOpacity(0.5)),
           ),
-          child: Text(error, style: TextStyle(color: StudyRepsTheme.errorPink)),
+          child: Text(error, style: const TextStyle(color: StudyRepsTheme.errorPink)),
       );
   }
 
@@ -356,7 +359,7 @@ class ProfileStatsScreen extends ConsumerWidget {
             children: [
               Text(
                 stat['label'],
-                style: TextStyle(
+                style: const TextStyle(
                   color: StudyRepsTheme.textMuted,
                   fontSize: 13,
                 ),

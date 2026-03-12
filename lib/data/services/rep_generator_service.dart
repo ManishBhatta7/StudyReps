@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
@@ -332,7 +331,7 @@ Structure:
 
   /// Convert parsed JSON to VideoModel
   static VideoModel _jsonToVideoModel(Map<String, dynamic> json) {
-    final uuid = const Uuid();
+    const uuid = Uuid();
     final id = uuid.v4();
 
     final correctAnswer = json['correctAnswer'] ?? 'Answer';
@@ -343,7 +342,7 @@ Structure:
       json['wrongOption3'] ?? 'Option D',
     ]..shuffle(); // Randomize option order
 
-    final correctIndex = options.indexOf(correctAnswer);
+    final _ = options.indexOf(correctAnswer); // correctIndex for future use
 
     // Pick a placeholder video
     final videoIndex = id.hashCode.abs() % _placeholderVideos.length;

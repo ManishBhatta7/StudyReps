@@ -9,7 +9,6 @@ class WebTtsService {
   static bool get isSupported => true;
   static web.SpeechSynthesis get _synth => web.window.speechSynthesis;
   static web.SpeechSynthesisVoice? _selectedVoice;
-  static bool _voicesLoaded = false;
 
   /// Wait for voices to become available (Chrome loads them async)
   static Future<List<web.SpeechSynthesisVoice>> _waitForVoices() async {
@@ -29,7 +28,6 @@ class WebTtsService {
   /// Get all available voices
   static Future<List<Map<String, String>>> getAvailableVoices() async {
     final voices = await _waitForVoices();
-    _voicesLoaded = true;
 
     return voices.map((v) {
       return {

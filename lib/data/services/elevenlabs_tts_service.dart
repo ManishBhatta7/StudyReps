@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -7,9 +6,8 @@ import '../../core/constants/app_constants.dart';
 /// ElevenLabs TTS Service — uses the Ruhaan voice for natural Hindi/Hinglish speech.
 class ElevenLabsTtsService {
   static bool get isConfigured {
-    final key = AppConstants.elevenLabsApiKey;
-    debugPrint('🔊 ElevenLabs key check: "${key.isNotEmpty ? '${key.substring(0, 5)}...(${key.length} chars)' : 'EMPTY'}"');
-    return key.isNotEmpty;
+    // Disabled due to rate limits - falls back natively to Web Speech API/Flutter TTS
+    return false;
   }
   
   /// Convert text to speech audio bytes using ElevenLabs API
@@ -22,7 +20,7 @@ class ElevenLabsTtsService {
       return null;
     }
 
-    final voiceId = AppConstants.elevenLabsVoiceId;
+    const voiceId = AppConstants.elevenLabsVoiceId;
     final url = Uri.parse(
       '${AppConstants.elevenLabsBaseUrl}/text-to-speech/$voiceId',
     );

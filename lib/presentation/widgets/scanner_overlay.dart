@@ -148,7 +148,7 @@ class _BracketPainter extends CustomPainter {
       ..strokeWidth = 4
       ..style = PaintingStyle.stroke;
 
-    final double cornerSize = 30;
+    const double cornerSize = 30;
 
     // Top Left
     canvas.drawPath(

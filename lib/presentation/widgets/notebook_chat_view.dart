@@ -17,9 +17,9 @@ class _NotebookChatViewState extends ConsumerState<NotebookChatView> {
 
   // Mock active sources
   final List<String> _activeSources = [
-    "Math Assignment.pdf",
-    "Report Card (Oct)",
-    "Biology Notes"
+    'Math Assignment.pdf',
+    'Report Card (Oct)',
+    'Biology Notes'
   ];
 
   @override
@@ -59,9 +59,9 @@ class _NotebookChatViewState extends ConsumerState<NotebookChatView> {
         Container(
           height: 60,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: RetainLearnTheme.paperWhite,
-            border: const Border(bottom: BorderSide(color: RetainLearnTheme.grayBorder)),
+            border: Border(bottom: BorderSide(color: RetainLearnTheme.grayBorder)),
           ),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
@@ -69,9 +69,9 @@ class _NotebookChatViewState extends ConsumerState<NotebookChatView> {
             separatorBuilder: (ctx, i) => const SizedBox(width: 8),
             itemBuilder: (ctx, i) {
               if (i == 0) {
-                 return Chip(
-                  avatar: const Icon(Icons.add, size: 16, color: RetainLearnTheme.tealPrimary),
-                  label: const Text("Add Source"),
+                 return const Chip(
+                  avatar: Icon(Icons.add, size: 16, color: RetainLearnTheme.tealPrimary),
+                  label: Text('Add Source'),
                   backgroundColor: RetainLearnTheme.tealSurface,
                   side: BorderSide.none,
                   labelStyle: TextStyle(
@@ -98,14 +98,14 @@ class _NotebookChatViewState extends ConsumerState<NotebookChatView> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.description_outlined, size: 14, color: RetainLearnTheme.textMedium),
+                    const Icon(Icons.description_outlined, size: 14, color: RetainLearnTheme.textMedium),
                     const SizedBox(width: 6),
                     Text(
                       source,
-                      style: TextStyle(fontSize: 12, color: RetainLearnTheme.textDark),
+                      style: const TextStyle(fontSize: 12, color: RetainLearnTheme.textDark),
                     ),
                     const SizedBox(width: 4),
-                    Icon(Icons.close, size: 12, color: RetainLearnTheme.textLight),
+                    const Icon(Icons.close, size: 12, color: RetainLearnTheme.textLight),
                   ],
                 ),
               );
@@ -131,9 +131,9 @@ class _NotebookChatViewState extends ConsumerState<NotebookChatView> {
         // 3. Input Area
         Container(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: RetainLearnTheme.paperWhite,
-            border: const Border(top: BorderSide(color: RetainLearnTheme.grayBorder)),
+            border: Border(top: BorderSide(color: RetainLearnTheme.grayBorder)),
           ),
           child: Row(
             children: [
@@ -141,8 +141,8 @@ class _NotebookChatViewState extends ConsumerState<NotebookChatView> {
                 child: TextField(
                   controller: _textController,
                   decoration: InputDecoration(
-                    hintText: "Ask a question about your sources...",
-                    hintStyle: TextStyle(color: RetainLearnTheme.textLight),
+                    hintText: 'Ask a question about your sources...',
+                    hintStyle: const TextStyle(color: RetainLearnTheme.textLight),
                     filled: true,
                     fillColor: RetainLearnTheme.paperOffWhite,
                     border: OutlineInputBorder(
@@ -186,7 +186,7 @@ class _NotebookChatViewState extends ConsumerState<NotebookChatView> {
         children: [
           Container(
             padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: RetainLearnTheme.tealSurface,
               shape: BoxShape.circle,
             ),
@@ -194,12 +194,12 @@ class _NotebookChatViewState extends ConsumerState<NotebookChatView> {
           ),
           const SizedBox(height: 24),
           Text(
-            "NotebookLM Assistant",
+            'NotebookLM Assistant',
             style: Theme.of(context).textTheme.displayMedium,
           ),
           const SizedBox(height: 8),
-          Text(
-            "Ask questions, summarize documents, or get study tips.",
+          const Text(
+            'Ask questions, summarize documents, or get study tips.',
             textAlign: TextAlign.center,
             style: TextStyle(color: RetainLearnTheme.textMedium),
           ),
@@ -230,12 +230,12 @@ class _ChatBubble extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (!isUser) ...[
-                   Icon(Icons.auto_awesome, size: 16, color: RetainLearnTheme.tealPrimary),
+                   const Icon(Icons.auto_awesome, size: 16, color: RetainLearnTheme.tealPrimary),
                    const SizedBox(width: 8),
-                   Text("Assistant", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: RetainLearnTheme.textDark)),
+                   const Text('Assistant', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: RetainLearnTheme.textDark)),
                 ],
                 if (isUser)
-                   Text("You", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: RetainLearnTheme.textMedium)),
+                   const Text('You', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: RetainLearnTheme.textMedium)),
               ],
             ),
             const SizedBox(height: 8),
@@ -247,14 +247,14 @@ class _ChatBubble extends StatelessWidget {
                 border: isUser ? Border.all(color: RetainLearnTheme.grayBorder) : null,
               ),
               child: isUser 
-                ? Text(message.content, style: TextStyle(color: RetainLearnTheme.textDark, height: 1.5))
+                ? Text(message.content, style: const TextStyle(color: RetainLearnTheme.textDark, height: 1.5))
                 : MarkdownBody(
-                    data: message.content + (message.isStreaming ? " ▋" : ""), // Blinking cursor effect
+                    data: message.content + (message.isStreaming ? ' ▋' : ''), // Blinking cursor effect
                     styleSheet: MarkdownStyleSheet(
-                      p: TextStyle(color: RetainLearnTheme.textDark, height: 1.6, fontSize: 16),
-                      h1: TextStyle(color: RetainLearnTheme.textDark, fontWeight: FontWeight.bold, fontSize: 24),
-                      h2: TextStyle(color: RetainLearnTheme.textDark, fontWeight: FontWeight.bold, fontSize: 20),
-                      code: TextStyle(backgroundColor: RetainLearnTheme.paperOffWhite, fontFamily: 'monospace'),
+                      p: const TextStyle(color: RetainLearnTheme.textDark, height: 1.6, fontSize: 16),
+                      h1: const TextStyle(color: RetainLearnTheme.textDark, fontWeight: FontWeight.bold, fontSize: 24),
+                      h2: const TextStyle(color: RetainLearnTheme.textDark, fontWeight: FontWeight.bold, fontSize: 20),
+                      code: const TextStyle(backgroundColor: RetainLearnTheme.paperOffWhite, fontFamily: 'monospace'),
                       codeblockDecoration: BoxDecoration(
                         color: RetainLearnTheme.paperOffWhite,
                         borderRadius: BorderRadius.circular(8),

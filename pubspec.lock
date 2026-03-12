@@ -537,7 +537,7 @@ packages:
     source: hosted
     version: "0.4.7"
   gotrue:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: gotrue
       sha256: f7b52008311941a7c3e99f9590c4ee32dfc102a5442e43abf1b287d9f8cc39b2
@@ -1318,7 +1318,7 @@ packages:
     source: hosted
     version: "1.2.0"
   supabase:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: supabase
       sha256: cc039f63a3168386b3a4f338f3bff342c860d415a3578f3fbe854024aee6f911

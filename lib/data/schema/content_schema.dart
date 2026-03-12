@@ -7,6 +7,7 @@
 /// 1. Easy to populate from PDFs
 /// 2. Compatible with NotebookLM workflow
 /// 3. Scalable for multiple subjects/boards
+library;
 
 // ============================================================
 // LEVEL 1: BOARD (Top level organization)

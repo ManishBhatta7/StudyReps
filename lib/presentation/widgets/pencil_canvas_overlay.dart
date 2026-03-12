@@ -6,10 +6,10 @@ class PencilCanvasOverlay extends StatefulWidget {
   final VoidCallback onDone;
 
   const PencilCanvasOverlay({
-    Key? key,
+    super.key,
     required this.onCancel,
     required this.onDone,
-  }) : super(key: key);
+  });
 
   @override
   State<PencilCanvasOverlay> createState() => PencilCanvasOverlayState();

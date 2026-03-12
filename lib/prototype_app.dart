@@ -82,12 +82,12 @@ class _ActiveVideoPlayerScreenState extends State<ActiveVideoPlayerScreen> {
     if (web.document.hidden) {
       _controller.pauseVideo();
       // Track this offline or send a webhook
-      debugPrint("🚨 DISTRACTION EVENT LOGGED: User tabbed out.");
+      debugPrint('🚨 DISTRACTION EVENT LOGGED: User tabbed out.');
       
       if (mounted && !_isQuestionLocked) {
          ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("⚠️ Focus lost! Your mom was notified via WhatsApp."),
+            content: Text('⚠️ Focus lost! Your mom was notified via WhatsApp.'),
             backgroundColor: Colors.redAccent,
             duration: Duration(seconds: 4),
           ),
@@ -104,7 +104,7 @@ class _ActiveVideoPlayerScreenState extends State<ActiveVideoPlayerScreen> {
       });
       _controller.playVideo();
     } catch (e) {
-      debugPrint("Fullscreen failed: $e");
+      debugPrint('Fullscreen failed: $e');
     }
   }
 
@@ -171,7 +171,7 @@ class _ActiveVideoPlayerScreenState extends State<ActiveVideoPlayerScreen> {
                     const Icon(Icons.school, size: 80, color: Colors.white),
                     const SizedBox(height: 20),
                     const Text(
-                      "Ready to focus?",
+                      'Ready to focus?',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -180,7 +180,7 @@ class _ActiveVideoPlayerScreenState extends State<ActiveVideoPlayerScreen> {
                     ),
                     const SizedBox(height: 10),
                     const Text(
-                      "This session requires full attention.\nLeaving the tab will break your streak.",
+                      'This session requires full attention.\nLeaving the tab will break your streak.',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.white70, fontSize: 16),
                     ),
@@ -188,7 +188,7 @@ class _ActiveVideoPlayerScreenState extends State<ActiveVideoPlayerScreen> {
                     ElevatedButton.icon(
                       onPressed: _requestBrowserFullscreen,
                       icon: const Icon(Icons.fullscreen),
-                      label: const Text("Enter Study Mode"),
+                      label: const Text('Enter Study Mode'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF6366F1),
                         foregroundColor: Colors.white,
@@ -222,7 +222,7 @@ class _ActiveVideoPlayerScreenState extends State<ActiveVideoPlayerScreen> {
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.5), width: 2),
                         ),
-                        child: Column(
+                        child: const Column(
                           children: [
                              Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -230,7 +230,7 @@ class _ActiveVideoPlayerScreenState extends State<ActiveVideoPlayerScreen> {
                                 Icon(Icons.smart_toy, color: Colors.indigoAccent),
                                 SizedBox(width: 10),
                                 Text(
-                                  "Ed Coach",
+                                  'Ed Coach',
                                   style: TextStyle(
                                     color: Colors.indigoAccent,
                                     fontWeight: FontWeight.bold,
@@ -238,9 +238,9 @@ class _ActiveVideoPlayerScreenState extends State<ActiveVideoPlayerScreen> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              "Okay, pause. Based on what was just covered, explain how osmosis is different from standard diffusion in your own words.",
+                            SizedBox(height: 16),
+                            Text(
+                              'Okay, pause. Based on what was just covered, explain how osmosis is different from standard diffusion in your own words.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 24,
@@ -261,7 +261,7 @@ class _ActiveVideoPlayerScreenState extends State<ActiveVideoPlayerScreen> {
                             Icon(Icons.check_circle, color: Color(0xFF10B981), size: 80),
                             SizedBox(height: 16),
                             Text(
-                              "Nailed it! Continuing lecture...",
+                              'Nailed it! Continuing lecture...',
                               style: TextStyle(color: Color(0xFF10B981), fontSize: 20, fontWeight: FontWeight.bold),
                             )
                           ],
@@ -295,7 +295,7 @@ class _ActiveVideoPlayerScreenState extends State<ActiveVideoPlayerScreen> {
                       if (!_isSuccess) ...[
                         const SizedBox(height: 24),
                         Text(
-                          _isListening ? "Listening to your explanation..." : "Hold to speak your answer",
+                          _isListening ? 'Listening to your explanation...' : 'Hold to speak your answer',
                           style: TextStyle(
                             color: _isListening ? Colors.white : Colors.white54,
                             fontSize: 16,

@@ -96,7 +96,7 @@ class _FloatingInputPillState extends State<FloatingInputPill> {
                 if (widget.onAttachment != null)
                   IconButton(
                     onPressed: widget.onAttachment,
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.add_circle_outline,
                       color: RetainLearnTheme.textLight,
                     ),
@@ -111,7 +111,7 @@ class _FloatingInputPillState extends State<FloatingInputPill> {
                     focusNode: widget.focusNode,
                     decoration: InputDecoration(
                       hintText: widget.hintText,
-                      hintStyle: TextStyle(
+                      hintStyle: const TextStyle(
                         color: RetainLearnTheme.textLight,
                         fontSize: 15,
                       ),
@@ -121,7 +121,7 @@ class _FloatingInputPillState extends State<FloatingInputPill> {
                         vertical: 14,
                       ),
                     ),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 15,
                       color: RetainLearnTheme.textDark,
                     ),
@@ -142,7 +142,7 @@ class _FloatingInputPillState extends State<FloatingInputPill> {
                             margin: const EdgeInsets.all(8),
                             width: 24,
                             height: 24,
-                            child: CircularProgressIndicator(
+                            child: const CircularProgressIndicator(
                               strokeWidth: 2,
                               color: RetainLearnTheme.tealPrimary,
                             ),

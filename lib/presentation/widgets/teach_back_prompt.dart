@@ -114,7 +114,7 @@ class _TeachBackPromptState extends State<TeachBackPrompt>
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
+                    gradient: const LinearGradient(
                       colors: [StudyRepsTheme.primaryPurple, StudyRepsTheme.accentCyan],
                     ),
                     borderRadius: BorderRadius.circular(12),
@@ -217,7 +217,7 @@ class _TeachBackPromptState extends State<TeachBackPrompt>
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.bolt, color: StudyRepsTheme.accentCyan, size: 14),
+                const Icon(Icons.bolt, color: StudyRepsTheme.accentCyan, size: 14),
                 const SizedBox(width: 4),
                 Text(
                   '+50 XP bonus for teaching back!',

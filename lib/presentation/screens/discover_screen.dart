@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/theme/study_reps_theme.dart';
 import '../../domain/models/video_model.dart';
-import '../../data/repositories/videos_repository.dart';
 import '../providers/video_feed_provider.dart';
 import 'swipe_gated_feed_screen.dart';
 
@@ -469,8 +468,9 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
           child: Text('Error loading content',
               style: TextStyle(color: StudyRepsTheme.textMuted))),
       data: (videos) {
-        if (videos.isEmpty)
+        if (videos.isEmpty) {
           return _buildEmptyState('No trending videos yet', Icons.trending_up);
+        }
         return ListView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           physics: const BouncingScrollPhysics(),
@@ -495,8 +495,9 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
           child: Text('Error loading content',
               style: TextStyle(color: StudyRepsTheme.textMuted))),
       data: (videos) {
-        if (videos.isEmpty)
+        if (videos.isEmpty) {
           return _buildEmptyState('No videos found', Icons.category_rounded);
+        }
         return GridView.builder(
           padding: const EdgeInsets.all(20),
           physics: const BouncingScrollPhysics(),
@@ -526,9 +527,10 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
           child: Text('Error loading videos',
               style: TextStyle(color: StudyRepsTheme.textMuted))),
       data: (videos) {
-        if (videos.isEmpty)
+        if (videos.isEmpty) {
           return _buildEmptyState(
               'No saved videos yet', Icons.bookmark_border_rounded);
+        }
         return ListView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           physics: const BouncingScrollPhysics(),
@@ -553,8 +555,9 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
           child: Text('Search failed',
               style: TextStyle(color: StudyRepsTheme.textMuted))),
       data: (results) {
-        if (results.isEmpty)
+        if (results.isEmpty) {
           return _buildEmptyState('No results found', Icons.search_off_rounded);
+        }
         return ListView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           physics: const BouncingScrollPhysics(),
@@ -884,18 +887,6 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
     }
   }
 
-  Color _difficultyColor(int level) {
-    switch (level) {
-      case 1:
-        return const Color(0xFF10B981);
-      case 2:
-        return const Color(0xFFF59E0B);
-      case 3:
-        return const Color(0xFFEF4444);
-      default:
-        return const Color(0xFF6366F1);
-    }
-  }
 
   Widget _buildEmptyState(String message, IconData icon) {
     return Center(
