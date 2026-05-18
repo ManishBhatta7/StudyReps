@@ -21,7 +21,7 @@ dependencies:
   go_router: ^13.0.1
   
   # Backend & Auth (Supabase)
-  supabase_flutter: ^2.3.4
+  supabase_flutter: ^2.6.0
   
   # Video Player (TikTok-style feed)
   video_player: ^2.8.2
@@ -54,13 +54,16 @@ dependencies:
   # Premium UI
   google_fonts: ^6.1.0
   glassmorphism: ^3.0.0
-  youtube_player_iframe: ^5.2.1
+  youtube_player_iframe: ^5.2.2
   image_picker: ^1.1.2
   file_picker: ^8.0.0
   flutter_markdown: ^0.7.7+1
   flutter_dotenv: ^6.0.0
   google_generative_ai: ^0.4.7
+  screenshot: ^3.0.0
+  web: ^1.1.0
 
+  gotrue: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -71,6 +74,7 @@ dev_dependencies:
   riverpod_generator: ^2.3.9
   hive_generator: ^2.0.1
 
+  supabase: any
 flutter:
   uses-material-design: true
   
@@ -79,4 +83,5 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/mascot/
+    - assets/videos/
 

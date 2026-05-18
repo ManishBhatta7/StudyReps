@@ -109,7 +109,7 @@ class StreakScreen extends ConsumerWidget {
           currentStreak > 0 
             ? 'Keep the flame burning! You\'re doing great.'
             : 'Get started with a rep to ignite your flame!',
-          style: TextStyle(
+          style: const TextStyle(
             color: StudyRepsTheme.textSecondary,
             fontSize: 14,
           ),
@@ -127,7 +127,7 @@ class StreakScreen extends ConsumerWidget {
         .map((d) => d.day)
         .toSet();
 
-    const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -142,7 +142,7 @@ class StreakScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(Icons.chevron_left_rounded, color: StudyRepsTheme.textMuted),
+              const Icon(Icons.chevron_left_rounded, color: StudyRepsTheme.textMuted),
               Text(
                 monthNames[now.month - 1],
                 style: const TextStyle(
@@ -152,7 +152,7 @@ class StreakScreen extends ConsumerWidget {
                   letterSpacing: 1,
                 ),
               ),
-              Icon(Icons.chevron_right_rounded, color: StudyRepsTheme.textMuted),
+              const Icon(Icons.chevron_right_rounded, color: StudyRepsTheme.textMuted),
             ],
           ),
           
@@ -212,7 +212,7 @@ class StreakScreen extends ConsumerWidget {
           const SizedBox(height: 12),
           
           // Today label
-          Text(
+          const Text(
             'TODAY',
             style: TextStyle(
               color: StudyRepsTheme.textMuted,
@@ -281,9 +281,9 @@ class StreakScreen extends ConsumerWidget {
                               color: StudyRepsTheme.textPrimary,
                             ),
                           ),
-                          TextSpan(
+                          const TextSpan(
                             text: '/$dailyGoal',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w600,
                               color: StudyRepsTheme.primaryIndigo,
@@ -292,7 +292,7 @@ class StreakScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    Text(
+                    const Text(
                       'Reps',
                       style: TextStyle(
                         color: StudyRepsTheme.textMuted,
@@ -312,7 +312,7 @@ class StreakScreen extends ConsumerWidget {
               ? 'Goal achieved! You are on fire! 🔥'
               : 'Almost there! ${dailyGoal - todayReps} more reps to hit your daily goal.',
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               color: StudyRepsTheme.textSecondary,
               fontSize: 13,
             ),
@@ -348,11 +348,11 @@ class StreakScreen extends ConsumerWidget {
               ),
               Row(
                 children: [
-                  Icon(Icons.lock_outline_rounded, size: 14, color: StudyRepsTheme.textMuted),
+                  const Icon(Icons.lock_outline_rounded, size: 14, color: StudyRepsTheme.textMuted),
                   const SizedBox(width: 4),
                   Text(
                     'Unlocked ${achievements.length - lockedCount}/${achievements.length}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: StudyRepsTheme.textMuted,
                       fontSize: 12,
                     ),
@@ -387,7 +387,7 @@ class StreakScreen extends ConsumerWidget {
             Center(
               child: Text(
                 'Keep it up! $lockedCount more badges to unlock',
-                style: TextStyle(
+                style: const TextStyle(
                   color: StudyRepsTheme.textMuted,
                   fontSize: 12,
                 ),

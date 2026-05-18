@@ -101,29 +101,54 @@ Be direct but kind. Focus on WHY they might have gotten it wrong.
       '$_baseUrl/models/$_model:generateContent?key=$apiKey'
     );
 
+    // Build the request body with optional thinking config
+    final requestBody = <String, dynamic>{
+      'contents': [
+        {
+          'parts': [
+            {'text': prompt}
+          ]
+        }
+      ],
+      'generationConfig': {
+        'temperature': 0.7,
+        'maxOutputTokens': 150,
+      },
+    };
+
+    // Enable thinking mode for deeper reasoning on answers
+    if (AppConstants.enableThinking) {
+      (requestBody['generationConfig'] as Map<String, dynamic>)['thinkingConfig'] = {
+        'thinkingBudget': AppConstants.thinkingBudget,
+      };
+    }
+
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'contents': [
-          {
-            'parts': [
-              {'text': prompt}
-            ]
-          }
-        ],
-        'generationConfig': {
-          'temperature': 0.7,
-          'maxOutputTokens': 100,
-        }
-      }),
+      body: jsonEncode(requestBody),
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final text = data['candidates']?[0]?['content']?['parts']?[0]?['text'];
-      return text?.toString().trim() ?? 
-          'The correct answer is "$correctAnswer".';
+      final candidates = data['candidates'] as List?;
+      if (candidates != null && candidates.isNotEmpty) {
+        // With thinking enabled, the model may return multiple parts.
+        // The actual text response is in the last non-thinking part.
+        final parts = candidates[0]['content']?['parts'] as List?;
+        if (parts != null && parts.isNotEmpty) {
+          // Find the actual text response (skip any "thought" parts)
+          for (final part in parts.reversed) {
+            if (part['text'] != null && part['thought'] != true) {
+              return part['text'].toString().trim();
+            }
+          }
+          // Fallback: just use the last part's text
+          return parts.last['text']?.toString().trim() ?? 
+              'The correct answer is "$correctAnswer".';
+        }
+      }
+      return 'The correct answer is "$correctAnswer".';
     }
 
     throw GeminiException(

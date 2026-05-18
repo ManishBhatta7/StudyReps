@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/models/video_model.dart';
@@ -59,10 +60,17 @@ class VideosRepository {
         videoData['isSaved'] = isSaved;
         videoData['likesCount'] = likes.length;
 
+        // Force local asset workaround for the mock videos to avoid CORS errors
+        // since we cannot currently reset the Supabase database.
+        const mockIds = ['physics_newton_apple', 'chem_periodic_table', 'bio_cell_division', 'math_pythagoras', 'physics_thermo'];
+        if (mockIds.contains(json['id'])) {
+          videoData['videoUrl'] = 'assets/videos/sample.mp4';
+        }
+
         return VideoModel.fromJson(videoData);
       }).toList();
     } catch (e) {
-      print('⚠️ Error fetching videos: $e');
+      debugPrint('⚠️ Error fetching videos: $e');
       return [];
     }
   }
@@ -78,7 +86,7 @@ class VideosRepository {
 
       return VideoModel.fromJson(response);
     } catch (e) {
-      print('⚠️ Error fetching video $id: $e');
+      debugPrint('⚠️ Error fetching video $id: $e');
       return null;
     }
   }
@@ -97,7 +105,7 @@ class VideosRepository {
           .map((json) => VideoModel.fromJson(json))
           .toList();
     } catch (e) {
-      print('⚠️ Error searching videos: $e');
+      debugPrint('⚠️ Error searching videos: $e');
       return [];
     }
   }
@@ -116,7 +124,7 @@ class VideosRepository {
           .map((json) => VideoModel.fromJson(json))
           .toList();
     } catch (e) {
-      print('⚠️ Error fetching by subject: $e');
+      debugPrint('⚠️ Error fetching by subject: $e');
       return [];
     }
   }
@@ -167,7 +175,7 @@ class VideosRepository {
       return savedVideos;
 
     } catch (e) {
-      print('⚠️ Error fetching saved videos: $e');
+      debugPrint('⚠️ Error fetching saved videos: $e');
       
       // Full Fallback: Return locally saved videos from Mock Data
       if (_localSavedVideoIds.isNotEmpty) {
@@ -215,7 +223,7 @@ class VideosRepository {
         return true;
       }
     } catch (e) {
-      print('⚠️ Error toggling like (using fallback): $e');
+      debugPrint('⚠️ Error toggling like (using fallback): $e');
       // Fallback: Toggle local state
       if (_localLikedVideoIds.contains(videoId)) {
         _localLikedVideoIds.remove(videoId);
@@ -258,7 +266,7 @@ class VideosRepository {
         return true;
       }
     } catch (e) {
-      print('⚠️ Error toggling save (using fallback): $e');
+      debugPrint('⚠️ Error toggling save (using fallback): $e');
       // Fallback: Toggle local state
       if (_localSavedVideoIds.contains(videoId)) {
         _localSavedVideoIds.remove(videoId);
@@ -283,7 +291,7 @@ class VideosRepository {
       });
     } catch (e) {
       // Fail silently for analytics
-      print('⚠️ Error logging view: $e');
+      debugPrint('⚠️ Error logging view: $e');
     }
   }
 
@@ -298,7 +306,8 @@ class VideosRepository {
         'platform': platform,
       });
     } catch (e) {
-      print('⚠️ Error logging share: $e');
+      debugPrint('⚠️ Error logging share: $e');
     }
   }
 }
+

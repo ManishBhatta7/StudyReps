@@ -47,3 +47,8 @@ app.*.map.json
 # Environment Variables
 .env
 
+# AI Agent skills and directories
+.agent/
+.agents/
+_agent/
+_agents/

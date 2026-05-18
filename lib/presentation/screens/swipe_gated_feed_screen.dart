@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/physics.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
-import 'dart:ui';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -14,13 +13,11 @@ import '../providers/adaptive_feed_provider.dart';
 import '../../data/services/gemini_coach_service.dart';
 import '../providers/streak_provider.dart';
 import '../providers/xp_provider.dart';
-import '../widgets/create_rep_dialog.dart';
 import '../widgets/lock_overlay.dart';
 import '../widgets/mascot_reactor.dart';
 import '../widgets/video_tutorbot_sheet.dart';
 import '../widgets/comment_section.dart';
 
-import 'drill_screen.dart';
 
 /// Swipe-Gated Video Feed Screen
 /// Users cannot swipe until they answer the question correctly
@@ -44,7 +41,6 @@ class _SwipeGatedFeedScreenState extends ConsumerState<SwipeGatedFeedScreen> {
   bool _isLocked = false; // Can user swipe?
   
   List<VideoModel> _videos = [];
-  bool _feedLoaded = false;
 
   @override
   void initState() {
@@ -54,7 +50,6 @@ class _SwipeGatedFeedScreenState extends ConsumerState<SwipeGatedFeedScreen> {
     
     if (widget.initialVideos != null && widget.initialVideos!.isNotEmpty) {
       _videos = widget.initialVideos!;
-      _feedLoaded = true;
     } else {
       _loadAdaptiveFeed();
     }
@@ -65,7 +60,6 @@ class _SwipeGatedFeedScreenState extends ConsumerState<SwipeGatedFeedScreen> {
     if (mounted) {
       setState(() {
         _videos = feed;
-        _feedLoaded = true;
       });
     }
   }
@@ -95,17 +89,6 @@ class _SwipeGatedFeedScreenState extends ConsumerState<SwipeGatedFeedScreen> {
     }
   }
 
-  // Add new video from Creator Mode
-  void _addVideo(VideoModel newVideo) {
-    setState(() {
-      _videos.insert(0, newVideo); // Add to top
-      _currentPage = 0; // Jump to new video
-    });
-    // Need to jump after build
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _pageController.jumpToPage(0);
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +103,6 @@ class _SwipeGatedFeedScreenState extends ConsumerState<SwipeGatedFeedScreen> {
           if (_videos.isEmpty) {
             setState(() {
               _videos = feed;
-              _feedLoaded = true;
             });
             // If we just loaded fresh content, ensure we're at page 0
             if (_pageController.hasClients) {
@@ -162,7 +144,7 @@ class _SwipeGatedFeedScreenState extends ConsumerState<SwipeGatedFeedScreen> {
                   });
                 },
                 itemBuilder: (context, index) {
-                  return SwipeGatedVideoItem(
+                  return HorizontalMatrixItem(
                     video: _videos[index],
                     isActive: _currentPage == index,
                     onLockTriggered: _lockFeed,
@@ -356,14 +338,14 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
 
   void _handleLoopComplete() {
     _loopCount++;
-    // print('🔄 Loop $_loopCount completed');
+    // debugPrint('🔄 Loop $_loopCount completed');
     
     if (_loopCount >= _maxLoops && !_isAnswered) {
       // LOCK THE FEED
       _controller!.pause();
       setState(() => _showGate = true);
       widget.onLockTriggered();
-      // print('🔒 GATE LOCKED - Answer required!');
+      // debugPrint('🔒 GATE LOCKED - Answer required!');
     } else if (!_isAnswered) {
       // Restart for next loop
       _controller!.seekTo(Duration.zero);
@@ -385,8 +367,8 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
     try {
       final result = await GeminiCoachService.validateAnswer(
         userAnswer: answer,
-        correctAnswer: widget.video.question?.correctAnswer ?? '',
-        questionPrompt: widget.video.question?.prompt ?? '',
+        correctAnswer: widget.video.question.correctAnswer,
+        questionPrompt: widget.video.question.prompt,
       );
 
       if (!mounted) return;
@@ -407,7 +389,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
       setState(() {
         _isChecking = false;
         _isIncorrect = true;
-        _aiFeedback = "Failed to connect to AI Coach. Try again.";
+        _aiFeedback = 'Failed to connect to AI Coach. Try again.';
         _handleWrongAnswer();
       });
     }
@@ -457,7 +439,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
     // Except if it isn't set.
     if (_aiFeedback == null) {
       setState(() {
-        _aiFeedback = "Not quite. Think about the core principles related to ${widget.video.subject}. Try reviewing the clip again.";
+        _aiFeedback = 'Not quite. Think about the core principles related to ${widget.video.subject}. Try reviewing the clip again.';
       });
     }
     
@@ -494,6 +476,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
             _isLiked = !newStatus;
             _likesCount = _isLiked ? _likesCount + 1 : _likesCount - 1;
         });
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Failed to update like: $e')),
         );
@@ -545,7 +528,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black, // Specific black background for video
+      color: Colors.black,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -682,7 +665,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          const Icon(
             Icons.swipe_up_rounded,
             color: StudyRepsTheme.primaryPurple,
             size: 20,
@@ -716,7 +699,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                   colors: [StudyRepsTheme.primaryPurple, StudyRepsTheme.accentCyan],
                 ),
                 borderRadius: BorderRadius.circular(4),
@@ -792,11 +775,15 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Tutorbot
+          // AI Coach (Replaces Ask AI + drawing logic)
           _buildActionButton(
-            icon: Icons.smart_toy_outlined,
+            icon: Icons.psychology_rounded,
             label: 'Coach',
-            onTap: () => VideoTutorbotSheet.show(context, widget.video),
+            onTap: () {
+              if (mounted) {
+                VideoTutorbotSheet.show(context, widget.video);
+              }
+            },
           ),
           const SizedBox(height: 20),
           
@@ -818,15 +805,33 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
           _buildSaveButton(),
            const SizedBox(height: 20),
            
-           // Share (Mock)
+           // Share
            _buildActionButton(
             icon: Icons.share_rounded,
             label: 'Share',
-            onTap: () {
+            onTap: () async {
               ref.read(videosRepositoryProvider).logShare(widget.video.id, platform: 'link');
+              final shareText = '💪 Check out "${widget.video.title}" on StudyReps!\n\n'
+                  'Learn through micro-struggles — one rep at a time.\n'
+                  'https://studyreps.app/video/${widget.video.id}';
+              // Use clipboard as universal fallback (works on web + mobile)
+              await Clipboard.setData(ClipboardData(text: shareText));
+              if (!mounted) return;
+              
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Sharing link copied! (Mock)')),
-              );
+                SnackBar(
+                    content: const Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.greenAccent, size: 20),
+                        SizedBox(width: 8),
+                        Expanded(child: Text('Share link copied! Paste it anywhere 🚀')),
+                      ],
+                    ),
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: Colors.grey[900],
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                );
             },
           ),
         ],
@@ -876,7 +881,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
                     _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
                     color: _isLiked ? StudyRepsTheme.errorPink : Colors.white,
                     size: 32,
-                    shadows: [
+                    shadows: const [
                         Shadow(color: Colors.black54, offset: Offset(0, 2), blurRadius: 6),
                     ],
                 ).animate(target: _isLiked ? 1 : 0).scale(begin: const Offset(0.8, 0.8), end: const Offset(1.2, 1.2), duration: 200.ms).then().scale(begin: const Offset(1.2, 1.2), end: const Offset(1.0, 1.0), duration: 100.ms),
@@ -945,8 +950,6 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
   }
 
   Widget _buildQuestionGate() {
-    if (widget.video.question == null) return const SizedBox();
-
     return LockOverlay(
       video: widget.video,
       isChecking: _isChecking,
@@ -959,3 +962,249 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
     );
   }
 }
+
+/// A 2D Matrix Item that wraps the Main Video, Study Drawer, and Deep Dive Videos
+class HorizontalMatrixItem extends StatefulWidget {
+  final VideoModel video;
+  final bool isActive;
+  final VoidCallback onLockTriggered;
+  final VoidCallback onUnlockAndAdvance;
+
+  const HorizontalMatrixItem({
+    super.key,
+    required this.video,
+    required this.isActive,
+    required this.onLockTriggered,
+    required this.onUnlockAndAdvance,
+  });
+
+  @override
+  State<HorizontalMatrixItem> createState() => _HorizontalMatrixItemState();
+}
+
+class _HorizontalMatrixItemState extends State<HorizontalMatrixItem> {
+  late PageController _horizontalController;
+  int _currentHorizontalPage = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _horizontalController = PageController(initialPage: 1);
+  }
+
+  @override
+  void dispose() {
+    _horizontalController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    bool isCenterActive = widget.isActive && _currentHorizontalPage == 1;
+
+    return PageView.builder(
+      controller: _horizontalController,
+      scrollDirection: Axis.horizontal,
+      onPageChanged: (index) {
+        setState(() {
+          _currentHorizontalPage = index;
+        });
+      },
+      itemCount: 4, // 0: Drawer, 1: Main, 2-3: Deep Dives (Mock)
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          return StudyDrawerPane(video: widget.video);
+        } else if (index == 1) {
+          return SwipeGatedVideoItem(
+            video: widget.video,
+            isActive: isCenterActive,
+            onLockTriggered: widget.onLockTriggered,
+            onUnlockAndAdvance: widget.onUnlockAndAdvance,
+          );
+        } else {
+          return DeepDiveVideoItem(
+            originalVideo: widget.video,
+            deepDiveIndex: index - 1, // 1, 2...
+            isActive: widget.isActive && _currentHorizontalPage == index,
+          );
+        }
+      },
+    );
+  }
+}
+
+class StudyDrawerPane extends StatelessWidget {
+  final VideoModel video;
+  
+  const StudyDrawerPane({super.key, required this.video});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: StudyRepsTheme.bgPrimary,
+      padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.menu_book_rounded, color: StudyRepsTheme.primaryPurple, size: 28),
+              const SizedBox(width: 12),
+              Text(
+                'Study Drawer',
+                style: StudyRepsTheme.darkTheme.textTheme.headlineSmall,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Resources for: ${video.title}',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+          const SizedBox(height: 32),
+          
+          _buildResourceCard(
+            icon: Icons.picture_as_pdf_rounded,
+            title: 'Topic Notes (PDF)',
+            subtitle: 'Read the summary notes',
+            color: StudyRepsTheme.errorPink,
+            onTap: () {
+               ScaffoldMessenger.of(context).showSnackBar(
+                 const SnackBar(content: Text('Opening PDF Notes... (Mock)')),
+               );
+            },
+          ),
+          const SizedBox(height: 16),
+          
+          _buildResourceCard(
+            icon: Icons.history_edu_rounded,
+            title: 'Past Year Questions',
+            subtitle: 'Practice previous exam patterns',
+            color: Colors.amber,
+            onTap: () {
+               ScaffoldMessenger.of(context).showSnackBar(
+                 const SnackBar(content: Text('Loading PYQs... (Mock)')),
+               );
+            },
+          ),
+          const SizedBox(height: 16),
+          
+          _buildResourceCard(
+            icon: Icons.chat_bubble_outline_rounded,
+            title: 'Class Discussion',
+            subtitle: 'Join the comment section',
+            color: StudyRepsTheme.accentCyan,
+            onTap: () => CommentSection.show(context, video.id),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResourceCard({
+    required IconData icon, 
+    required String title, 
+    required String subtitle, 
+    required Color color,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text(subtitle, style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: color),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class DeepDiveVideoItem extends StatelessWidget {
+  final VideoModel originalVideo;
+  final int deepDiveIndex;
+  final bool isActive;
+
+  const DeepDiveVideoItem({
+    super.key,
+    required this.originalVideo,
+    required this.deepDiveIndex,
+    required this.isActive,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Determine the subject or next part for the deep dive tile
+    final partName = deepDiveIndex == 1 ? 'Part 2' : 'Part 3';
+    
+    final mockVideo = originalVideo.copyWith(
+      id: '${originalVideo.id}_deepdive_$deepDiveIndex',
+      title: 'Deep Dive $partName:\n${originalVideo.title}',
+      isLiked: false,
+      likesCount: originalVideo.likesCount ~/ 2, 
+    );
+
+    return Stack(
+      children: [
+        SwipeGatedVideoItem(
+          video: mockVideo,
+          isActive: isActive,
+          onLockTriggered: () {}, 
+          onUnlockAndAdvance: () {}, 
+        ),
+        Positioned(
+          top: 70,
+          left: 16,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: StudyRepsTheme.bgPrimary.withOpacity(0.85),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: StudyRepsTheme.primaryPurple, width: 1.5),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.explore_rounded, color: StudyRepsTheme.primaryPurple, size: 18),
+                const SizedBox(width: 6),
+                Text(
+                  'Deep Dive • $partName',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+

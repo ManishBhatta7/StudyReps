@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 // Import supabase_flutter but hide the User type to avoid conflict with our domain User
 // AuthUser is automatically re-exported and available
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
-import 'package:gotrue/src/types/user.dart' as supabase;
+import 'package:gotrue/gotrue.dart' as supabase;
 
 import '../../domain/models/user.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -53,7 +53,7 @@ class SupabaseAuthRepository implements AuthRepository {
 
       if (response.user == null) {
         debugPrint('❌ AuthRepo: Sign in failed - No user returned');
-        throw RepositoryException(message: 'Sign in failed: No user returned');
+        throw RepositoryException(message: 'Invalid credentials or email not confirmed.');
       }
 
       debugPrint('✅ AuthRepo: Sign in successful! User ID: ${response.user!.id}');
@@ -89,8 +89,8 @@ class SupabaseAuthRepository implements AuthRepository {
       );
 
       if (response.user == null) {
-        debugPrint('❌ AuthRepo: Sign up failed - No user returned');
-        throw RepositoryException(message: 'Sign up failed: No user returned');
+        debugPrint('⚠️ AuthRepo: Sign up successful, but awaiting email confirmation or email already exists.');
+        throw RepositoryException(message: 'Please check your email to verify your account.');
       }
 
       debugPrint('✅ AuthRepo: Sign up successful! User ID: ${response.user!.id}');

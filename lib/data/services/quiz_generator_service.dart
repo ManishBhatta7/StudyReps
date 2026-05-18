@@ -129,7 +129,7 @@ RESPOND WITH ONLY THE JSON ARRAY, NO OTHER TEXT.
         difficulty: 2,
         hint: 'Think about what was the central idea of the video.',
       ),
-      GeneratedQuestion(
+      const GeneratedQuestion(
         type: GeneratedQuestionType.openInput,
         prompt: 'Give a real-world example of the concept discussed in this video.',
         correctAnswer: '',
@@ -137,7 +137,7 @@ RESPOND WITH ONLY THE JSON ARRAY, NO OTHER TEXT.
         difficulty: 3,
         hint: 'Think about everyday situations where this concept applies.',
       ),
-      GeneratedQuestion(
+      const GeneratedQuestion(
         type: GeneratedQuestionType.openInput,
         prompt: 'What would happen if the opposite of what was explained in the video were true?',
         correctAnswer: '',

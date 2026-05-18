@@ -7,6 +7,8 @@ import '../../presentation/providers/stats_provider.dart';
 import '../../domain/models/video_model.dart';
 import '../providers/video_feed_provider.dart';
 import '../../presentation/providers/xp_provider.dart';
+import '../../presentation/providers/auth_provider.dart';
+import 'squads_screen.dart';
 
 /// Profile Stats Screen
 /// 
@@ -19,6 +21,7 @@ class ProfileStatsScreen extends ConsumerWidget {
     final dashboardStatsAsync = ref.watch(dashboardStatsProvider);
     final tsrHealthAsync = ref.watch(tsrHealthProvider);
     final xpAsync = ref.watch(xpProvider);
+    final user = ref.watch(currentDomainUserProvider);
 
     return Scaffold(
       backgroundColor: StudyRepsTheme.bgPrimary,
@@ -28,7 +31,7 @@ class ProfileStatsScreen extends ConsumerWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.settings_outlined, color: StudyRepsTheme.textSecondary),
+            icon: const Icon(Icons.settings_outlined, color: StudyRepsTheme.textSecondary),
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const SettingsScreen()),
@@ -44,9 +47,9 @@ class ProfileStatsScreen extends ConsumerWidget {
             
             // Avatar & Name
             xpAsync.when(
-              data: (xp) => _buildProfileHeader(xp.currentLevel, xp.totalXp, xp.xpForNextLevel),
+              data: (xp) => _buildProfileHeader(xp.currentLevel, xp.totalXp, xp.xpForNextLevel, user),
               loading: () => const CircularProgressIndicator(),
-              error: (_, __) => _buildProfileHeader(1, 0, 100),
+              error: (_, __) => _buildProfileHeader(1, 0, 100, user),
             ),
             
             const SizedBox(height: 24),
@@ -54,8 +57,8 @@ class ProfileStatsScreen extends ConsumerWidget {
             // TSR Health Score (New)
             tsrHealthAsync.when(
               data: (health) => _buildHealthScore(health),
-              loading: () => _buildLoadingCard("Calculating Health Score..."),
-              error: (err, _) => _buildErrorCard("Could not load health score"),
+              loading: () => _buildLoadingCard('Calculating Health Score...'),
+              error: (err, _) => _buildErrorCard('Could not load health score'),
             ),
 
             const SizedBox(height: 24),
@@ -64,8 +67,15 @@ class ProfileStatsScreen extends ConsumerWidget {
             dashboardStatsAsync.when(
               data: (stats) => _buildStatsGrid(stats),
               loading: () => _buildStatsLoading(),
-              error: (err, _) => _buildErrorCard("Could not load stats"),
+              error: (err, _) => _buildErrorCard('Could not load stats'),
             ),
+
+            const SizedBox(height: 24),
+            
+            // Study Squads Hub Card
+            _buildSquadsHubCard(context),
+            
+            const SizedBox(height: 24),
             
             // My Created Reps (Categorized)
             _buildMyRepsSection(ref),
@@ -82,7 +92,10 @@ class ProfileStatsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildProfileHeader(int level, int xp, int nextLevelXp) {
+  Widget _buildProfileHeader(int level, int xp, int nextLevelXp, user) {
+    final displayName = user?.fullName ?? user?.name ?? 'Student';
+    final initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : '?';
+
     return Column(
       children: [
         // Avatar
@@ -106,25 +119,40 @@ class ProfileStatsScreen extends ConsumerWidget {
           child: CircleAvatar(
             radius: 47,
             backgroundColor: StudyRepsTheme.bgSecondary,
-            child: Icon(
-              Icons.person_rounded,
-              size: 50,
-              color: StudyRepsTheme.textMuted,
-            ),
+            backgroundImage: user?.avatarUrl != null ? NetworkImage(user!.avatarUrl!) : null,
+            child: user?.avatarUrl == null ? Text(
+              initial,
+              style: const TextStyle(
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+                color: StudyRepsTheme.textMuted,
+              ),
+            ) : null,
           ),
         ),
         
         const SizedBox(height: 16),
         
         // Username
-        const Text(
-          '@StudentPro',
-          style: TextStyle(
+        Text(
+          displayName,
+          style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w700,
             color: StudyRepsTheme.textPrimary,
           ),
         ),
+        
+        if (user?.email != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            user!.email!,
+            style: const TextStyle(
+              fontSize: 14,
+              color: StudyRepsTheme.textMuted,
+            ),
+          ),
+        ],
         
         const SizedBox(height: 8),
         
@@ -173,8 +201,11 @@ class ProfileStatsScreen extends ConsumerWidget {
 
   Widget _buildHealthScore(TSRHealthStats health) {
     Color scoreColor = StudyRepsTheme.successGreen;
-    if (health.score < 50) scoreColor = StudyRepsTheme.errorPink;
-    else if (health.score < 80) scoreColor = Colors.orange;
+    if (health.score < 50) {
+      scoreColor = StudyRepsTheme.errorPink;
+    } else if (health.score < 80) {
+      scoreColor = Colors.orange;
+    }
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -188,7 +219,7 @@ class ProfileStatsScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 'TSR Health Score',
                 style: TextStyle(
                   color: StudyRepsTheme.textSecondary,
@@ -241,7 +272,7 @@ class ProfileStatsScreen extends ConsumerWidget {
           Text(
             health.advice,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               color: StudyRepsTheme.textMuted,
               fontSize: 14,
               fontStyle: FontStyle.italic,
@@ -283,7 +314,7 @@ class ProfileStatsScreen extends ConsumerWidget {
               children: [
                   const CircularProgressIndicator(),
                   const SizedBox(height: 16),
-                  Text(message, style: TextStyle(color: StudyRepsTheme.textMuted)),
+                  Text(message, style: const TextStyle(color: StudyRepsTheme.textMuted)),
               ],
           ),
       );
@@ -292,9 +323,9 @@ class ProfileStatsScreen extends ConsumerWidget {
   Widget _buildStatsLoading() {
       return Row(
           children: [
-              Expanded(child: _buildLoadingCard("...")),
+              Expanded(child: _buildLoadingCard('...')),
               const SizedBox(width: 12),
-              Expanded(child: _buildLoadingCard("...")),
+              Expanded(child: _buildLoadingCard('...')),
           ],
       );
   }
@@ -308,7 +339,7 @@ class ProfileStatsScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: StudyRepsTheme.errorPink.withOpacity(0.5)),
           ),
-          child: Text(error, style: TextStyle(color: StudyRepsTheme.errorPink)),
+          child: Text(error, style: const TextStyle(color: StudyRepsTheme.errorPink)),
       );
   }
 
@@ -328,7 +359,7 @@ class ProfileStatsScreen extends ConsumerWidget {
             children: [
               Text(
                 stat['label'],
-                style: TextStyle(
+                style: const TextStyle(
                   color: StudyRepsTheme.textMuted,
                   fontSize: 13,
                 ),
@@ -352,6 +383,76 @@ class ProfileStatsScreen extends ConsumerWidget {
         ],
       ),
     ).animate().fadeIn(delay: (150 + index * 80).ms).scale(begin: const Offset(0.9, 0.9));
+  }
+
+  Widget _buildSquadsHubCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SquadsScreen()),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              StudyRepsTheme.primaryIndigo.withOpacity(0.8),
+              StudyRepsTheme.primaryPurple.withOpacity(0.8),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: StudyRepsTheme.primaryPurple.withOpacity(0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.groups_rounded, color: Colors.white, size: 28),
+            ),
+            const SizedBox(width: 16),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Study Squads',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Join forces and conquer goals together!',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: Colors.white54),
+          ],
+        ),
+      ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
+    );
   }
 
   Widget _buildMyRepsSection(WidgetRef ref) {

@@ -1,9 +1,10 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:video_player/video_player.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/theme/study_reps_theme.dart';
+import 'main_navigation_shell.dart';
 import 'student_onboarding_screen.dart';
 
 /// Intro Screen - App introduction with video background
@@ -100,6 +101,23 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
     );
   }
 
+  void _skipIntro() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('has_completed_onboarding', true);
+
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const MainNavigationShell(initialIndex: 1), // 1 is Discover tab
+        transitionDuration: const Duration(milliseconds: 500),
+        transitionsBuilder: (_, animation, __, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -180,8 +198,8 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: TextButton(
-          onPressed: _navigateToLogin,
-          child: Row(
+          onPressed: _skipIntro,
+          child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
@@ -192,7 +210,7 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
                   fontSize: 15,
                 ),
               ),
-              const SizedBox(width: 4),
+              SizedBox(width: 4),
               Icon(
                 Icons.arrow_forward_ios_rounded,
                 color: StudyRepsTheme.textSecondary,
@@ -255,7 +273,7 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
           // Subtitle
           Text(
             slide.subtitle,
-            style: TextStyle(
+            style: const TextStyle(
               color: StudyRepsTheme.textSecondary,
               fontSize: 17,
               height: 1.5,

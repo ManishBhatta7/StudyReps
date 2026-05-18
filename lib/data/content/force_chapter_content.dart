@@ -189,7 +189,7 @@ class ForceQuestionBank {
   /// Mixed question formats for engaging learning
   static List<QuestionData> getAllQuestions() => [
     // ============ QUICK RECALL ============
-    QuestionData(
+    const QuestionData(
       id: 'q1_force_definition',
       topicId: 'force_intro',
       type: QuestionType.multipleChoice,
@@ -201,7 +201,7 @@ class ForceQuestionBank {
       difficulty: 1,
     ),
     
-    QuestionData(
+    const QuestionData(
       id: 'q2_force_types',
       topicId: 'force_intro',
       type: QuestionType.multipleChoice,
@@ -214,7 +214,7 @@ class ForceQuestionBank {
     ),
 
     // ============ TRUE/FALSE FLASH ============
-    QuestionData(
+    const QuestionData(
       id: 'q3_inertia_tf',
       topicId: 'newtons_first_law',
       type: QuestionType.trueFalse,
@@ -225,7 +225,7 @@ class ForceQuestionBank {
       difficulty: 1,
     ),
     
-    QuestionData(
+    const QuestionData(
       id: 'q4_centrifugal_tf',
       topicId: 'circular_motion',
       type: QuestionType.trueFalse,
@@ -237,7 +237,7 @@ class ForceQuestionBank {
     ),
 
     // ============ CALCULATE IT ============
-    QuestionData(
+    const QuestionData(
       id: 'q5_fma_calc',
       topicId: 'newtons_second_law',
       type: QuestionType.numerical,
@@ -249,7 +249,7 @@ class ForceQuestionBank {
       hint: 'Use F = ma',
     ),
     
-    QuestionData(
+    const QuestionData(
       id: 'q6_momentum_calc',
       topicId: 'momentum',
       type: QuestionType.numerical,
@@ -261,7 +261,7 @@ class ForceQuestionBank {
       hint: 'Momentum = mass × velocity',
     ),
     
-    QuestionData(
+    const QuestionData(
       id: 'q7_motion_eq_calc',
       topicId: 'equations_of_motion',
       type: QuestionType.numerical,
@@ -273,7 +273,7 @@ class ForceQuestionBank {
       hint: 'Use v = u + at, u = 0',
     ),
     
-    QuestionData(
+    const QuestionData(
       id: 'q8_torque_calc',
       topicId: 'moment_of_force',
       type: QuestionType.numerical,
@@ -286,7 +286,7 @@ class ForceQuestionBank {
     ),
 
     // ============ FILL THE BLANK ============
-    QuestionData(
+    const QuestionData(
       id: 'q9_third_law_fill',
       topicId: 'newtons_third_law',
       type: QuestionType.fillBlank,
@@ -297,7 +297,7 @@ class ForceQuestionBank {
       difficulty: 1,
     ),
     
-    QuestionData(
+    const QuestionData(
       id: 'q10_momentum_fill',
       topicId: 'momentum',
       type: QuestionType.fillBlank,
@@ -309,7 +309,7 @@ class ForceQuestionBank {
     ),
 
     // ============ APPLY IT (Scenario-based) ============
-    QuestionData(
+    const QuestionData(
       id: 'q11_apply_inertia',
       topicId: 'newtons_first_law',
       type: QuestionType.multipleChoice,
@@ -321,7 +321,7 @@ class ForceQuestionBank {
       difficulty: 2,
     ),
     
-    QuestionData(
+    const QuestionData(
       id: 'q12_apply_third_law',
       topicId: 'newtons_third_law',
       type: QuestionType.multipleChoice,
@@ -333,7 +333,7 @@ class ForceQuestionBank {
       difficulty: 2,
     ),
     
-    QuestionData(
+    const QuestionData(
       id: 'q13_apply_equilibrium',
       topicId: 'equilibrium',
       type: QuestionType.multipleChoice,
@@ -346,7 +346,7 @@ class ForceQuestionBank {
     ),
 
     // ============ VISUAL MATCH ============
-    QuestionData(
+    const QuestionData(
       id: 'q14_cg_visual',
       topicId: 'centre_of_gravity',
       type: QuestionType.multipleChoice,
@@ -359,7 +359,7 @@ class ForceQuestionBank {
     ),
 
     // ============ FORMULA RECALL ============
-    QuestionData(
+    const QuestionData(
       id: 'q15_formula_motion',
       topicId: 'equations_of_motion',
       type: QuestionType.multipleChoice,
@@ -372,7 +372,7 @@ class ForceQuestionBank {
     ),
 
     // ============ CONCEPT CHECK ============
-    QuestionData(
+    const QuestionData(
       id: 'q16_concept_centripetal',
       topicId: 'circular_motion',
       type: QuestionType.multipleChoice,
@@ -385,7 +385,7 @@ class ForceQuestionBank {
     ),
 
     // ============ QUICK MATH ============
-    QuestionData(
+    const QuestionData(
       id: 'q17_quick_conversion',
       topicId: 'force_intro',
       type: QuestionType.numerical,
@@ -398,7 +398,7 @@ class ForceQuestionBank {
     ),
 
     // ============ MISTAKE FINDER ============
-    QuestionData(
+    const QuestionData(
       id: 'q18_find_error',
       topicId: 'newtons_second_law',
       type: QuestionType.multipleChoice,

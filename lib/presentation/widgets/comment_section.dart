@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/study_reps_theme.dart';
+import '../providers/comments_provider.dart';
+import '../../domain/models/comment_model.dart';
 
 /// Comment Section Widget
 ///
 /// Inline comments on videos with threaded replies, sentiment indicators,
 /// and "helpful" voting. Part of the social/collaborative learning layer.
-class CommentSection extends StatefulWidget {
+class CommentSection extends ConsumerStatefulWidget {
   final String videoId;
   final VoidCallback? onClose;
 
@@ -29,82 +32,28 @@ class CommentSection extends StatefulWidget {
   }
 
   @override
-  State<CommentSection> createState() => _CommentSectionState();
+  ConsumerState<CommentSection> createState() => _CommentSectionState();
 }
 
-class _CommentSectionState extends State<CommentSection> {
+class _CommentSectionState extends ConsumerState<CommentSection> {
   @override
   Widget build(BuildContext context) {
     return _CommentSheetContent(videoId: widget.videoId);
   }
 }
 
-class _CommentSheetContent extends StatefulWidget {
+class _CommentSheetContent extends ConsumerStatefulWidget {
   final String videoId;
   final ScrollController? scrollController;
 
   const _CommentSheetContent({required this.videoId, this.scrollController});
 
   @override
-  State<_CommentSheetContent> createState() => _CommentSheetContentState();
+  ConsumerState<_CommentSheetContent> createState() => _CommentSheetContentState();
 }
 
-class _CommentSheetContentState extends State<_CommentSheetContent> {
+class _CommentSheetContentState extends ConsumerState<_CommentSheetContent> {
   final _inputController = TextEditingController();
-  final List<_Comment> _comments = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadMockComments();
-  }
-
-  void _loadMockComments() {
-    _comments.addAll([
-      _Comment(
-        username: 'physicsNerd42',
-        content: 'This finally made F=ma click for me! The car example was perfect 🚗',
-        sentiment: _Sentiment.positive,
-        helpfulCount: 12,
-        timeAgo: '2h ago',
-        replies: [
-          _Comment(
-            username: 'studybuddy',
-            content: 'Same! I kept confusing force and momentum before this.',
-            sentiment: _Sentiment.positive,
-            helpfulCount: 3,
-            timeAgo: '1h ago',
-          ),
-        ],
-      ),
-      _Comment(
-        username: 'confused_student',
-        content: 'Wait, so what happens when two forces are equal? Does the object just stop?',
-        sentiment: _Sentiment.confused,
-        helpfulCount: 5,
-        timeAgo: '4h ago',
-        replies: [
-          _Comment(
-            username: 'StudyReps_AI',
-            content: '💡 Great question! When two forces are equal and opposite, the net force is zero — '
-                "the object doesn't stop, it maintains its current state (Newton's 1st Law). "
-                'If moving, it keeps moving at the same speed!',
-            sentiment: _Sentiment.positive,
-            helpfulCount: 18,
-            timeAgo: '4h ago',
-            isAI: true,
-          ),
-        ],
-      ),
-      _Comment(
-        username: 'mathLover',
-        content: 'Could someone explain the derivation from momentum? F = Δp/Δt',
-        sentiment: _Sentiment.neutral,
-        helpfulCount: 8,
-        timeAgo: '6h ago',
-      ),
-    ]);
-  }
 
   @override
   void dispose() {
@@ -112,25 +61,36 @@ class _CommentSheetContentState extends State<_CommentSheetContent> {
     super.dispose();
   }
 
-  void _addComment(String text) {
+  void _addComment(String text) async {
     if (text.trim().isEmpty) return;
     _inputController.clear();
-    setState(() {
-      _comments.insert(
-        0,
-        _Comment(
-          username: 'you',
-          content: text,
-          sentiment: _Sentiment.neutral,
-          helpfulCount: 0,
-          timeAgo: 'just now',
-        ),
+    
+    // Unfocus keyboard
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    try {
+      await ref.read(commentControllerProvider).addComment(widget.videoId, text);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error adding comment: $e', style: const TextStyle(color: Colors.white)), backgroundColor: Colors.red),
       );
-    });
+    }
+  }
+
+  String _formatTimeAgo(DateTime? time) {
+    if (time == null) return 'just now';
+    final diff = DateTime.now().difference(time);
+    if (diff.inDays > 0) return '${diff.inDays}d ago';
+    if (diff.inHours > 0) return '${diff.inHours}h ago';
+    if (diff.inMinutes > 0) return '${diff.inMinutes}m ago';
+    return 'just now';
   }
 
   @override
   Widget build(BuildContext context) {
+    final commentsAsync = ref.watch(videoCommentsProvider(widget.videoId));
+
     return Container(
       decoration: BoxDecoration(
         color: StudyRepsTheme.bgPrimary,
@@ -155,13 +115,23 @@ class _CommentSheetContentState extends State<_CommentSheetContent> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
-                Text(
-                  '${_comments.length} Comments',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                commentsAsync.maybeWhen(
+                  data: (comments) => Text(
+                    '${comments.length} Comments',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
+                  orElse: () => const Text(
+                    'Comments',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
                 ),
                 const Spacer(),
                 TextButton.icon(
@@ -177,12 +147,22 @@ class _CommentSheetContentState extends State<_CommentSheetContent> {
 
           // Comments list
           Expanded(
-            child: ListView.builder(
-              controller: widget.scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _comments.length,
-              itemBuilder: (context, index) =>
-                  _buildCommentTile(_comments[index]),
+            child: commentsAsync.when(
+              data: (comments) {
+                if (comments.isEmpty) {
+                  return const Center(
+                    child: Text('No comments yet. Start the discussion!', style: TextStyle(color: Colors.white54)),
+                  );
+                }
+                return ListView.builder(
+                  controller: widget.scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: comments.length,
+                  itemBuilder: (context, index) => _buildCommentTile(comments[index]),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator(color: StudyRepsTheme.primaryPurple)),
+              error: (e, st) => Center(child: Text('Failed to load comments\n$e', style: const TextStyle(color: Colors.white54), textAlign: TextAlign.center)),
             ),
           ),
 
@@ -197,10 +177,10 @@ class _CommentSheetContentState extends State<_CommentSheetContent> {
             child: SafeArea(
               child: Row(
                 children: [
-                  CircleAvatar(
+                  const CircleAvatar(
                     radius: 16,
                     backgroundColor: StudyRepsTheme.primaryPurple,
-                    child: const Text('Y', style: TextStyle(color: Colors.white, fontSize: 12)),
+                    child: Text('Y', style: TextStyle(color: Colors.white, fontSize: 12)),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -227,7 +207,7 @@ class _CommentSheetContentState extends State<_CommentSheetContent> {
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () => _addComment(_inputController.text),
-                    child: Icon(Icons.send_rounded,
+                    child: const Icon(Icons.send_rounded,
                         color: StudyRepsTheme.primaryPurple, size: 22),
                   ),
                 ],
@@ -239,7 +219,10 @@ class _CommentSheetContentState extends State<_CommentSheetContent> {
     );
   }
 
-  Widget _buildCommentTile(_Comment comment, {bool isReply = false}) {
+  Widget _buildCommentTile(CommentModel comment, {bool isReply = false}) {
+    // Generate an avatar letter and determine sentiment mock based on ID purely for visuals
+    final initial = (comment.username?.isNotEmpty == true) ? comment.username![0].toUpperCase() : 'U';
+    
     return Padding(
       padding: EdgeInsets.only(
         left: isReply ? 40 : 0,
@@ -259,7 +242,7 @@ class _CommentSheetContentState extends State<_CommentSheetContent> {
                     ? StudyRepsTheme.accentCyan
                     : StudyRepsTheme.primaryPurple.withOpacity(0.5),
                 child: Text(
-                  comment.isAI ? '🤖' : comment.username[0].toUpperCase(),
+                  comment.isAI ? '🤖' : initial,
                   style: TextStyle(fontSize: isReply ? 10 : 12),
                 ),
               ),
@@ -272,7 +255,7 @@ class _CommentSheetContentState extends State<_CommentSheetContent> {
                     Row(
                       children: [
                         Text(
-                          comment.username,
+                          comment.username ?? 'Unknown Student',
                           style: TextStyle(
                             color: comment.isAI
                                 ? StudyRepsTheme.accentCyan
@@ -301,10 +284,10 @@ class _CommentSheetContentState extends State<_CommentSheetContent> {
                           ),
                         ],
                         const SizedBox(width: 6),
-                        _buildSentimentDot(comment.sentiment),
+                        _buildSentimentDot(comment.id % 4), // visual mock for demo
                         const Spacer(),
                         Text(
-                          comment.timeAgo,
+                          _formatTimeAgo(comment.createdAt),
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.3),
                             fontSize: 11,
@@ -315,7 +298,7 @@ class _CommentSheetContentState extends State<_CommentSheetContent> {
                     const SizedBox(height: 4),
                     // Content
                     Text(
-                      comment.content,
+                      comment.body,
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.85),
                         fontSize: 13,
@@ -327,9 +310,18 @@ class _CommentSheetContentState extends State<_CommentSheetContent> {
                     Row(
                       children: [
                         _buildAction(Icons.thumb_up_outlined,
-                            '${comment.helpfulCount}'),
+                            '${comment.likesCount}'),
                         const SizedBox(width: 16),
                         _buildAction(Icons.reply_rounded, 'Reply'),
+                        if (comment.userId == ref.read(supabaseClientProvider).auth.currentUser?.id) ... [
+                          const Spacer(),
+                          GestureDetector(
+                            onTap: () {
+                              ref.read(commentControllerProvider).deleteComment(comment.id);
+                            },
+                            child: const Icon(Icons.delete_outline, color: Colors.white24, size: 14),
+                          ),
+                        ],
                       ],
                     ),
                   ],
@@ -337,28 +329,25 @@ class _CommentSheetContentState extends State<_CommentSheetContent> {
               ),
             ],
           ),
-          // Replies
-          if (comment.replies != null)
-            ...comment.replies!
-                .map((reply) => _buildCommentTile(reply, isReply: true)),
+          // Placeholder for real replies relation eventually
         ],
       ),
     );
   }
 
-  Widget _buildSentimentDot(_Sentiment sentiment) {
+  Widget _buildSentimentDot(int index) {
     Color color;
-    switch (sentiment) {
-      case _Sentiment.positive:
+    switch (index) {
+      case 0:
         color = Colors.greenAccent;
         break;
-      case _Sentiment.confused:
+      case 1:
         color = Colors.orangeAccent;
         break;
-      case _Sentiment.negative:
+      case 2:
         color = Colors.redAccent;
         break;
-      case _Sentiment.neutral:
+      default:
         color = Colors.grey;
         break;
     }
@@ -383,28 +372,4 @@ class _CommentSheetContentState extends State<_CommentSheetContent> {
       ),
     );
   }
-}
-
-// ─── Data Models ───
-
-enum _Sentiment { positive, negative, confused, neutral }
-
-class _Comment {
-  final String username;
-  final String content;
-  final _Sentiment sentiment;
-  final int helpfulCount;
-  final String timeAgo;
-  final bool isAI;
-  final List<_Comment>? replies;
-
-  const _Comment({
-    required this.username,
-    required this.content,
-    required this.sentiment,
-    required this.helpfulCount,
-    required this.timeAgo,
-    this.isAI = false,
-    this.replies,
-  });
 }

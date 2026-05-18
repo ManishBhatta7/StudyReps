@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'dart:html' as html;
-import 'dart:js_util' as js_util;
+import 'dart:js_interop';
 import 'dart:typed_data';
+import 'package:web/web.dart' as web;
 
 /// Web implementation of screen capture using getDisplayMedia API.
 /// Prompts the user to share a screen/tab/window, captures a single frame,
@@ -12,30 +12,29 @@ bool get isScreenCaptureSupported => true;
 Future<Uint8List?> captureScreen() async {
   try {
     // Request screen share via getDisplayMedia
-    final mediaDevices = html.window.navigator.mediaDevices;
-    if (mediaDevices == null) return null;
+    final mediaDevices = web.window.navigator.mediaDevices;
 
-    final stream = await js_util.promiseToFuture<html.MediaStream>(
-      js_util.callMethod(mediaDevices, 'getDisplayMedia', [
-        js_util.jsify({'video': true})
-      ]),
-    );
+    final options = web.DisplayMediaStreamOptions(video: true.toJS);
+    final stream = await mediaDevices.getDisplayMedia(options).toDart;
 
     // Create a video element to receive the stream
-    final video = html.VideoElement()
-      ..srcObject = stream
-      ..autoplay = true
-      ..muted = true;
+    final video = web.document.createElement('video') as web.HTMLVideoElement;
+    video.srcObject = stream;
+    video.autoplay = true;
+    video.muted = true;
 
     // Append to DOM temporarily (needed for rendering)
-    video.style
-      ..position = 'fixed'
-      ..top = '-9999px'
-      ..left = '-9999px';
-    html.document.body?.append(video);
+    video.style.position = 'fixed';
+    video.style.top = '-9999px';
+    video.style.left = '-9999px';
+    web.document.body?.append(video);
 
     // Wait for video to load
-    await video.onLoadedData.first;
+    // Poll until video has valid dimensions or timeout
+    for (int i = 0; i < 30; i++) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (video.videoWidth > 0 && video.videoHeight > 0) break;
+    }
     // Small delay to ensure frame is rendered
     await Future.delayed(const Duration(milliseconds: 400));
 
@@ -49,14 +48,17 @@ Future<Uint8List?> captureScreen() async {
     }
 
     // Capture frame to canvas
-    final canvas = html.CanvasElement(width: width, height: height);
-    canvas.context2D.drawImageScaled(video, 0, 0, width.toDouble(), height.toDouble());
+    final canvas = web.document.createElement('canvas') as web.HTMLCanvasElement;
+    canvas.width = width;
+    canvas.height = height;
+    final ctx = canvas.getContext('2d')! as web.CanvasRenderingContext2D;
+    ctx.drawImage(video, 0, 0);
 
     // Cleanup: stop all tracks and remove video
     _cleanupStream(stream, video);
 
     // Convert canvas to JPEG bytes
-    final dataUrl = canvas.toDataUrl('image/jpeg', 0.85);
+    final dataUrl = canvas.toDataURL('image/jpeg', 0.85.toJS);
     final base64Data = dataUrl.split(',')[1];
     return base64Decode(base64Data);
   } catch (e) {
@@ -65,9 +67,10 @@ Future<Uint8List?> captureScreen() async {
   }
 }
 
-void _cleanupStream(html.MediaStream stream, html.VideoElement video) {
+void _cleanupStream(web.MediaStream stream, web.HTMLVideoElement video) {
   try {
-    for (final track in stream.getTracks()) {
+    final tracks = stream.getTracks().toDart;
+    for (final track in tracks) {
       track.stop();
     }
     video.srcObject = null;

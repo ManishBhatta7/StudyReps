@@ -101,16 +101,16 @@ class DrillNotifier extends StateNotifier<DrillState> {
 
     // 2. Prepare Context for AI
     // We prepend the System Prompt to the conversation history for the AI
-    final prompt = "$kDrillSystemPrompt\n\nUser: $text";
+    final prompt = '$kDrillSystemPrompt\n\nUser: $text';
 
     try {
       final repository = ref.read(geminiRepositoryProvider);
       
       // Placeholder for bot
-      final botMsgId = "bot_${DateTime.now().millisecondsSinceEpoch}";
+      final botMsgId = 'bot_${DateTime.now().millisecondsSinceEpoch}';
       final botMsg = ChatMessage(
         id: botMsgId,
-        content: "",
+        content: '',
         isUser: false,
         isStreaming: true,
         timestamp: DateTime.now(),
@@ -124,7 +124,7 @@ class DrillNotifier extends StateNotifier<DrillState> {
         // In a real app we'd maintain history context here or via the repository
       );
 
-      String accumulated = "";
+      String accumulated = '';
       await for (final chunk in stream) {
         accumulated += chunk;
         state = state.copyWith(
@@ -136,10 +136,10 @@ class DrillNotifier extends StateNotifier<DrillState> {
       
       // Parse Rep Count from response if possible
       int newRep = state.currentRep;
-      if (accumulated.contains("Rep")) {
+      if (accumulated.contains('Rep')) {
          // Naive parsing logic could go here
          // e.g. Regex to find "Rep (\d+)/10"
-         final regex = RegExp(r"Rep\s+(\d+)/");
+         final regex = RegExp(r'Rep\s+(\d+)/');
          final match = regex.firstMatch(accumulated);
          if (match != null) {
            newRep = int.tryParse(match.group(1)!) ?? newRep;
@@ -199,7 +199,7 @@ class _DrillScreenState extends ConsumerState<DrillScreen> {
       appBar: AppBar(
         title: Column(
           children: [
-            const Text("AdaptiveEd Coach"),
+            const Text('AdaptiveEd Coach'),
             Text(
               "Rep ${state.currentRep}/${state.totalReps} • ${state.currentTopic ?? 'Select Topic'}",
               style: StudyRepsTheme.darkTheme.textTheme.labelMedium,
@@ -237,7 +237,7 @@ class _DrillScreenState extends ConsumerState<DrillScreen> {
                     controller: _textController,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      hintText: "Answer or ask...",
+                      hintText: 'Answer or ask...',
                       hintStyle: const TextStyle(color: Colors.white54),
                       filled: true,
                       fillColor: Colors.black26,
@@ -295,7 +295,7 @@ class _DrillBubble extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!isUser) ...[
-              const Text("COACH", style: TextStyle(color: StudyRepsTheme.primaryPurple, fontSize: 10, fontWeight: FontWeight.bold)),
+              const Text('COACH', style: TextStyle(color: StudyRepsTheme.primaryPurple, fontSize: 10, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
             ],
             MarkdownBody(

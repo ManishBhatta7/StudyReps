@@ -5,10 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/constants/app_constants.dart';
 import 'core/theme/study_reps_theme.dart';
 import 'data/services/chat_persistence_service.dart';
+import 'presentation/providers/auth_provider.dart';
+import 'presentation/screens/intro_screen.dart';
 import 'presentation/screens/login_screen.dart';
 import 'presentation/screens/main_navigation_shell.dart';
 
@@ -38,6 +41,7 @@ class _AppRootState extends State<AppRoot> {
   bool _isInitialized = false;
   String? _error;
   bool _isAuthenticated = false;
+  bool _hasCompletedOnboarding = true; // Default to true to avoid flash
 
   @override
   void initState() {
@@ -48,7 +52,7 @@ class _AppRootState extends State<AppRoot> {
   Future<void> _initializeApp() async {
     try {
        // Load env vars
-      await dotenv.load(fileName: ".env");
+      await dotenv.load(fileName: '.env');
 
       // Set orientation
       await SystemChrome.setPreferredOrientations([
@@ -61,6 +65,10 @@ class _AppRootState extends State<AppRoot> {
 
       // Init Chat Persistence (Tutorbot memory)
       await ChatPersistenceService.init();
+
+      // Check first launch
+      final prefs = await SharedPreferences.getInstance();
+      _hasCompletedOnboarding = prefs.getBool('has_completed_onboarding') ?? false;
 
       // Init Supabase
       debugPrint('🚀 Initializing Supabase...');
@@ -157,8 +165,31 @@ class _AppRootState extends State<AppRoot> {
       debugShowCheckedModeBanner: false,
       theme: StudyRepsTheme.darkTheme,
       themeMode: ThemeMode.dark,
-      // Create global navigation key if needed, or rely on internal routing
-      home: _isAuthenticated ? const MainNavigationShell() : const LoginScreen(),
+      home: _hasCompletedOnboarding
+          ? Consumer(
+              builder: (context, ref, child) {
+                final authState = ref.watch(authStateStreamProvider);
+                
+                return authState.when(
+                  data: (user) {
+                    if (user != null) {
+                      return const MainNavigationShell();
+                    }
+                    return const LoginScreen();
+                  },
+                  loading: () {
+                    if (_isAuthenticated) {
+                       return const MainNavigationShell();
+                    }
+                    return const Scaffold(
+                      body: Center(child: CircularProgressIndicator()),
+                    );
+                  },
+                  error: (e, st) => const LoginScreen(),
+                );
+              },
+            )
+          : const IntroScreen(),
     );
   }
 }

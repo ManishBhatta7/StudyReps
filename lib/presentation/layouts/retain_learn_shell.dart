@@ -103,7 +103,7 @@ class _RetainLearnShellState extends ConsumerState<RetainLearnShell> {
           // Sidebar
           Container(
             width: 240,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: RetainLearnTheme.paperWhite,
               border: Border(
                 right: BorderSide(color: RetainLearnTheme.grayBorder),
@@ -122,7 +122,7 @@ class _RetainLearnShellState extends ConsumerState<RetainLearnShell> {
                           color: RetainLearnTheme.tealSurface,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.auto_stories,
                           color: RetainLearnTheme.tealPrimary,
                           size: 24,
@@ -276,7 +276,7 @@ class _RetainLearnShellState extends ConsumerState<RetainLearnShell> {
                               const SizedBox(width: 8),
                               Text(
                                 item.label,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                   color: RetainLearnTheme.tealDark,

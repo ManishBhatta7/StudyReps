@@ -65,7 +65,7 @@ class SourceChip extends StatelessWidget {
               const SizedBox(width: 4),
               GestureDetector(
                 onTap: onRemove,
-                child: Icon(
+                child: const Icon(
                   Icons.close,
                   size: 14,
                   color: RetainLearnTheme.textLight,
@@ -93,7 +93,6 @@ class SourceChip extends StatelessWidget {
       case SourceType.essay:
         return RetainLearnTheme.sourceEssay;
       case SourceType.document:
-      default:
         return RetainLearnTheme.textMedium;
     }
   }
@@ -113,7 +112,6 @@ class SourceChip extends StatelessWidget {
       case SourceType.essay:
         return Icons.edit_document;
       case SourceType.document:
-      default:
         return Icons.description;
     }
   }
