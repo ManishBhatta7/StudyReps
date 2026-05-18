@@ -53,3 +53,6 @@ app.*.map.json
 .agents/
 _agent/
 _agents/
+
+# web-landing is a separate standalone project — not a submodule
+web-landing/
