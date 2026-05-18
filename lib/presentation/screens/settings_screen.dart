@@ -5,6 +5,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/study_reps_theme.dart';
+import '../../data/services/engines/review_queue_service.dart';
+import 'content_review_screen.dart';
 import 'login_screen.dart';
 
 // Settings Providers
@@ -122,6 +124,10 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 24),
+
+            _buildSectionHeader('Content Studio'),
+            _ContentStudioCard(),
             const SizedBox(height: 24),
 
             _buildSectionHeader('Account'),
@@ -732,5 +738,84 @@ class _TimePickerSheet extends ConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+// --- Content Studio Card -----------------------------------------------------
+
+/// Settings entry point for the AI Content Pipeline with live pending badge.
+class _ContentStudioCard extends StatelessWidget {
+  const _ContentStudioCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final stats = ReviewQueueService.stats;
+    final pending = stats['pending'] ?? 0;
+    final approved = stats['approved'] ?? 0;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: StudyRepsTheme.warmCard,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 12, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => ContentReviewScreen.show(context),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  width: 44, height: 44,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF6366F1), Color(0xFF818CF8)],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(Icons.rate_review_rounded, color: Colors.white, size: 22),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Content Review Queue',
+                          style: GoogleFonts.outfit(
+                              color: StudyRepsTheme.warmTextDark,
+                              fontWeight: FontWeight.w700, fontSize: 15)),
+                      const SizedBox(height: 3),
+                      Text('$pproved approved · $pending pending review',
+                          style: GoogleFonts.outfit(
+                              color: StudyRepsTheme.warmTextLight, fontSize: 12)),
+                    ],
+                  ),
+                ),
+                if (pending > 0)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: StudyRepsTheme.warmOrange,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text('$pending',
+                        style: GoogleFonts.outfit(
+                            color: Colors.white, fontSize: 13, fontWeight: FontWeight.w800)),
+                  )
+                else
+                  const Icon(Icons.chevron_right_rounded,
+                      color: StudyRepsTheme.warmTextLight, size: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.05);
   }
 }

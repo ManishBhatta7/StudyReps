@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/constants/app_constants.dart';
 import 'core/theme/study_reps_theme.dart';
 import 'data/services/chat_persistence_service.dart';
+import 'data/services/engines/review_queue_service.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/screens/intro_screen.dart';
 import 'presentation/screens/login_screen.dart';
@@ -65,6 +66,9 @@ class _AppRootState extends State<AppRoot> {
 
       // Init Chat Persistence (Tutorbot memory)
       await ChatPersistenceService.init();
+
+      // Init Content Review Queue
+      await ReviewQueueService.init();
 
       // Check first launch
       final prefs = await SharedPreferences.getInstance();
