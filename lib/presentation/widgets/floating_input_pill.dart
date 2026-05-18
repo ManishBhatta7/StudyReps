@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../core/theme/retain_learn_theme.dart';
+import '../../core/theme/study_reps_theme.dart';
 
 /// Floating Input Pill - NotebookLM-style chat input
 ///
@@ -84,10 +84,10 @@ class _FloatingInputPillState extends State<FloatingInputPill> {
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
             decoration: BoxDecoration(
-              color: RetainLearnTheme.paperWhite.withOpacity(0.95),
+              color: StudyRepsTheme.warmWhite,
               borderRadius: BorderRadius.circular(28),
               border: Border.all(
-                color: RetainLearnTheme.grayBorder,
+                color: StudyRepsTheme.warmBorder,
               ),
             ),
             child: Row(
@@ -98,7 +98,7 @@ class _FloatingInputPillState extends State<FloatingInputPill> {
                     onPressed: widget.onAttachment,
                     icon: const Icon(
                       Icons.add_circle_outline,
-                      color: RetainLearnTheme.textLight,
+                      color: StudyRepsTheme.warmTextLight,
                     ),
                     padding: const EdgeInsets.only(left: 12),
                     constraints: const BoxConstraints(),
@@ -112,7 +112,7 @@ class _FloatingInputPillState extends State<FloatingInputPill> {
                     decoration: InputDecoration(
                       hintText: widget.hintText,
                       hintStyle: const TextStyle(
-                        color: RetainLearnTheme.textLight,
+                        color: StudyRepsTheme.warmTextLight,
                         fontSize: 15,
                       ),
                       border: InputBorder.none,
@@ -123,7 +123,7 @@ class _FloatingInputPillState extends State<FloatingInputPill> {
                     ),
                     style: const TextStyle(
                       fontSize: 15,
-                      color: RetainLearnTheme.textDark,
+                      color: StudyRepsTheme.warmTextDark,
                     ),
                     maxLines: 4,
                     minLines: 1,
@@ -144,7 +144,7 @@ class _FloatingInputPillState extends State<FloatingInputPill> {
                             height: 24,
                             child: const CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: RetainLearnTheme.tealPrimary,
+                              color: StudyRepsTheme.warmOrange,
                             ),
                           )
                         : IconButton(
@@ -153,8 +153,8 @@ class _FloatingInputPillState extends State<FloatingInputPill> {
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: _hasText
-                                    ? RetainLearnTheme.tealPrimary
-                                    : RetainLearnTheme.grayBorder,
+                                    ? StudyRepsTheme.warmOrange
+                                    : StudyRepsTheme.warmBorder,
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
@@ -162,7 +162,7 @@ class _FloatingInputPillState extends State<FloatingInputPill> {
                                 size: 18,
                                 color: _hasText
                                     ? Colors.white
-                                    : RetainLearnTheme.textLight,
+                                    : StudyRepsTheme.warmTextLight,
                               ),
                             ),
                             padding: EdgeInsets.zero,

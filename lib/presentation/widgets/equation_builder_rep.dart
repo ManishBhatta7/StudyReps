@@ -50,9 +50,9 @@ class _EquationBuilderRepState extends State<EquationBuilderRep> {
           height: 80,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: StudyRepsTheme.bgSecondary.withOpacity(0.5),
+            color: StudyRepsTheme.warmCream,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: StudyRepsTheme.borderSubtle),
+            border: Border.all(color: StudyRepsTheme.warmBorder),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -103,17 +103,17 @@ class _EquationBuilderRepState extends State<EquationBuilderRep> {
           height: 50,
           decoration: BoxDecoration(
             color: filledToken != null 
-                ? StudyRepsTheme.primaryPurple.withOpacity(0.2)
+                ? StudyRepsTheme.warmOrange.withOpacity(0.1)
                 : isActive 
-                    ? Colors.white.withOpacity(0.1) 
-                    : Colors.transparent,
+                    ? StudyRepsTheme.warmOrange.withOpacity(0.05) 
+                    : Colors.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: filledToken != null
-                  ? StudyRepsTheme.primaryPurple
+                  ? StudyRepsTheme.warmOrange
                   : isActive
-                      ? Colors.white
-                      : StudyRepsTheme.borderSubtle,
+                      ? StudyRepsTheme.warmOrange
+                      : StudyRepsTheme.warmBorder,
               width: isActive || filledToken != null ? 2 : 1,
               style: filledToken == null ? BorderStyle.solid : BorderStyle.solid,
             ),
@@ -123,7 +123,7 @@ class _EquationBuilderRepState extends State<EquationBuilderRep> {
                   child: Text(
                     filledToken,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: StudyRepsTheme.warmTextDark,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -163,15 +163,15 @@ class _TokenCard extends StatelessWidget {
       width: 60,
       height: 60,
       decoration: BoxDecoration(
-        color: StudyRepsTheme.bgGlass,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDragging ? StudyRepsTheme.accentCyan : StudyRepsTheme.borderSubtle,
+          color: isDragging ? StudyRepsTheme.warmOrange : StudyRepsTheme.warmBorder,
         ),
         boxShadow: isDragging 
             ? [
                 BoxShadow(
-                  color: StudyRepsTheme.accentCyan.withOpacity(0.5),
+                  color: StudyRepsTheme.warmOrange.withOpacity(0.2),
                   blurRadius: 12,
                   spreadRadius: 2,
                 )
@@ -182,7 +182,7 @@ class _TokenCard extends StatelessWidget {
         child: Text(
           token,
           style: const TextStyle(
-            color: Colors.white,
+            color: StudyRepsTheme.warmTextDark,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),

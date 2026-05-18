@@ -9,7 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../../core/theme/study_reps_theme.dart';
 import '../../data/services/chat_persistence_service.dart';
-import '../../data/services/elevenlabs_tts_service.dart';
+import '../../data/services/google_tts_service.dart';
 import '../../data/services/screen_capture.dart' as screen_capture;
 import '../../data/services/web_audio_player.dart';
 import '../../data/services/web_tts.dart';
@@ -113,11 +113,11 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
   }
 
   /// Initialize TTS engine
-  /// Priority: ElevenLabs (Ruhaan voice) > Browser Web Speech API > flutter_tts
+  /// Priority: Google Cloud TTS (WaveNet) > Browser Web Speech API > flutter_tts
   Future<void> _initTts() async {
     try {
-      if (ElevenLabsTtsService.isConfigured) {
-        debugPrint('🔊 ElevenLabs TTS configured (Ruhaan voice)');
+      if (GoogleTtsService.isConfigured) {
+        debugPrint('🔊 Google Cloud TTS configured (WaveNet voice)');
       }
       
       if (kIsWeb && WebTtsService.isSupported) {
@@ -142,7 +142,7 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
   }
 
   /// Speak a message aloud or stop speaking
-  /// Tries ElevenLabs first, then browser TTS, then flutter_tts
+  /// Tries Google Cloud TTS first, then browser TTS, then flutter_tts
   Future<void> _toggleSpeak(ChatMessage msg) async {
     try {
       if (_isSpeaking && _speakingMessageId == msg.id) {
@@ -178,14 +178,21 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
         if (mounted) setState(() { _isSpeaking = false; _speakingMessageId = null; });
       }
 
-      // ── Try ElevenLabs first (best quality) ──
-      if (ElevenLabsTtsService.isConfigured && kIsWeb) {
-        final audioBytes = await ElevenLabsTtsService.textToSpeech(cleanText);
+      // ── Try Google Cloud TTS first (best quality, 1M chars/month free) ──
+      if (GoogleTtsService.isConfigured) {
+        final audioBytes = await GoogleTtsService.textToSpeech(cleanText);
         if (audioBytes != null && audioBytes.isNotEmpty) {
-          await WebAudioPlayer.playBytes(audioBytes, onComplete: onDone);
+          if (kIsWeb) {
+            await WebAudioPlayer.playBytes(audioBytes, onComplete: onDone);
+          } else {
+            // On mobile/desktop, write to temp file and play
+            // For now, fall through to flutter_tts as a simpler path
+            debugPrint('🔊 Google TTS: Got audio, but non-web playback not yet wired — using flutter_tts');
+            await _tts.speak(cleanText);
+          }
           return; // Success!
         }
-        debugPrint('🔊 ElevenLabs failed, falling back...');
+        debugPrint('🔊 Google TTS failed, falling back...');
       }
 
       // ── Fallback: Browser Web Speech API ──
@@ -453,19 +460,19 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: StudyRepsTheme.bgSecondary,
+        backgroundColor: StudyRepsTheme.warmCream,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Clear Conversation?',
-            style: TextStyle(color: StudyRepsTheme.textPrimary)),
+            style: TextStyle(color: StudyRepsTheme.warmTextDark)),
         content: const Text(
           'This will erase the tutorbot history for this video.',
-          style: TextStyle(color: StudyRepsTheme.textSecondary),
+          style: TextStyle(color: StudyRepsTheme.warmTextMedium),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child:
-                const Text('Cancel', style: TextStyle(color: StudyRepsTheme.textMuted)),
+                const Text('Cancel', style: TextStyle(color: StudyRepsTheme.warmTextLight)),
           ),
           TextButton(
             onPressed: () {
@@ -506,13 +513,12 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
 
     return Container(
       decoration: BoxDecoration(
-        color: StudyRepsTheme.bgPrimary,
+        color: StudyRepsTheme.warmCream,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        border:
-            Border.all(color: StudyRepsTheme.primaryPurple.withOpacity(0.3)),
+        border: Border.all(color: StudyRepsTheme.warmBorder.withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
-            color: StudyRepsTheme.primaryPurple.withOpacity(0.15),
+            color: StudyRepsTheme.warmOrange.withOpacity(0.1),
             blurRadius: 30,
             offset: const Offset(0, -5),
           ),
@@ -526,21 +532,21 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white24,
+              color: StudyRepsTheme.warmBorder,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
 
           _buildHeader(chatState),
           const SizedBox(height: 8),
-          Divider(color: Colors.white.withOpacity(0.08), height: 1),
+          Divider(color: StudyRepsTheme.warmBorder.withOpacity(0.6), height: 1),
 
           // Quick Actions
           if (chatState.messages.length <= 2) ...[
             const SizedBox(height: 12),
             _buildQuickActions(),
             const SizedBox(height: 8),
-            Divider(color: Colors.white.withOpacity(0.08), height: 1),
+            Divider(color: StudyRepsTheme.warmBorder.withOpacity(0.8), height: 1),
           ],
 
           // Voice Listening Banner
@@ -588,13 +594,13 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               gradient: const LinearGradient(colors: [
-                StudyRepsTheme.primaryPurple,
-                StudyRepsTheme.accentCyan,
+                StudyRepsTheme.warmOrange,
+                StudyRepsTheme.warmOrangeDark,
               ]),
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: StudyRepsTheme.primaryPurple.withOpacity(0.3),
+                  color: StudyRepsTheme.warmOrange.withOpacity(0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -612,7 +618,7 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
                   children: [
                     const Text('Adaptive Coach',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: StudyRepsTheme.warmTextDark,
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           letterSpacing: -0.3,
@@ -640,51 +646,36 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
                   ],
                 ),
                 const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        color: StudyRepsTheme.successGreen,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        widget.video.title,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.5),
-                          fontSize: 12,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+                Text(
+                  widget.video.title,
+                  style: const TextStyle(
+                    color: StudyRepsTheme.warmTextMedium,
+                    fontSize: 12,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          if (messageCount > 1)
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(10),
+            if (messageCount > 1)
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: StudyRepsTheme.warmChipBg,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text('$messageCount msgs',
+                    style: const TextStyle(
+                        color: StudyRepsTheme.warmTextMedium, fontSize: 11)),
               ),
-              child: Text('$messageCount msgs',
-                  style: TextStyle(
-                      color: Colors.white.withOpacity(0.5), fontSize: 11)),
+            const SizedBox(width: 4),
+            IconButton(
+              onPressed: _clearChat,
+              icon: const Icon(Icons.delete_outline_rounded,
+                  color: StudyRepsTheme.warmTextLight, size: 20),
+              tooltip: 'Clear chat',
             ),
-          const SizedBox(width: 4),
-          IconButton(
-            onPressed: _clearChat,
-            icon: Icon(Icons.delete_outline_rounded,
-                color: Colors.white.withOpacity(0.4), size: 20),
-            tooltip: 'Clear chat',
-          ),
         ],
       ),
     );
@@ -721,34 +712,33 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
               padding:
                   const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                gradient: isHighlight
-                    ? LinearGradient(colors: [
-                        const Color(0xFF4285F4).withOpacity(0.2),
-                        const Color(0xFF34A853).withOpacity(0.1),
-                      ])
-                    : LinearGradient(colors: [
-                        StudyRepsTheme.primaryPurple.withOpacity(0.15),
-                        StudyRepsTheme.accentCyan.withOpacity(0.08),
-                      ]),
+                color: isHighlight
+                    ? StudyRepsTheme.warmOrange.withOpacity(0.05)
+                    : StudyRepsTheme.warmWhite,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: isHighlight
-                      ? const Color(0xFF4285F4).withOpacity(0.35)
-                      : StudyRepsTheme.primaryPurple.withOpacity(0.25),
+                      ? StudyRepsTheme.warmOrange.withOpacity(0.5)
+                      : StudyRepsTheme.warmBorder,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(icon,
-                      color: isHighlight
-                          ? const Color(0xFF4285F4)
-                          : StudyRepsTheme.accentCyan,
+                      color: StudyRepsTheme.warmOrange,
                       size: 15),
                   const SizedBox(width: 6),
                   Text(label,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.85),
+                        color: StudyRepsTheme.warmTextDark,
                         fontSize: 12,
                         fontWeight:
                             isHighlight ? FontWeight.w700 : FontWeight.w500,
@@ -813,15 +803,15 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
                   children: [
                     const Text('Listening...',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: StudyRepsTheme.warmTextDark,
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                         )),
                     if (_lastRecognized.isNotEmpty)
                       Text(
                         _lastRecognized,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
+                        style: const TextStyle(
+                          color: StudyRepsTheme.warmTextMedium,
                           fontSize: 11,
                           fontStyle: FontStyle.italic,
                         ),
@@ -859,11 +849,11 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       decoration: BoxDecoration(
         gradient: LinearGradient(colors: [
-          const Color(0xFF4285F4).withOpacity(0.08),
-          const Color(0xFF34A853).withOpacity(0.05),
+          StudyRepsTheme.warmOrange.withOpacity(0.08),
+          StudyRepsTheme.warmGreen.withOpacity(0.05),
         ]),
         border: Border(
-          top: BorderSide(color: const Color(0xFF4285F4).withOpacity(0.2)),
+          top: BorderSide(color: StudyRepsTheme.warmOrange.withOpacity(0.2)),
           bottom: BorderSide(color: Colors.white.withOpacity(0.05)),
         ),
       ),
@@ -873,11 +863,11 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
           Row(
             children: [
               const Icon(Icons.auto_awesome,
-                  color: Color(0xFF4285F4), size: 16),
+                  color: StudyRepsTheme.warmOrange, size: 16),
               const SizedBox(width: 8),
-              Text('Gemini Vision',
+              const Text('Gemini Vision',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
+                    color: StudyRepsTheme.warmTextDark,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   )),
@@ -890,10 +880,10 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
             ],
           ),
           const SizedBox(height: 4),
-          Text(
+          const Text(
               'Point your camera at any problem, share your screen, or pick an image',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.4),
+                color: StudyRepsTheme.warmTextMedium,
                 fontSize: 11,
               )),
           const SizedBox(height: 12),
@@ -904,7 +894,7 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
                   icon: Icons.camera_alt_rounded,
                   label: 'Camera',
                   sublabel: 'Take photo',
-                  color: const Color(0xFF4285F4),
+                  color: StudyRepsTheme.warmOrange,
                   onTap: _captureFromCamera,
                 ),
               ),
@@ -914,7 +904,7 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
                   icon: Icons.photo_library_rounded,
                   label: 'Gallery',
                   sublabel: 'Pick image',
-                  color: const Color(0xFF34A853),
+                  color: StudyRepsTheme.warmGreen,
                   onTap: _pickFromGallery,
                 ),
               ),
@@ -924,7 +914,7 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
                   icon: Icons.screen_share_rounded,
                   label: 'Screen',
                   sublabel: kIsWeb ? 'Share tab' : 'Camera',
-                  color: const Color(0xFFFBBC05),
+                  color: StudyRepsTheme.warmOrange,
                   onTap: kIsWeb ? _shareScreen : _captureFromCamera,
                 ),
               ),
@@ -964,14 +954,14 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
             ),
             const SizedBox(height: 6),
             Text(label,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
+                style: const TextStyle(
+                  color: StudyRepsTheme.warmTextDark,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 )),
             Text(sublabel,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.4),
+                style: const TextStyle(
+                  color: StudyRepsTheme.warmTextMedium,
                   fontSize: 9,
                 )),
           ],
@@ -1000,18 +990,18 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
               isBot ? CrossAxisAlignment.start : CrossAxisAlignment.end,
           children: [
             if (isBot)
-              Padding(
-                padding: const EdgeInsets.only(left: 4, bottom: 4),
+              const Padding(
+                padding: EdgeInsets.only(left: 4, bottom: 4),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.psychology_rounded,
                         size: 12,
-                        color: StudyRepsTheme.accentCyan.withOpacity(0.7)),
-                    const SizedBox(width: 4),
+                        color: StudyRepsTheme.warmOrange),
+                    SizedBox(width: 4),
                     Text('Coach',
                         style: TextStyle(
-                          color: StudyRepsTheme.accentCyan.withOpacity(0.7),
+                          color: StudyRepsTheme.warmOrange,
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                         )),
@@ -1027,8 +1017,8 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: isBot
-                    ? Colors.white.withOpacity(0.07)
-                    : StudyRepsTheme.primaryPurple.withOpacity(0.25),
+                    ? StudyRepsTheme.warmWhite
+                    : StudyRepsTheme.warmOrange,
                 borderRadius: BorderRadius.only(
                   topLeft:
                       Radius.circular(msg.hasImage && !isBot ? 14 : 18),
@@ -1038,8 +1028,16 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
                   bottomRight: Radius.circular(isBot ? 18 : 4),
                 ),
                 border: isBot
-                    ? Border.all(color: Colors.white.withOpacity(0.08))
+                    ? Border.all(color: StudyRepsTheme.warmBorder.withOpacity(0.5))
                     : null,
+                boxShadow: [
+                  if (isBot)
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.02),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1048,32 +1046,32 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
                       ? MarkdownBody(
                           data: msg.text,
                           styleSheet: MarkdownStyleSheet(
-                            p: TextStyle(
-                              color: Colors.white.withOpacity(0.9),
+                            p: const TextStyle(
+                              color: StudyRepsTheme.warmTextDark,
                               fontSize: 14,
                               height: 1.5,
                             ),
                             strong: const TextStyle(
-                              color: StudyRepsTheme.accentCyan,
+                              color: StudyRepsTheme.warmOrangeDark,
                               fontWeight: FontWeight.w700,
                             ),
-                            em: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
+                            em: const TextStyle(
+                              color: StudyRepsTheme.warmTextMedium,
                               fontStyle: FontStyle.italic,
                             ),
-                            code: TextStyle(
-                              color: StudyRepsTheme.accentCyan,
+                            code: const TextStyle(
+                              color: StudyRepsTheme.warmOrangeDark,
                               backgroundColor:
-                                  Colors.white.withOpacity(0.05),
+                                  StudyRepsTheme.warmChipBg,
                               fontSize: 13,
                             ),
-                            listBullet: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
+                            listBullet: const TextStyle(
+                              color: StudyRepsTheme.warmTextMedium,
                             ),
                             blockquoteDecoration: BoxDecoration(
                               border: Border(
                                 left: BorderSide(
-                                  color: StudyRepsTheme.primaryPurple
+                                  color: StudyRepsTheme.warmOrange
                                       .withOpacity(0.5),
                                   width: 3,
                                 ),
@@ -1082,8 +1080,8 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
                           ),
                         )
                       : Text(msg.text,
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.95),
+                          style: const TextStyle(
+                            color: Colors.white,
                             fontSize: 14,
                             height: 1.4,
                           )),
@@ -1102,13 +1100,13 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
                                   horizontal: 10, vertical: 5),
                               decoration: BoxDecoration(
                                 color: isSpeakingThis
-                                    ? StudyRepsTheme.accentCyan.withOpacity(0.15)
-                                    : Colors.white.withOpacity(0.05),
+                                    ? StudyRepsTheme.warmOrange.withOpacity(0.15)
+                                    : StudyRepsTheme.warmChipBg,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: isSpeakingThis
-                                      ? StudyRepsTheme.accentCyan.withOpacity(0.4)
-                                      : Colors.white.withOpacity(0.1),
+                                      ? StudyRepsTheme.warmOrange.withOpacity(0.4)
+                                      : StudyRepsTheme.warmBorder,
                                 ),
                               ),
                               child: Row(
@@ -1120,16 +1118,16 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
                                         : Icons.volume_up_rounded,
                                     size: 14,
                                     color: isSpeakingThis
-                                        ? StudyRepsTheme.accentCyan
-                                        : Colors.white.withOpacity(0.5),
+                                        ? StudyRepsTheme.warmOrange
+                                        : StudyRepsTheme.warmTextMedium,
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
                                     isSpeakingThis ? 'Stop' : 'Listen',
                                     style: TextStyle(
                                       color: isSpeakingThis
-                                          ? StudyRepsTheme.accentCyan
-                                          : Colors.white.withOpacity(0.5),
+                                          ? StudyRepsTheme.warmOrange
+                                          : StudyRepsTheme.warmTextMedium,
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -1150,8 +1148,8 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
               padding: EdgeInsets.only(
                   top: 3, left: isBot ? 4 : 0, right: isBot ? 0 : 4),
               child: Text(_formatTime(msg.timestamp),
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.25),
+                  style: const TextStyle(
+                    color: StudyRepsTheme.warmTextMedium,
                     fontSize: 10,
                   )),
             ),
@@ -1170,7 +1168,7 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: const Color(0xFF4285F4).withOpacity(0.3),
+            color: StudyRepsTheme.warmOrange.withOpacity(0.3),
             width: 1.5,
           ),
         ),
@@ -1201,7 +1199,7 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
                           msg.text.contains('Screen')
                               ? Icons.screen_share_rounded
                               : Icons.auto_awesome,
-                          color: const Color(0xFF4285F4),
+                          color: StudyRepsTheme.warmOrange,
                           size: 10),
                       const SizedBox(width: 3),
                       Text(
@@ -1232,17 +1230,17 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
       width: 200,
       height: 80,
       decoration: BoxDecoration(
-        color: const Color(0xFF4285F4).withOpacity(0.1),
+        color: StudyRepsTheme.warmOrange.withOpacity(0.1),
         borderRadius: BorderRadius.circular(14),
         border:
-            Border.all(color: const Color(0xFF4285F4).withOpacity(0.3)),
+            Border.all(color: StudyRepsTheme.warmOrange.withOpacity(0.3)),
       ),
       child: const Center(
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.image_rounded,
-                color: Color(0xFF4285F4), size: 20),
+                color: StudyRepsTheme.warmOrange, size: 20),
             SizedBox(width: 8),
             Text('Image analyzed',
                 style: TextStyle(color: Colors.white54, fontSize: 12)),
@@ -1287,7 +1285,7 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
           children: [
             Icon(Icons.psychology_rounded,
                 size: 16,
-                color: StudyRepsTheme.accentCyan.withOpacity(0.6)),
+                color: StudyRepsTheme.warmOrange.withOpacity(0.6)),
             const SizedBox(width: 10),
             ...[0, 1, 2].map((i) => _buildAnimatedDot(i)),
           ],
@@ -1307,7 +1305,7 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
           width: 7,
           height: 7,
           decoration: BoxDecoration(
-            color: StudyRepsTheme.accentCyan.withOpacity(value),
+            color: StudyRepsTheme.warmOrange.withOpacity(value),
             shape: BoxShape.circle,
           ),
         );
@@ -1323,9 +1321,9 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
     return Container(
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 16),
       decoration: BoxDecoration(
-        color: StudyRepsTheme.bgPrimary,
+        color: StudyRepsTheme.warmWhite,
         border: Border(
-          top: BorderSide(color: Colors.white.withOpacity(0.08)),
+          top: BorderSide(color: StudyRepsTheme.warmBorder.withOpacity(0.5)),
         ),
       ),
       child: SafeArea(
@@ -1337,7 +1335,7 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
                   ? Icons.camera_alt_rounded
                   : Icons.camera_alt_outlined,
               isActive: _showVisionOptions,
-              activeColor: const Color(0xFF4285F4),
+              activeColor: StudyRepsTheme.warmOrange,
               onTap: isLoading
                   ? null
                   : () => setState(
@@ -1361,14 +1359,14 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.06),
+                  color: StudyRepsTheme.warmWhite,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
                     color: _isListening
                         ? Colors.red.withOpacity(0.3)
                         : _inputFocusNode.hasFocus
-                            ? StudyRepsTheme.primaryPurple.withOpacity(0.4)
-                            : Colors.white.withOpacity(0.08),
+                            ? StudyRepsTheme.warmOrange.withOpacity(0.4)
+                            : StudyRepsTheme.warmBorder,
                   ),
                 ),
                 child: TextField(
@@ -1376,7 +1374,7 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
                   focusNode: _inputFocusNode,
                   enabled: !isLoading,
                   style:
-                      const TextStyle(color: Colors.white, fontSize: 14),
+                      const TextStyle(color: StudyRepsTheme.warmTextDark, fontSize: 14),
                   maxLines: 3,
                   minLines: 1,
                   decoration: InputDecoration(
@@ -1389,9 +1387,10 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
                                 : 'Ask or use 🎤 voice...',
                     hintStyle: TextStyle(
                       color: _isListening
-                          ? Colors.red.withOpacity(0.5)
-                          : Colors.white.withOpacity(0.3),
+                          ? Colors.red.withOpacity(0.7)
+                          : StudyRepsTheme.warmTextLight,
                       fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
@@ -1427,8 +1426,8 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
                   gradient: isLoading
                       ? null
                       : const LinearGradient(colors: [
-                          StudyRepsTheme.primaryPurple,
-                          StudyRepsTheme.accentCyan,
+                          StudyRepsTheme.warmOrange,
+                          StudyRepsTheme.warmOrangeDark,
                         ]),
                   color: isLoading
                       ? Colors.white.withOpacity(0.1)
@@ -1438,7 +1437,7 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
                       ? []
                       : [
                           BoxShadow(
-                            color: StudyRepsTheme.primaryPurple
+                            color: StudyRepsTheme.warmOrange
                                 .withOpacity(0.3),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
@@ -1477,12 +1476,12 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
         decoration: BoxDecoration(
           color: isActive
               ? activeColor.withOpacity(0.2)
-              : Colors.white.withOpacity(0.06),
+              : StudyRepsTheme.warmCream,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isActive
                 ? activeColor.withOpacity(0.5)
-                : Colors.white.withOpacity(0.08),
+                : StudyRepsTheme.warmBorder,
           ),
           boxShadow: showPulse
               ? [
@@ -1496,7 +1495,7 @@ class _TutorbotContentState extends ConsumerState<_TutorbotContent>
         child: Icon(icon,
             color: isActive
                 ? activeColor
-                : Colors.white.withOpacity(0.5),
+                : StudyRepsTheme.warmTextMedium,
             size: 19),
       ),
     );

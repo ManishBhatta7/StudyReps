@@ -96,13 +96,13 @@ class _TeachBackPromptState extends State<TeachBackPrompt>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              StudyRepsTheme.primaryPurple.withOpacity(0.15),
-              StudyRepsTheme.accentCyan.withOpacity(0.08),
+              StudyRepsTheme.warmOrange.withOpacity(0.1),
+              StudyRepsTheme.warmOrange.withOpacity(0.05),
             ],
           ),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: StudyRepsTheme.primaryPurple.withOpacity(0.3),
+            color: StudyRepsTheme.warmOrange.withOpacity(0.3),
           ),
         ),
         child: Column(
@@ -115,7 +115,7 @@ class _TeachBackPromptState extends State<TeachBackPrompt>
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [StudyRepsTheme.primaryPurple, StudyRepsTheme.accentCyan],
+                      colors: [StudyRepsTheme.warmOrange, StudyRepsTheme.warmOrangeDark],
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -129,7 +129,7 @@ class _TeachBackPromptState extends State<TeachBackPrompt>
                       Text(
                         'Teach It Back! 🎓',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: StudyRepsTheme.warmTextDark,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -137,7 +137,7 @@ class _TeachBackPromptState extends State<TeachBackPrompt>
                       Text(
                         'Record a 30-60s explanation',
                         style: TextStyle(
-                          color: Colors.white54,
+                          color: StudyRepsTheme.warmTextMedium,
                           fontSize: 12,
                         ),
                       ),
@@ -150,7 +150,7 @@ class _TeachBackPromptState extends State<TeachBackPrompt>
                   },
                   icon: Icon(
                     Icons.close_rounded,
-                    color: Colors.white.withOpacity(0.5),
+                    color: StudyRepsTheme.warmTextLight.withOpacity(0.5),
                   ),
                 ),
               ],
@@ -169,7 +169,7 @@ class _TeachBackPromptState extends State<TeachBackPrompt>
                 'Can you explain "${widget.video.title}" in your own words? '
                 'Teaching is the strongest form of learning!',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
+                  color: StudyRepsTheme.warmTextDark.withOpacity(0.8),
                   fontSize: 14,
                   height: 1.5,
                 ),
@@ -189,7 +189,7 @@ class _TeachBackPromptState extends State<TeachBackPrompt>
                 ),
                 label: Text(_isRecording ? 'Recording...' : 'Start Recording'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: StudyRepsTheme.primaryPurple,
+                  backgroundColor: StudyRepsTheme.warmOrange,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
@@ -204,10 +204,10 @@ class _TeachBackPromptState extends State<TeachBackPrompt>
             // Skip
             TextButton(
               onPressed: widget.onDismiss,
-              child: Text(
+              child: const Text(
                 'Maybe later',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.4),
+                  color: StudyRepsTheme.warmTextLight,
                   fontSize: 13,
                 ),
               ),
@@ -217,12 +217,12 @@ class _TeachBackPromptState extends State<TeachBackPrompt>
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.bolt, color: StudyRepsTheme.accentCyan, size: 14),
+                const Icon(Icons.bolt, color: StudyRepsTheme.warmOrange, size: 14),
                 const SizedBox(width: 4),
                 Text(
                   '+50 XP bonus for teaching back!',
                   style: TextStyle(
-                    color: StudyRepsTheme.accentCyan.withOpacity(0.8),
+                    color: StudyRepsTheme.warmOrange.withOpacity(0.8),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),

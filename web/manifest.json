@@ -1,11 +1,11 @@
 {
-    "name": "adaptive_ed_coach_flutter",
-    "short_name": "adaptive_ed_coach_flutter",
+    "name": "StudyReps",
+    "short_name": "StudyReps",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FAF5F0",
+    "theme_color": "#FF7043",
+    "description": "Short-form video lessons + quiz locks + AI coaching. The study app that makes learning addictive.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

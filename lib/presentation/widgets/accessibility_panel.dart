@@ -42,9 +42,9 @@ class _AccessibilityContent extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: StudyRepsTheme.bgPrimary,
+        color: StudyRepsTheme.warmCream,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: StudyRepsTheme.warmBorder),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -55,7 +55,7 @@ class _AccessibilityContent extends ConsumerWidget {
             child: Container(
               width: 40, height: 4,
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: StudyRepsTheme.warmTextLight.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -65,7 +65,7 @@ class _AccessibilityContent extends ConsumerWidget {
           const Text(
             'Accessibility ♿',
             style: TextStyle(
-              color: Colors.white,
+              color: StudyRepsTheme.warmTextDark,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -104,18 +104,18 @@ class _AccessibilityContent extends ConsumerWidget {
       double min, double max, ValueChanged<double> onChanged, String display) {
     return Row(
       children: [
-        Icon(icon, color: StudyRepsTheme.accentCyan, size: 20),
+        Icon(icon, color: StudyRepsTheme.warmOrange, size: 20),
         const SizedBox(width: 12),
-        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+        Text(label, style: const TextStyle(color: StudyRepsTheme.warmTextDark, fontSize: 14)),
         const Spacer(),
-        Text(display, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+        Text(display, style: const TextStyle(color: StudyRepsTheme.warmTextMedium, fontSize: 12)),
         SizedBox(
           width: 120,
           child: SliderTheme(
             data: const SliderThemeData(
-              activeTrackColor: StudyRepsTheme.primaryPurple,
-              thumbColor: StudyRepsTheme.accentCyan,
-              inactiveTrackColor: Colors.white12,
+              activeTrackColor: StudyRepsTheme.warmOrange,
+              thumbColor: StudyRepsTheme.warmOrange,
+              inactiveTrackColor: StudyRepsTheme.warmBorder,
               trackHeight: 3,
             ),
             child: Slider(value: value, min: min, max: max, onChanged: onChanged),
@@ -131,14 +131,14 @@ class _AccessibilityContent extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Icon(icon, color: StudyRepsTheme.accentCyan, size: 20),
+          Icon(icon, color: StudyRepsTheme.warmOrange, size: 20),
           const SizedBox(width: 12),
-          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+          Text(label, style: const TextStyle(color: StudyRepsTheme.warmTextDark, fontSize: 14)),
           const Spacer(),
           Switch.adaptive(
             value: value,
             onChanged: onChanged,
-            activeColor: StudyRepsTheme.primaryPurple,
+            activeColor: StudyRepsTheme.warmOrange,
           ),
         ],
       ),

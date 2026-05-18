@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/retain_learn_theme.dart';
+import '../../core/theme/study_reps_theme.dart';
 
 class ScannerOverlay extends StatefulWidget {
   final Widget child;
@@ -77,14 +77,14 @@ class _ScannerOverlayState extends State<ScannerOverlay>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        RetainLearnTheme.tealPrimary.withOpacity(0),
-                        RetainLearnTheme.tealLight,
-                        RetainLearnTheme.tealPrimary.withOpacity(0),
+                        StudyRepsTheme.warmOrange.withOpacity(0),
+                        StudyRepsTheme.warmOrange,
+                        StudyRepsTheme.warmOrange.withOpacity(0),
                       ],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: RetainLearnTheme.tealPrimary.withOpacity(0.5),
+                        color: StudyRepsTheme.warmOrange.withOpacity(0.5),
                         blurRadius: 10,
                         spreadRadius: 2,
                       ),

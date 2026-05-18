@@ -93,9 +93,9 @@ class _CommentSheetContentState extends ConsumerState<_CommentSheetContent> {
 
     return Container(
       decoration: BoxDecoration(
-        color: StudyRepsTheme.bgPrimary,
+        color: StudyRepsTheme.warmCream,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: StudyRepsTheme.warmBorder),
       ),
       child: Column(
         children: [
@@ -105,7 +105,7 @@ class _CommentSheetContentState extends ConsumerState<_CommentSheetContent> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white24,
+              color: StudyRepsTheme.warmTextLight.withOpacity(0.2),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -119,7 +119,7 @@ class _CommentSheetContentState extends ConsumerState<_CommentSheetContent> {
                   data: (comments) => Text(
                     '${comments.length} Comments',
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: StudyRepsTheme.warmTextDark,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -127,7 +127,7 @@ class _CommentSheetContentState extends ConsumerState<_CommentSheetContent> {
                   orElse: () => const Text(
                     'Comments',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: StudyRepsTheme.warmTextDark,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -138,12 +138,12 @@ class _CommentSheetContentState extends ConsumerState<_CommentSheetContent> {
                   onPressed: () {},
                   icon: const Icon(Icons.sort, size: 16),
                   label: const Text('Top'),
-                  style: TextButton.styleFrom(foregroundColor: Colors.white54),
+                  style: TextButton.styleFrom(foregroundColor: StudyRepsTheme.warmTextMedium),
                 ),
               ],
             ),
           ),
-          Divider(color: Colors.white.withOpacity(0.1)),
+          const Divider(color: StudyRepsTheme.warmBorder),
 
           // Comments list
           Expanded(
@@ -151,7 +151,7 @@ class _CommentSheetContentState extends ConsumerState<_CommentSheetContent> {
               data: (comments) {
                 if (comments.isEmpty) {
                   return const Center(
-                    child: Text('No comments yet. Start the discussion!', style: TextStyle(color: Colors.white54)),
+                    child: Text('No comments yet. Start the discussion!', style: TextStyle(color: StudyRepsTheme.warmTextMedium)),
                   );
                 }
                 return ListView.builder(
@@ -161,17 +161,17 @@ class _CommentSheetContentState extends ConsumerState<_CommentSheetContent> {
                   itemBuilder: (context, index) => _buildCommentTile(comments[index]),
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator(color: StudyRepsTheme.primaryPurple)),
-              error: (e, st) => Center(child: Text('Failed to load comments\n$e', style: const TextStyle(color: Colors.white54), textAlign: TextAlign.center)),
+              loading: () => const Center(child: CircularProgressIndicator(color: StudyRepsTheme.warmOrange)),
+              error: (e, st) => Center(child: Text('Failed to load comments\n$e', style: const TextStyle(color: StudyRepsTheme.warmTextMedium), textAlign: TextAlign.center)),
             ),
           ),
 
           // Input
           Container(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               border: Border(
-                top: BorderSide(color: Colors.white.withOpacity(0.1)),
+                top: BorderSide(color: StudyRepsTheme.warmBorder),
               ),
             ),
             child: SafeArea(
@@ -179,19 +179,19 @@ class _CommentSheetContentState extends ConsumerState<_CommentSheetContent> {
                 children: [
                   const CircleAvatar(
                     radius: 16,
-                    backgroundColor: StudyRepsTheme.primaryPurple,
+                    backgroundColor: StudyRepsTheme.warmOrange,
                     child: Text('Y', style: TextStyle(color: Colors.white, fontSize: 12)),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: _inputController,
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                      style: const TextStyle(color: StudyRepsTheme.warmTextDark, fontSize: 14),
                       decoration: InputDecoration(
                         hintText: 'Add a comment...',
-                        hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+                        hintStyle: const TextStyle(color: StudyRepsTheme.warmTextLight),
                         filled: true,
-                        fillColor: Colors.white.withOpacity(0.06),
+                        fillColor: Colors.white,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
                           borderSide: BorderSide.none,
@@ -208,7 +208,7 @@ class _CommentSheetContentState extends ConsumerState<_CommentSheetContent> {
                   GestureDetector(
                     onTap: () => _addComment(_inputController.text),
                     child: const Icon(Icons.send_rounded,
-                        color: StudyRepsTheme.primaryPurple, size: 22),
+                        color: StudyRepsTheme.warmOrange, size: 22),
                   ),
                 ],
               ),
@@ -239,8 +239,8 @@ class _CommentSheetContentState extends ConsumerState<_CommentSheetContent> {
               CircleAvatar(
                 radius: isReply ? 14 : 16,
                 backgroundColor: comment.isAI
-                    ? StudyRepsTheme.accentCyan
-                    : StudyRepsTheme.primaryPurple.withOpacity(0.5),
+                    ? StudyRepsTheme.warmOrange
+                    : StudyRepsTheme.warmOrange.withOpacity(0.5),
                 child: Text(
                   comment.isAI ? '🤖' : initial,
                   style: TextStyle(fontSize: isReply ? 10 : 12),
@@ -258,8 +258,8 @@ class _CommentSheetContentState extends ConsumerState<_CommentSheetContent> {
                           comment.username ?? 'Unknown Student',
                           style: TextStyle(
                             color: comment.isAI
-                                ? StudyRepsTheme.accentCyan
-                                : Colors.white70,
+                                ? StudyRepsTheme.warmOrange
+                                : StudyRepsTheme.warmTextDark,
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
@@ -270,7 +270,7 @@ class _CommentSheetContentState extends ConsumerState<_CommentSheetContent> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 1),
                             decoration: BoxDecoration(
-                              color: StudyRepsTheme.accentCyan.withOpacity(0.2),
+                              color: StudyRepsTheme.warmOrange.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: const Text(
@@ -288,8 +288,8 @@ class _CommentSheetContentState extends ConsumerState<_CommentSheetContent> {
                         const Spacer(),
                         Text(
                           _formatTimeAgo(comment.createdAt),
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.3),
+                          style: const TextStyle(
+                            color: StudyRepsTheme.warmTextLight,
                             fontSize: 11,
                           ),
                         ),
@@ -299,8 +299,8 @@ class _CommentSheetContentState extends ConsumerState<_CommentSheetContent> {
                     // Content
                     Text(
                       comment.body,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.85),
+                      style: const TextStyle(
+                        color: StudyRepsTheme.warmTextDark,
                         fontSize: 13,
                         height: 1.4,
                       ),
@@ -319,7 +319,7 @@ class _CommentSheetContentState extends ConsumerState<_CommentSheetContent> {
                             onTap: () {
                               ref.read(commentControllerProvider).deleteComment(comment.id);
                             },
-                            child: const Icon(Icons.delete_outline, color: Colors.white24, size: 14),
+                            child: const Icon(Icons.delete_outline, color: StudyRepsTheme.warmTextLight, size: 14),
                           ),
                         ],
                       ],
@@ -362,11 +362,11 @@ class _CommentSheetContentState extends ConsumerState<_CommentSheetContent> {
     return GestureDetector(
       child: Row(
         children: [
-          Icon(icon, size: 14, color: Colors.white38),
+          Icon(icon, size: 14, color: StudyRepsTheme.warmTextMedium),
           const SizedBox(width: 4),
           Text(
             label,
-            style: const TextStyle(color: Colors.white38, fontSize: 12),
+            style: const TextStyle(color: StudyRepsTheme.warmTextMedium, fontSize: 12),
           ),
         ],
       ),

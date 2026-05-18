@@ -1,7 +1,9 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../core/theme/study_reps_theme.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import 'settings_screen.dart';
 import '../../presentation/providers/stats_provider.dart';
 import '../../domain/models/video_model.dart';
@@ -9,12 +11,18 @@ import '../providers/video_feed_provider.dart';
 import '../../presentation/providers/xp_provider.dart';
 import '../../presentation/providers/auth_provider.dart';
 import 'squads_screen.dart';
+import 'teacher_dashboard_screen.dart';
+import '../../core/theme/study_reps_theme.dart';
 
-/// Profile Stats Screen
-/// 
-/// Shows user profile, statistics, level progress, and recent activity
+/// Profile Stats Screen — BoldVoice-inspired premium design
+///
+/// Warm cream background with dark cards, orange accents,
+/// circular progress rings, and clean modern typography
 class ProfileStatsScreen extends ConsumerWidget {
   const ProfileStatsScreen({super.key});
+
+  // No longer needed, using StudyRepsTheme
+
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,332 +32,460 @@ class ProfileStatsScreen extends ConsumerWidget {
     final user = ref.watch(currentDomainUserProvider);
 
     return Scaffold(
-      backgroundColor: StudyRepsTheme.bgPrimary,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: const Text('Profile'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined, color: StudyRepsTheme.textSecondary),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const SettingsScreen()),
-            ),
+      backgroundColor: StudyRepsTheme.warmCream,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            children: [
+              // ─── Top Bar ───
+              _buildTopBar(context),
+
+              // ─── Profile Header ───
+              xpAsync.when(
+                data: (xp) => _buildProfileHeader(xp.currentLevel, xp.totalXp, xp.xpForNextLevel, user),
+                loading: () => const SizedBox(height: 120, child: Center(child: CircularProgressIndicator(color: StudyRepsTheme.warmOrange))),
+                error: (_, __) => _buildProfileHeader(1, 0, 100, user),
+              ),
+
+              const SizedBox(height: 28),
+
+              // ─── Proficiency Card (Dark) ───
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: tsrHealthAsync.when(
+                  data: (health) => _buildProficiencyCard(health),
+                  loading: () => _buildLoadingCard(),
+                  error: (_, __) => _buildProficiencyCardFallback(),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // ─── Stats Row ───
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: dashboardStatsAsync.when(
+                  data: (stats) => _buildStatsRow(stats),
+                  loading: () => _buildStatsRowLoading(),
+                  error: (_, __) => _buildStatsRow(DashboardStats(totalReps: 0, accuracy: '0%', subjectBreakdown: {})),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // ─── Study Priorities ───
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _buildStudyPrioritiesSection(),
+              ),
+
+              const SizedBox(height: 24),
+
+              // ─── Squads Hub Card ───
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _buildSquadsCard(context),
+              ),
+
+              const SizedBox(height: 24),
+
+              // ─── Teacher & Parent Dashboard ───
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _buildTeacherModeCard(context),
+              ),
+
+              const SizedBox(height: 24),
+
+              // ─── My Reps Section ───
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _buildMyRepsSection(ref),
+              ),
+
+              const SizedBox(height: 24),
+
+              // ─── Recent Activity ───
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _buildRecentActivity(),
+              ),
+
+              const SizedBox(height: 100),
+            ],
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          children: [
-            const SizedBox(height: 10),
-            
-            // Avatar & Name
-            xpAsync.when(
-              data: (xp) => _buildProfileHeader(xp.currentLevel, xp.totalXp, xp.xpForNextLevel, user),
-              loading: () => const CircularProgressIndicator(),
-              error: (_, __) => _buildProfileHeader(1, 0, 100, user),
-            ),
-            
-            const SizedBox(height: 24),
-            
-            // TSR Health Score (New)
-            tsrHealthAsync.when(
-              data: (health) => _buildHealthScore(health),
-              loading: () => _buildLoadingCard('Calculating Health Score...'),
-              error: (err, _) => _buildErrorCard('Could not load health score'),
-            ),
-
-            const SizedBox(height: 24),
-            
-            // Stats Grid
-            dashboardStatsAsync.when(
-              data: (stats) => _buildStatsGrid(stats),
-              loading: () => _buildStatsLoading(),
-              error: (err, _) => _buildErrorCard('Could not load stats'),
-            ),
-
-            const SizedBox(height: 24),
-            
-            // Study Squads Hub Card
-            _buildSquadsHubCard(context),
-            
-            const SizedBox(height: 24),
-            
-            // My Created Reps (Categorized)
-            _buildMyRepsSection(ref),
-
-            const SizedBox(height: 32),
-            
-            // Recent Activity
-            _buildRecentActivity(),
-            
-            const SizedBox(height: 100),
-          ],
         ),
       ),
     );
   }
 
-  Widget _buildProfileHeader(int level, int xp, int nextLevelXp, user) {
-    final displayName = user?.fullName ?? user?.name ?? 'Student';
-    final initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : '?';
-
-    return Column(
-      children: [
-        // Avatar
-        Container(
-          width: 100,
-          height: 100,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: StudyRepsTheme.primaryIndigo,
-              width: 3,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: StudyRepsTheme.primaryIndigo.withOpacity(0.3),
-                blurRadius: 20,
-                spreadRadius: 2,
-              ),
-            ],
-          ),
-          child: CircleAvatar(
-            radius: 47,
-            backgroundColor: StudyRepsTheme.bgSecondary,
-            backgroundImage: user?.avatarUrl != null ? NetworkImage(user!.avatarUrl!) : null,
-            child: user?.avatarUrl == null ? Text(
-              initial,
-              style: const TextStyle(
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-                color: StudyRepsTheme.textMuted,
-              ),
-            ) : null,
-          ),
-        ),
-        
-        const SizedBox(height: 16),
-        
-        // Username
-        Text(
-          displayName,
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: StudyRepsTheme.textPrimary,
-          ),
-        ),
-        
-        if (user?.email != null) ...[
-          const SizedBox(height: 4),
+  // ════════════════════════════════════
+  // TOP BAR
+  // ════════════════════════════════════
+  Widget _buildTopBar(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
           Text(
-            user!.email!,
-            style: const TextStyle(
-              fontSize: 14,
-              color: StudyRepsTheme.textMuted,
+            'Profile',
+            style: GoogleFonts.outfit(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: StudyRepsTheme.warmTextDark,
+              letterSpacing: -0.5,
+            ),
+          ),
+          GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ),
+            child: Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.settings_outlined, color: StudyRepsTheme.warmTextMedium, size: 22),
             ),
           ),
         ],
-        
-        const SizedBox(height: 8),
-        
-        // Level Badge
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: StudyRepsTheme.primaryIndigo.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: StudyRepsTheme.primaryIndigo.withOpacity(0.5)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+      ),
+    ).animate().fadeIn(duration: 300.ms);
+  }
+
+  // ════════════════════════════════════
+  // PROFILE HEADER — Avatar + Name + Level
+  // ════════════════════════════════════
+  Widget _buildProfileHeader(int level, int xp, int nextLevelXp, user) {
+    final displayName = user?.fullName ?? user?.name ?? 'Student';
+    final initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : '?';
+    final progress = nextLevelXp > 0 ? (xp / nextLevelXp).clamp(0.0, 1.0) : 0.0;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        children: [
+          // Avatar with level ring
+          Stack(
+            alignment: Alignment.center,
             children: [
-              const Icon(Icons.star_rounded, color: Colors.amber, size: 18),
-              const SizedBox(width: 6),
-              Text(
-                'Level $level',
-                style: const TextStyle(
-                  color: StudyRepsTheme.primaryIndigoLight,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
+              // Progress ring
+              SizedBox(
+                width: 96,
+                height: 96,
+                child: CircularProgressIndicator(
+                  value: progress,
+                  strokeWidth: 3.5,
+                  backgroundColor: StudyRepsTheme.warmBorder,
+                  valueColor: const AlwaysStoppedAnimation(StudyRepsTheme.warmOrange),
+                  strokeCap: StrokeCap.round,
                 ),
               ),
-              const SizedBox(width: 12),
+              // Avatar
               Container(
-                width: 1,
-                height: 12,
-                color: StudyRepsTheme.primaryIndigo.withOpacity(0.4),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                '$xp / $nextLevelXp XP',
-                style: const TextStyle(
-                  color: StudyRepsTheme.textSecondary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: StudyRepsTheme.warmDarkCard,
+                  boxShadow: [
+                    BoxShadow(
+                      color: StudyRepsTheme.warmOrange.withOpacity(0.15),
+                      blurRadius: 20,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: CircleAvatar(
+                  radius: 40,
+                  backgroundColor: StudyRepsTheme.warmDarkCard,
+                  backgroundImage: user?.avatarUrl != null ? NetworkImage(user!.avatarUrl!) : null,
+                  child: user?.avatarUrl == null
+                      ? Text(
+                          initial,
+                          style: GoogleFonts.outfit(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w700,
+                            color: StudyRepsTheme.warmTextOnDark,
+                          ),
+                        )
+                      : null,
                 ),
               ),
             ],
           ),
-        ),
-      ],
-    ).animate().fadeIn().scale(begin: const Offset(0.9, 0.9));
+
+          const SizedBox(height: 14),
+
+          // Name
+          Text(
+            displayName,
+            style: GoogleFonts.outfit(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: StudyRepsTheme.warmTextDark,
+            ),
+          ),
+
+          if (user?.email != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              user!.email!,
+              style: GoogleFonts.outfit(
+                fontSize: 13,
+                color: StudyRepsTheme.warmTextLight,
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 10),
+
+          // Level badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: StudyRepsTheme.warmOrange.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.bolt_rounded, color: StudyRepsTheme.warmOrange, size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  'Level $level',
+                  style: GoogleFonts.outfit(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: StudyRepsTheme.warmOrangeDark,
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 12,
+                  margin: const EdgeInsets.symmetric(horizontal: 10),
+                  color: StudyRepsTheme.warmOrange.withOpacity(0.3),
+                ),
+                Text(
+                  '$xp / $nextLevelXp XP',
+                  style: GoogleFonts.outfit(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: StudyRepsTheme.warmTextMedium,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Curriculum / Grade Badge
+          if (user?.preferences?.board != null || user?.preferences?.grade != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                color: StudyRepsTheme.warmGreen.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.school_rounded, color: StudyRepsTheme.warmGreen, size: 16),
+                  const SizedBox(width: 6),
+                  Text(
+                    [user?.preferences?.board, user?.preferences?.grade]
+                        .where((e) => e != null && e.isNotEmpty)
+                        .join(' • '),
+                    style: GoogleFonts.outfit(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: StudyRepsTheme.warmGreen,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 400.ms).scale(begin: const Offset(0.95, 0.95));
   }
 
-  Widget _buildHealthScore(TSRHealthStats health) {
-    Color scoreColor = StudyRepsTheme.successGreen;
+  // ════════════════════════════════════
+  // PROFICIENCY CARD — Dark card with circular progress
+  // (Inspired by BoldVoice's 86% proficiency screen)
+  // ════════════════════════════════════
+  Widget _buildProficiencyCard(TSRHealthStats health) {
+    Color ringColor = StudyRepsTheme.warmGreen;
     if (health.score < 50) {
-      scoreColor = StudyRepsTheme.errorPink;
+      ringColor = StudyRepsTheme.warmOrange;
     } else if (health.score < 80) {
-      scoreColor = Colors.orange;
+      ringColor = StudyRepsTheme.warmOrange.withOpacity(0.8);
     }
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: StudyRepsTheme.bgSecondary,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: StudyRepsTheme.borderSubtle),
+        color: StudyRepsTheme.warmDarkCard,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         children: [
+          // Header row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'TSR Health Score',
-                style: TextStyle(
-                  color: StudyRepsTheme.textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
+              Text(
+                'Study Health',
+                style: GoogleFonts.outfit(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: StudyRepsTheme.warmTextMutedOnDark,
+                  letterSpacing: 0.5,
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                   color: scoreColor.withOpacity(0.2),
-                   borderRadius: BorderRadius.circular(8),
+                  color: ringColor.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   health.status.toUpperCase(),
-                  style: TextStyle(
-                    color: scoreColor,
-                    fontWeight: FontWeight.bold,
+                  style: GoogleFonts.outfit(
                     fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: ringColor,
+                    letterSpacing: 0.8,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              SizedBox(
-                width: 100,
-                height: 100,
-                child: CircularProgressIndicator(
-                  value: health.score / 100,
-                  strokeWidth: 10,
-                  backgroundColor: StudyRepsTheme.bgTertiary,
-                  valueColor: AlwaysStoppedAnimation(scoreColor),
-                ),
-              ),
-              Text(
-                '${health.score}',
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ],
+
+          const SizedBox(height: 24),
+
+          // Circular progress
+          _CircularScoreIndicator(
+            score: health.score,
+            ringColor: ringColor,
           ),
+
           const SizedBox(height: 20),
+
+          // Feedback text
           Text(
-            health.advice,
+            health.advice.isNotEmpty
+                ? health.advice
+                : 'Keep up the great work! Your study consistency is paying off.',
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: StudyRepsTheme.textMuted,
+            style: GoogleFonts.outfit(
               fontSize: 14,
+              height: 1.5,
+              color: StudyRepsTheme.warmTextMutedOnDark,
               fontStyle: FontStyle.italic,
             ),
           ),
         ],
       ),
-    ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1);
+    ).animate().fadeIn(delay: 100.ms, duration: 500.ms).slideY(begin: 0.05);
   }
 
-  Widget _buildStatsGrid(DashboardStats stats) {
-    final statItems = [
-      {'label': 'Total Reps', 'value': '${stats.totalReps}', 'icon': Icons.fitness_center_rounded, 'color': StudyRepsTheme.primaryIndigo},
-      {'label': 'Accuracy', 'value': stats.accuracy, 'icon': Icons.check_circle_outline_rounded, 'color': StudyRepsTheme.successGreen},
-      // You could add streak here if you were tracking it in the DB
-    ];
+  Widget _buildProficiencyCardFallback() {
+    return _buildProficiencyCard(
+      TSRHealthStats(score: 72, status: 'Good', advice: 'Practice daily to maintain your streak and improve retention.'),
+    );
+  }
 
+  Widget _buildLoadingCard() {
+    return Container(
+      width: double.infinity,
+      height: 240,
+      decoration: BoxDecoration(
+        color: StudyRepsTheme.warmDarkCard,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: const Center(
+        child: CircularProgressIndicator(color: StudyRepsTheme.warmOrange, strokeWidth: 2.5),
+      ),
+    );
+  }
+
+  // ════════════════════════════════════
+  // STATS ROW — Two stat cards side by side
+  // ════════════════════════════════════
+  Widget _buildStatsRow(DashboardStats stats) {
     return Row(
       children: [
-        for (int i = 0; i < statItems.length; i++) ...[
-             Expanded(
-              child: _buildStatCard(statItems[i], i),
-            ),
-            if (i < statItems.length - 1) const SizedBox(width: 12),
-        ]
+        Expanded(
+          child: _buildStatCard(
+            label: 'Total Reps',
+            value: '${stats.totalReps}',
+            icon: Icons.fitness_center_rounded,
+            iconColor: StudyRepsTheme.warmOrange,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildStatCard(
+            label: 'Accuracy',
+            value: stats.accuracy,
+            icon: Icons.check_circle_outline_rounded,
+            iconColor: StudyRepsTheme.warmGreen,
+          ),
+        ),
       ],
     );
   }
-  
-  Widget _buildLoadingCard(String message) {
-      return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: StudyRepsTheme.bgSecondary.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Column(
-              children: [
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 16),
-                  Text(message, style: const TextStyle(color: StudyRepsTheme.textMuted)),
-              ],
-          ),
-      );
-  }
-  
-  Widget _buildStatsLoading() {
-      return Row(
-          children: [
-              Expanded(child: _buildLoadingCard('...')),
-              const SizedBox(width: 12),
-              Expanded(child: _buildLoadingCard('...')),
-          ],
-      );
-  }
-  
-  Widget _buildErrorCard(String error) {
-      return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-              color: StudyRepsTheme.errorPink.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: StudyRepsTheme.errorPink.withOpacity(0.5)),
-          ),
-          child: Text(error, style: const TextStyle(color: StudyRepsTheme.errorPink)),
-      );
+
+  Widget _buildStatsRowLoading() {
+    return Row(
+      children: [
+        Expanded(child: _buildStatCardSkeleton()),
+        const SizedBox(width: 12),
+        Expanded(child: _buildStatCardSkeleton()),
+      ],
+    );
   }
 
-  Widget _buildStatCard(Map<String, dynamic> stat, int index) {
+  Widget _buildStatCard({
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color iconColor,
+  }) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: StudyRepsTheme.bgSecondary,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: StudyRepsTheme.borderSubtle),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -358,110 +494,310 @@ class ProfileStatsScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                stat['label'],
-                style: const TextStyle(
-                  color: StudyRepsTheme.textMuted,
-                  fontSize: 13,
+                label,
+                style: GoogleFonts.outfit(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: StudyRepsTheme.warmTextLight,
                 ),
               ),
-              Icon(
-                stat['icon'] as IconData,
-                color: stat['color'] as Color,
-                size: 22,
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: iconColor, size: 18),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
-            stat['value'],
-            style: const TextStyle(
-              color: StudyRepsTheme.textPrimary,
+            value,
+            style: GoogleFonts.outfit(
               fontSize: 28,
               fontWeight: FontWeight.w700,
+              color: StudyRepsTheme.warmTextDark,
             ),
           ),
         ],
       ),
-    ).animate().fadeIn(delay: (150 + index * 80).ms).scale(begin: const Offset(0.9, 0.9));
+    ).animate().fadeIn(delay: 200.ms, duration: 400.ms).scale(begin: const Offset(0.95, 0.95));
   }
 
-  Widget _buildSquadsHubCard(BuildContext context) {
+  Widget _buildStatCardSkeleton() {
+    return Container(
+      height: 100,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: const Center(
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(color: StudyRepsTheme.warmOrange, strokeWidth: 2),
+        ),
+      ),
+    );
+  }
+
+  // ════════════════════════════════════
+  // STUDY PRIORITIES — BoldVoice style tags
+  // ════════════════════════════════════
+  Widget _buildStudyPrioritiesSection() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: StudyRepsTheme.warmOrange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.auto_awesome_rounded, color: StudyRepsTheme.warmOrange, size: 16),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Study Priorities',
+                style: GoogleFonts.outfit(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: StudyRepsTheme.warmTextDark,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 8),
+          Text(
+            'Tap on a subject to focus on it more.',
+            style: GoogleFonts.outfit(fontSize: 13, color: StudyRepsTheme.warmTextLight),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Subject chips
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildSubjectChip('Physics', Icons.bolt_rounded, true),
+              _buildSubjectChip('Chemistry', Icons.science_rounded, false),
+              _buildSubjectChip('Biology', Icons.biotech_rounded, false),
+              _buildSubjectChip('History', Icons.history_edu_rounded, true),
+              _buildSubjectChip('Math', Icons.calculate_rounded, false),
+            ],
+          ),
+        ],
+      ),
+    ).animate().fadeIn(delay: 300.ms, duration: 400.ms).slideY(begin: 0.05);
+  }
+
+  Widget _buildSubjectChip(String label, IconData icon, bool active) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: active ? StudyRepsTheme.warmOrange.withOpacity(0.12) : StudyRepsTheme.warmChipBg,
+        borderRadius: BorderRadius.circular(12),
+        border: active
+            ? Border.all(color: StudyRepsTheme.warmOrange.withOpacity(0.3), width: 1.5)
+            : null,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: active ? StudyRepsTheme.warmOrange : StudyRepsTheme.warmTextMedium),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: GoogleFonts.outfit(
+              fontSize: 13,
+              fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+              color: active ? StudyRepsTheme.warmOrangeDark : StudyRepsTheme.warmTextMedium,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ════════════════════════════════════
+  // SQUADS CARD — Premium gradient
+  // ════════════════════════════════════
+  Widget _buildSquadsCard(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const SquadsScreen()),
-        );
-      },
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const SquadsScreen()),
+      ),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              StudyRepsTheme.primaryIndigo.withOpacity(0.8),
-              StudyRepsTheme.primaryPurple.withOpacity(0.8),
-            ],
+          gradient: const LinearGradient(
+            colors: [StudyRepsTheme.warmDarkCard, Color(0xFF2A2A2E)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: StudyRepsTheme.primaryPurple.withOpacity(0.3),
-              blurRadius: 15,
-              offset: const Offset(0, 5),
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                shape: BoxShape.circle,
+                color: StudyRepsTheme.warmOrange.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(Icons.groups_rounded, color: Colors.white, size: 28),
+              child: const Icon(Icons.groups_rounded, color: StudyRepsTheme.warmOrange, size: 24),
             ),
-            const SizedBox(width: 16),
-            const Expanded(
+            const SizedBox(width: 14),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Study Squads',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: StudyRepsTheme.warmTextOnDark,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   Text(
                     'Join forces and conquer goals together!',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 13,
+                    style: GoogleFonts.outfit(
+                      fontSize: 12,
+                      color: StudyRepsTheme.warmTextMutedOnDark,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: Colors.white54),
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.chevron_right_rounded, color: StudyRepsTheme.warmTextMutedOnDark, size: 20),
+            ),
           ],
         ),
-      ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
-    );
+      ),
+    ).animate().fadeIn(delay: 350.ms, duration: 400.ms).slideY(begin: 0.05);
   }
 
-  Widget _buildMyRepsSection(WidgetRef ref) {
-    // 1. Get user created videos
-    final userVideos = ref.watch(userCreatedVideosProvider);
+  // ════════════════════════════════════
+  // TEACHER & PARENT MODE CARD
+  // ════════════════════════════════════
+  Widget _buildTeacherModeCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const TeacherDashboardScreen()),
+      ),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: StudyRepsTheme.primaryPurple.withOpacity(0.3), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: StudyRepsTheme.primaryPurple.withOpacity(0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: StudyRepsTheme.primaryPurple.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(Icons.school_rounded, color: StudyRepsTheme.primaryPurple, size: 24),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Teacher & Parent Dashboard',
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: StudyRepsTheme.warmTextDark,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    'Monitor student progress and analytics',
+                    style: GoogleFonts.outfit(
+                      fontSize: 12,
+                      color: StudyRepsTheme.warmTextLight,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: StudyRepsTheme.warmBorder,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.chevron_right_rounded, color: StudyRepsTheme.warmTextMedium, size: 20),
+            ),
+          ],
+        ),
+      ),
+    ).animate().fadeIn(delay: 400.ms, duration: 400.ms).slideY(begin: 0.05);
+  }
 
+  // ════════════════════════════════════
+  // MY REPS SECTION — Grouped by subject
+  // ════════════════════════════════════
+  Widget _buildMyRepsSection(WidgetRef ref) {
+    final userVideos = ref.watch(userCreatedVideosProvider);
     if (userVideos.isEmpty) return const SizedBox.shrink();
 
-    // 2. Group by subject
     final grouped = <String, List<VideoModel>>{};
     for (final video in userVideos) {
       final subject = video.subject.isEmpty ? 'General' : video.subject;
@@ -474,117 +810,136 @@ class ProfileStatsScreen extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-          child: Text(
-            'My Reps',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
+        Row(
+          children: [
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: StudyRepsTheme.warmGreen.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.library_books_rounded, color: StudyRepsTheme.warmGreen, size: 16),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'My Reps',
+              style: GoogleFonts.outfit(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: StudyRepsTheme.warmTextDark,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Column(
+              children: grouped.entries.map((entry) {
+                final subject = entry.key;
+                final reps = entry.value;
+
+                return Theme(
+                  data: ThemeData(dividerColor: Colors.transparent),
+                  child: ExpansionTile(
+                    leading: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: StudyRepsTheme.warmChipBg,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        _getSubjectIcon(subject),
+                        color: StudyRepsTheme.warmOrange,
+                        size: 18,
+                      ),
+                    ),
+                    title: Text(
+                      subject,
+                      style: GoogleFonts.outfit(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: StudyRepsTheme.warmTextDark,
+                      ),
+                    ),
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: StudyRepsTheme.warmChipBg,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '${reps.length}',
+                        style: GoogleFonts.outfit(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: StudyRepsTheme.warmTextMedium,
+                        ),
+                      ),
+                    ),
+                    children: reps.map((rep) => _buildRepTile(rep)).toList(),
+                  ),
+                );
+              }).toList(),
             ),
           ),
         ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.03),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
-          ),
-          child: Column(
-            children: grouped.entries.map((entry) {
-              final subject = entry.key;
-              final reps = entry.value;
-              
-              return Theme(
-                data: Theme.of(ref.context).copyWith(dividerColor: Colors.transparent),
-                child: ExpansionTile(
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: StudyRepsTheme.primaryIndigo.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      _getSubjectIcon(subject),
-                      color: StudyRepsTheme.accentCyan,
-                      size: 16,
-                    ),
-                  ),
-                  title: Text(
-                    subject,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${reps.length}',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                  children: reps.map((rep) => _buildRepTile(rep)).toList(),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
       ],
-    ).animate().fadeIn(delay: 350.ms);
+    ).animate().fadeIn(delay: 400.ms, duration: 400.ms);
   }
 
   Widget _buildRepTile(VideoModel rep) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: StudyRepsTheme.warmCream,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.help_outline_rounded, 
-                  color: StudyRepsTheme.textSecondary, size: 14),
+              const Icon(Icons.help_outline_rounded, color: StudyRepsTheme.warmTextLight, size: 14),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   rep.question.prompt,
-                  style: const TextStyle(
-                    color: Colors.white, 
-                    fontSize: 14,
+                  style: GoogleFonts.outfit(
+                    fontSize: 13,
                     fontWeight: FontWeight.w500,
+                    color: StudyRepsTheme.warmTextDark,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Row(
             children: [
-              const Icon(Icons.check_circle_outline_rounded, 
-                  color: StudyRepsTheme.successGreen, size: 14),
+              const Icon(Icons.check_circle_outline_rounded, color: StudyRepsTheme.warmGreen, size: 14),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   rep.question.correctAnswer,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.7), 
-                    fontSize: 13,
+                  style: GoogleFonts.outfit(
+                    fontSize: 12,
+                    color: StudyRepsTheme.warmTextMedium,
                   ),
                 ),
               ),
@@ -597,77 +952,104 @@ class ProfileStatsScreen extends ConsumerWidget {
 
   IconData _getSubjectIcon(String subject) {
     switch (subject.toLowerCase()) {
-      case 'biology': return Icons.biotech_rounded;
-      case 'physics': return Icons.bolt_rounded;
-      case 'chemistry': return Icons.science_rounded;
-      case 'history': return Icons.history_edu_rounded;
-      case 'math': 
-      case 'mathematics': return Icons.calculate_rounded;
-      default: return Icons.school_rounded;
+      case 'biology':
+        return Icons.biotech_rounded;
+      case 'physics':
+        return Icons.bolt_rounded;
+      case 'chemistry':
+        return Icons.science_rounded;
+      case 'history':
+        return Icons.history_edu_rounded;
+      case 'math':
+      case 'mathematics':
+        return Icons.calculate_rounded;
+      default:
+        return Icons.school_rounded;
     }
   }
 
+  // ════════════════════════════════════
+  // RECENT ACTIVITY — Clean timeline
+  // ════════════════════════════════════
   Widget _buildRecentActivity() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-          child: Text(
-            'Recent Activity',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
+        Row(
+          children: [
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: StudyRepsTheme.warmOrange.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.history_rounded, color: StudyRepsTheme.warmOrange, size: 16),
             ),
-          ),
+            const SizedBox(width: 10),
+            Text(
+              'Recent Activity',
+              style: GoogleFonts.outfit(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: StudyRepsTheme.warmTextDark,
+              ),
+            ),
+          ],
         ),
-        // Placeholder data
+        const SizedBox(height: 12),
         _buildActivityItem('Mastered "Newton\'s Second Law"', '2m ago', Icons.emoji_events_rounded, Colors.amber),
-        _buildActivityItem('Completed Physics Quiz', '1h ago', Icons.quiz_rounded, Colors.purple),
-        _buildActivityItem('Started 7 Day Streak', '1d ago', Icons.local_fire_department_rounded, Colors.orange),
+        _buildActivityItem('Completed Physics Quiz', '1h ago', Icons.quiz_rounded, StudyRepsTheme.warmOrange),
+        _buildActivityItem('Started 7 Day Streak', '1d ago', Icons.local_fire_department_rounded, StudyRepsTheme.warmOrange),
       ],
-    );
+    ).animate().fadeIn(delay: 500.ms, duration: 400.ms);
   }
-  
+
   Widget _buildActivityItem(String text, String time, IconData icon, Color color) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 20),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   text,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: GoogleFonts.outfit(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
+                    color: StudyRepsTheme.warmTextDark,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   time,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.4),
+                  style: GoogleFonts.outfit(
                     fontSize: 11,
+                    color: StudyRepsTheme.warmTextLight,
                   ),
                 ),
               ],
@@ -677,4 +1059,102 @@ class ProfileStatsScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+// ════════════════════════════════════
+// CIRCULAR SCORE INDICATOR — Custom painted ring
+// Matches BoldVoice's 86% proficiency ring exactly
+// ════════════════════════════════════
+class _CircularScoreIndicator extends StatelessWidget {
+  final int score;
+  final Color ringColor;
+
+  const _CircularScoreIndicator({
+    required this.score,
+    required this.ringColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 120,
+      height: 120,
+      child: CustomPaint(
+        painter: _ScoreRingPainter(
+          score: score,
+          ringColor: ringColor,
+        ),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '$score%',
+                style: GoogleFonts.outfit(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  height: 1,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Score',
+                style: GoogleFonts.outfit(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: StudyRepsTheme.warmTextMutedOnDark,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ScoreRingPainter extends CustomPainter {
+  final int score;
+  final Color ringColor;
+
+  _ScoreRingPainter({required this.score, required this.ringColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 6;
+    const strokeWidth = 8.0;
+
+    // Background ring
+    final bgPaint = Paint()
+      ..color = Colors.white.withOpacity(0.08)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawCircle(center, radius, bgPaint);
+
+    // Progress arc
+    final progressPaint = Paint()
+      ..color = ringColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    const startAngle = -pi / 2;
+    final sweepAngle = 2 * pi * (score / 100);
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      startAngle,
+      sweepAngle,
+      false,
+      progressPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _ScoreRingPainter oldDelegate) =>
+      oldDelegate.score != score || oldDelegate.ringColor != ringColor;
 }

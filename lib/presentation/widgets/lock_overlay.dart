@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/theme/study_reps_theme.dart';
 import '../../domain/models/video_model.dart';
@@ -59,8 +60,8 @@ class _LockOverlayState extends State<LockOverlay> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        gradient: StudyRepsTheme.lockGradient,
+      decoration: const BoxDecoration(
+        color: Color(0xB3FFF7ED), // Warm Cream (StudyRepsTheme.warmCream) with transparency
       ),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
@@ -109,8 +110,14 @@ class _LockOverlayState extends State<LockOverlay> {
         height: 80,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: StudyRepsTheme.successGradient,
-          boxShadow: [StudyRepsTheme.successGlow],
+          color: StudyRepsTheme.warmGreen,
+          boxShadow: [
+            BoxShadow(
+              color: StudyRepsTheme.warmGreen.withOpacity(0.4),
+              blurRadius: 20,
+              spreadRadius: 5,
+            )
+          ],
         ),
         child: const Icon(
           Icons.lock_open_rounded,
@@ -125,8 +132,14 @@ class _LockOverlayState extends State<LockOverlay> {
       height: 80,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: StudyRepsTheme.primaryGradient,
-        boxShadow: [StudyRepsTheme.primaryGlow],
+        color: StudyRepsTheme.warmOrange,
+        boxShadow: [
+          BoxShadow(
+            color: StudyRepsTheme.warmOrange.withOpacity(0.4),
+            blurRadius: 20,
+            spreadRadius: 5,
+          )
+        ],
       ),
       child: const Icon(
         Icons.lock_rounded,
@@ -146,22 +159,15 @@ class _LockOverlayState extends State<LockOverlay> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withOpacity(0.15),
-            Colors.white.withOpacity(0.05),
-          ],
-        ),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1.5,
+          color: StudyRepsTheme.warmOrange.withOpacity(0.2),
+          width: 2.0,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withOpacity(0.08),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
@@ -173,15 +179,15 @@ class _LockOverlayState extends State<LockOverlay> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: StudyRepsTheme.primaryPurple.withOpacity(0.2),
+              color: StudyRepsTheme.warmOrange.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               widget.video.subject.toUpperCase(),
               style: const TextStyle(
-                color: StudyRepsTheme.primaryPurpleLight,
+                color: StudyRepsTheme.warmOrange,
                 fontSize: 12,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
                 letterSpacing: 1,
               ),
             ),
@@ -192,8 +198,9 @@ class _LockOverlayState extends State<LockOverlay> {
           // Question Text
           Text(
             widget.video.question.prompt,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: Colors.white,
+            style: GoogleFonts.outfit(
+              fontSize: 24,
+              color: StudyRepsTheme.warmTextDark,
               fontWeight: FontWeight.w800,
               height: 1.2,
             ),
@@ -208,14 +215,14 @@ class _LockOverlayState extends State<LockOverlay> {
               children: [
                 const Icon(
                   Icons.lightbulb_outline,
-                  color: StudyRepsTheme.accentCyan,
+                  color: StudyRepsTheme.warmOrange,
                   size: 16,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   widget.video.question.hint,
                   style: const TextStyle(
-                    color: StudyRepsTheme.textMuted,
+                    color: StudyRepsTheme.warmTextMedium,
                     fontSize: 13,
                     fontStyle: FontStyle.italic,
                   ),
@@ -260,27 +267,33 @@ class _LockOverlayState extends State<LockOverlay> {
                 padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
                 decoration: BoxDecoration(
                   color: isSelected 
-                      ? StudyRepsTheme.primaryPurple.withOpacity(0.25)
-                      : Colors.black.withOpacity(0.4),
+                      ? StudyRepsTheme.warmOrange.withOpacity(0.1)
+                      : Colors.white,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isSelected 
-                        ? StudyRepsTheme.primaryPurpleLight 
-                        : Colors.white.withOpacity(0.1),
+                        ? StudyRepsTheme.warmOrange 
+                        : StudyRepsTheme.warmBorder,
                     width: isSelected ? 2 : 1.5,
                   ),
                   boxShadow: isSelected ? [
                     BoxShadow(
-                      color: StudyRepsTheme.primaryPurple.withOpacity(0.4),
+                      color: StudyRepsTheme.warmOrange.withOpacity(0.2),
                       blurRadius: 16,
                       offset: const Offset(0, 4),
                     )
-                  ] : [],
+                  ] : [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.02),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 200),
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.white70,
+                  style: GoogleFonts.outfit(
+                    color: isSelected ? StudyRepsTheme.warmOrange : StudyRepsTheme.warmTextDark,
                     fontSize: isSelected ? 17 : 16,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     letterSpacing: 0.3,
@@ -298,23 +311,23 @@ class _LockOverlayState extends State<LockOverlay> {
     // Text input for other question types
     return Container(
       decoration: BoxDecoration(
-        color: StudyRepsTheme.bgGlass,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: StudyRepsTheme.borderSubtle),
+        border: Border.all(color: StudyRepsTheme.warmBorder),
       ),
       child: TextField(
         controller: _answerController,
         enabled: !widget.isChecking,
-        style: const TextStyle(
-          color: StudyRepsTheme.textPrimary,
+        style: GoogleFonts.outfit(
+          color: StudyRepsTheme.warmTextDark,
           fontSize: 18,
         ),
         textAlign: TextAlign.center,
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           hintText: 'Type your answer...',
-          hintStyle: TextStyle(color: StudyRepsTheme.textMuted),
+          hintStyle: GoogleFonts.outfit(color: StudyRepsTheme.warmTextLight),
           border: InputBorder.none,
-          contentPadding: EdgeInsets.all(20),
+          contentPadding: const EdgeInsets.all(20),
         ),
         onSubmitted: (_) => _handleSubmit(),
       ),
@@ -326,11 +339,11 @@ class _LockOverlayState extends State<LockOverlay> {
       width: double.infinity,
       child: Container(
         decoration: BoxDecoration(
-          gradient: widget.isChecking ? null : StudyRepsTheme.primaryGradient,
+          color: widget.isChecking ? StudyRepsTheme.warmBorder : StudyRepsTheme.warmOrange,
           borderRadius: BorderRadius.circular(20),
           boxShadow: widget.isChecking ? null : [
             BoxShadow(
-              color: StudyRepsTheme.primaryPurple.withOpacity(0.4),
+              color: StudyRepsTheme.warmOrange.withOpacity(0.3),
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),
@@ -339,7 +352,7 @@ class _LockOverlayState extends State<LockOverlay> {
         child: ElevatedButton(
           onPressed: widget.isChecking ? null : _handleSubmit,
           style: ElevatedButton.styleFrom(
-            backgroundColor: widget.isChecking ? StudyRepsTheme.bgGlass : Colors.transparent,
+            backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
             padding: const EdgeInsets.symmetric(vertical: 20),
             shape: RoundedRectangleBorder(
@@ -413,7 +426,7 @@ class _LockOverlayState extends State<LockOverlay> {
         const Text(
           'Video resuming...',
           style: TextStyle(
-            color: StudyRepsTheme.textMuted,
+            color: StudyRepsTheme.warmTextMedium,
             fontSize: 14,
           ),
         ),
@@ -438,13 +451,13 @@ class _LockOverlayState extends State<LockOverlay> {
                 children: [
                   Icon(
                     Icons.auto_awesome_rounded,
-                    color: StudyRepsTheme.primaryPurpleLight,
+                    color: StudyRepsTheme.warmOrange,
                   ),
                   SizedBox(width: 12),
                   Text(
                     'AI Coach Feedback',
                     style: TextStyle(
-                      color: StudyRepsTheme.primaryPurpleLight,
+                      color: StudyRepsTheme.warmOrange,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
@@ -456,10 +469,10 @@ class _LockOverlayState extends State<LockOverlay> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
+                    color: StudyRepsTheme.warmOrange.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: StudyRepsTheme.primaryPurple.withOpacity(0.3),
+                      color: StudyRepsTheme.warmOrange.withOpacity(0.3),
                     ),
                   ),
                   child: Row(
@@ -469,7 +482,7 @@ class _LockOverlayState extends State<LockOverlay> {
                         padding: EdgeInsets.only(top: 2),
                         child: Icon(
                           Icons.insights_rounded,
-                          color: StudyRepsTheme.accentCyan,
+                          color: StudyRepsTheme.warmOrange,
                           size: 18,
                         ),
                       ),
@@ -477,8 +490,8 @@ class _LockOverlayState extends State<LockOverlay> {
                       Expanded(
                         child: Text(
                           widget.aiFeedback!,
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.95),
+                          style: GoogleFonts.outfit(
+                            color: StudyRepsTheme.warmTextDark,
                             fontSize: 15,
                             height: 1.4,
                             letterSpacing: 0.3,
@@ -517,7 +530,7 @@ class _LockOverlayState extends State<LockOverlay> {
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: StudyRepsTheme.primaryIndigo,
+              backgroundColor: StudyRepsTheme.warmOrangeLight,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),

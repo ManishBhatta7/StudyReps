@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/video_model.dart';
 import '../../data/services/spaced_repetition_service.dart';
 import 'video_feed_provider.dart';
+import 'auth_provider.dart';
 
 /// Adaptive Feed Provider
 ///
@@ -26,6 +27,7 @@ final adaptiveFeedProvider = FutureProvider<List<VideoModel>>((ref) async {
   final allVideos = await ref.watch(allVideosProvider.future);
   final userId = ref.watch(currentUserIdProvider);
   final config = ref.watch(feedConfigProvider);
+  final currentUser = ref.watch(currentDomainUserProvider);
 
   if (allVideos.isEmpty) return [];
 
@@ -33,6 +35,8 @@ final adaptiveFeedProvider = FutureProvider<List<VideoModel>>((ref) async {
     allVideos: allVideos,
     userId: userId,
     config: config,
+    userBoard: currentUser?.preferences?.board,
+    userGrade: currentUser?.preferences?.grade,
   );
 });
 
@@ -74,8 +78,24 @@ class AdaptiveFeedEngine {
     required List<VideoModel> allVideos,
     required String userId,
     required FeedConfig config,
+    String? userBoard,
+    String? userGrade,
   }) async {
     if (allVideos.isEmpty) return [];
+
+    // 0. Filter videos matching user curriculum (if specified)
+    List<VideoModel> curriculumVideos = allVideos.where((v) {
+      // If a video has no boards/grades, we assume it's general and not filter it out
+      // otherwise, if boards/grades are present, check if user's selection matches
+      bool boardMatches = userBoard == null || v.boards.isEmpty || v.boards.contains(userBoard);
+      bool gradeMatches = userGrade == null || v.grades.isEmpty || v.grades.contains(userGrade);
+      return boardMatches && gradeMatches;
+    }).toList();
+
+    // If filtering eliminates everything (e.g. no videos for that board/grade yet), fallback to all
+    if (curriculumVideos.isEmpty) {
+      curriculumVideos = allVideos;
+    }
 
     // 1. Gather user learning data
     final reviewVideoIds = await SpacedRepetitionService.getVideosForReview(userId);
@@ -96,7 +116,7 @@ class AdaptiveFeedEngine {
     final masteredVideos = <VideoModel>[];
     final userPriorityVideos = <VideoModel>[]; // New category for immediate feedback
 
-    for (final video in allVideos) {
+    for (final video in curriculumVideos) {
       // Check for user-created content (AI reps) first
       if (video.id.startsWith('ai_')) {
         userPriorityVideos.add(video);

@@ -1,6 +1,7 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/constants/app_constants.dart';
+import '../../domain/models/video_model.dart';
 
 /// GeminiCoachService - AI-powered coaching for StudyReps
 ///
@@ -74,87 +75,43 @@ class GeminiCoachService {
     return false;
   }
 
-  /// Get coaching feedback from Gemini API
+  /// Get coaching feedback from Gemini API via Edge Function
   static Future<String> _getGeminiFeedback({
     required String userAnswer,
     required String correctAnswer,
     required String questionPrompt,
   }) async {
-    final apiKey = AppConstants.geminiApiKey;
-    
-    // Skip API call if no key configured
-    if (apiKey == 'YOUR_GEMINI_API_KEY') {
-      return 'The correct answer is "$correctAnswer". Compare with your answer and try again.';
-    }
-    
-    final prompt = '''
-You are a strict but encouraging logic coach in a learning app. 
-The student was asked: "$questionPrompt"
-Their answer: "$userAnswer"
-The correct answer is: "$correctAnswer"
+    try {
+      final response = await Supabase.instance.client.functions.invoke(
+        'gemini-coach',
+        body: {
+          'action': 'validateAnswer',
+          'userAnswer': userAnswer,
+          'correctAnswer': correctAnswer,
+          'questionPrompt': questionPrompt,
+          'enableThinking': AppConstants.enableThinking,
+          'thinkingBudget': AppConstants.thinkingBudget,
+        },
+      );
 
-Give EXACTLY 1 sentence of specific, actionable feedback. No fluff.
-Be direct but kind. Focus on WHY they might have gotten it wrong.
-''';
-
-    final url = Uri.parse(
-      '$_baseUrl/models/$_model:generateContent?key=$apiKey'
-    );
-
-    // Build the request body with optional thinking config
-    final requestBody = <String, dynamic>{
-      'contents': [
-        {
-          'parts': [
-            {'text': prompt}
-          ]
-        }
-      ],
-      'generationConfig': {
-        'temperature': 0.7,
-        'maxOutputTokens': 150,
-      },
-    };
-
-    // Enable thinking mode for deeper reasoning on answers
-    if (AppConstants.enableThinking) {
-      (requestBody['generationConfig'] as Map<String, dynamic>)['thinkingConfig'] = {
-        'thinkingBudget': AppConstants.thinkingBudget,
-      };
-    }
-
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(requestBody),
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+      final data = response.data;
       final candidates = data['candidates'] as List?;
       if (candidates != null && candidates.isNotEmpty) {
-        // With thinking enabled, the model may return multiple parts.
-        // The actual text response is in the last non-thinking part.
         final parts = candidates[0]['content']?['parts'] as List?;
         if (parts != null && parts.isNotEmpty) {
-          // Find the actual text response (skip any "thought" parts)
           for (final part in parts.reversed) {
             if (part['text'] != null && part['thought'] != true) {
               return part['text'].toString().trim();
             }
           }
-          // Fallback: just use the last part's text
-          return parts.last['text']?.toString().trim() ?? 
+          return parts.last['text']?.toString().trim() ??
               'The correct answer is "$correctAnswer".';
         }
       }
       return 'The correct answer is "$correctAnswer".';
+    } catch (e) {
+      throw GeminiException('API returned an error: $e');
     }
-
-    throw GeminiException(
-      'API returned ${response.statusCode}',
-      statusCode: response.statusCode,
-    );
   }
 
   /// Test API connection
@@ -169,6 +126,56 @@ Be direct but kind. Focus on WHY they might have gotten it wrong.
     } catch (e) {
       return false;
     }
+  }
+
+  /// NEW: Generate a context-aware question based on video metadata/transcript
+  static Future<QuestionModel> generateDynamicQuestion(VideoModel video) async {
+    try {
+      final response = await Supabase.instance.client.functions.invoke(
+        'gemini-coach',
+        body: {
+          'action': 'generateDynamicQuestion',
+          'title': video.title,
+          'subject': video.subject,
+          'creatorName': video.creatorName,
+          'tags': video.tags,
+          'transcriptSnippet': video.transcript.length > 500 ? video.transcript.substring(0, 500) : video.transcript,
+        },
+      );
+
+      final data = response.data;
+      final candidates = data['candidates'] as List?;
+      if (candidates != null && candidates.isNotEmpty) {
+        final parts = candidates[0]['content']?['parts'] as List?;
+        if (parts != null && parts.isNotEmpty) {
+          final text = parts[0]['text'] as String;
+          // Handle optional markdown wrapping in API response
+          String cleanJson = text.replaceAll('```json', '').replaceAll('```', '').trim();
+          
+          if (cleanJson.contains('{') && cleanJson.contains('}')) {
+            int firstBrace = cleanJson.indexOf('{');
+            int lastBrace = cleanJson.lastIndexOf('}');
+            cleanJson = cleanJson.substring(firstBrace, lastBrace + 1);
+          }
+          
+          final json = jsonDecode(cleanJson);
+          
+          return QuestionModel(
+            id: 'ai_gen_${DateTime.now().millisecondsSinceEpoch}',
+            prompt: json['prompt'],
+            correctAnswer: json['correctAnswer'],
+            type: QuestionType.multipleChoice,
+            options: List<String>.from(json['options']),
+            hint: json['hint'] ?? '',
+            explanation: json['explanation'] ?? '',
+          );
+        }
+      }
+    } catch (e) {
+      print('⚠️ AI Question Generation Error: $e');
+    }
+    
+    return video.question; // Fallback to hardcoded question
   }
 }
 

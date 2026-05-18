@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/study_reps_theme.dart';
 import '../../domain/models/video_model.dart';
 import 'package:uuid/uuid.dart';
 
+/// Create Rep Dialog — BoldVoice warm cream design
 class CreateRepDialog extends StatefulWidget {
   const CreateRepDialog({super.key});
 
@@ -35,7 +37,6 @@ class _CreateRepDialogState extends State<CreateRepDialog> {
       setState(() {
         _selectedVideo = video;
         _isUrlMode = false;
-        // Auto-fill title from filename if empty
         if (_titleController.text.isEmpty) {
           _titleController.text = video.name.split('.').first;
         }
@@ -47,7 +48,15 @@ class _CreateRepDialogState extends State<CreateRepDialog> {
     if (_formKey.currentState!.validate()) {
       if (_selectedVideo == null && (_videoUrl == null || _videoUrl!.isEmpty)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a video or enter a URL')),
+          SnackBar(
+            content: Text(
+              'Please select a video or enter a URL',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+            ),
+            backgroundColor: Colors.red.shade400,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
         );
         return;
       }
@@ -65,8 +74,8 @@ class _CreateRepDialogState extends State<CreateRepDialog> {
         title: _titleController.text,
         creatorName: 'You',
         subject: 'Custom Rep',
-        lockTimestamp: 5, // Default lock time for custom videos
-        duration: const Duration(seconds: 30), // Placeholder
+        lockTimestamp: 5,
+        duration: const Duration(seconds: 30),
         question: QuestionModel(
           prompt: _questionController.text,
           type: QuestionType.multipleChoice,
@@ -83,7 +92,7 @@ class _CreateRepDialogState extends State<CreateRepDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: StudyRepsTheme.bgSecondary,
+      backgroundColor: StudyRepsTheme.warmCream,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Container(
         padding: const EdgeInsets.all(24),
@@ -93,20 +102,31 @@ class _CreateRepDialogState extends State<CreateRepDialog> {
             // Header
             Row(
               children: [
-                const Icon(Icons.add_circle_outline, color: StudyRepsTheme.primaryPurple),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: StudyRepsTheme.warmOrange.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.add_circle_outline, color: StudyRepsTheme.warmOrange),
+                ),
                 const SizedBox(width: 12),
                 Text(
                   'Create New Rep',
-                  style: StudyRepsTheme.darkTheme.textTheme.headlineLarge?.copyWith(fontSize: 20),
+                  style: GoogleFonts.outfit(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: StudyRepsTheme.warmTextDark,
+                  ),
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white54),
+                  icon: const Icon(Icons.close, color: StudyRepsTheme.warmTextLight),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
             ),
-            const Divider(color: Colors.white10),
+            const Divider(color: StudyRepsTheme.warmBorder),
             
             // Scrollable Form
             Expanded(
@@ -125,22 +145,23 @@ class _CreateRepDialogState extends State<CreateRepDialog> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white10,
+                            color: StudyRepsTheme.warmCard,
                             borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: StudyRepsTheme.warmBorder),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.movie, color: Colors.green),
+                              const Icon(Icons.movie, color: StudyRepsTheme.warmGreen),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
                                   _selectedVideo!.path.split('/').last,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(color: Colors.white),
+                                  style: GoogleFonts.outfit(color: StudyRepsTheme.warmTextDark),
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
+                                icon: const Icon(Icons.delete, color: Colors.redAccent),
                                 onPressed: () => setState(() => _selectedVideo = null),
                               ),
                             ],
@@ -151,11 +172,16 @@ class _CreateRepDialogState extends State<CreateRepDialog> {
                           children: [
                             Expanded(
                               child: ElevatedButton.icon(
-                                icon: const Icon(Icons.video_library),
-                                label: const Text('Gallery'),
+                                icon: const Icon(Icons.video_library, color: Colors.white),
+                                label: Text(
+                                  'Gallery',
+                                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600),
+                                ),
                                 onPressed: _pickVideo,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF2A2A40),
+                                  backgroundColor: StudyRepsTheme.warmOrange,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
                                 ),
                               ),
                             ),
@@ -171,7 +197,7 @@ class _CreateRepDialogState extends State<CreateRepDialog> {
                       _buildTextField(_questionController, 'Question Prompt', maxLines: 2),
                       const SizedBox(height: 8),
                       _buildTextField(_correctAnswerController, '✅ Correct Answer', 
-                        icon: Icons.check_circle_outline, color: Colors.green),
+                        icon: Icons.check_circle_outline, color: StudyRepsTheme.warmGreen),
                       const SizedBox(height: 8),
                       _buildTextField(_wrong1Controller, '❌ Wrong Option 1'),
                       const SizedBox(height: 8),
@@ -188,17 +214,27 @@ class _CreateRepDialogState extends State<CreateRepDialog> {
               ),
             ),
             
-            // Footer Buttons
+            // Footer Button
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: StudyRepsTheme.primaryPurple,
+                  backgroundColor: StudyRepsTheme.warmOrange,
                   padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  elevation: 4,
+                  shadowColor: StudyRepsTheme.warmOrange.withOpacity(0.4),
                 ),
-                child: const Text('Create Rep'),
+                child: Text(
+                  'Create Rep',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                ),
               ),
             ),
           ],
@@ -210,10 +246,10 @@ class _CreateRepDialogState extends State<CreateRepDialog> {
   Widget _buildSectionLabel(String label) {
     return Text(
       label,
-      style: const TextStyle(
-        color: Colors.white54,
+      style: GoogleFonts.outfit(
+        color: StudyRepsTheme.warmTextLight,
         fontSize: 12,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w700,
         letterSpacing: 1,
       ),
     );
@@ -228,18 +264,28 @@ class _CreateRepDialogState extends State<CreateRepDialog> {
       padding: const EdgeInsets.only(bottom: 8),
       child: TextFormField(
         controller: controller,
-        style: TextStyle(color: color ?? Colors.white),
+        style: GoogleFonts.outfit(color: color ?? StudyRepsTheme.warmTextDark),
         maxLines: maxLines,
         validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: (color ?? Colors.white).withOpacity(0.5)),
+          labelStyle: GoogleFonts.outfit(
+            color: (color ?? StudyRepsTheme.warmTextMedium).withOpacity(0.7),
+          ),
           prefixIcon: icon != null ? Icon(icon, color: color, size: 20) : null,
           filled: true,
-          fillColor: Colors.white.withOpacity(0.05),
+          fillColor: StudyRepsTheme.warmCard,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
+            borderSide: const BorderSide(color: StudyRepsTheme.warmBorder),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: StudyRepsTheme.warmBorder),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: StudyRepsTheme.warmOrange, width: 2),
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),

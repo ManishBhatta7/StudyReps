@@ -21,34 +21,44 @@ VideoModel _$VideoModelFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$VideoModel {
   String get id => throw _privateConstructorUsedError;
-  String get videoUrl => throw _privateConstructorUsedError;
+  String get videoUrl =>
+      throw _privateConstructorUsedError; // Empty for flashcards
   int get lockTimestamp =>
-      throw _privateConstructorUsedError; // Seconds into video where lock occurs
+      throw _privateConstructorUsedError; // Seconds into video where lock occurs (0 for flashcards)
   QuestionModel get question => throw _privateConstructorUsedError;
   String get creatorName => throw _privateConstructorUsedError;
   String get creatorAvatar => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
   String get subject => throw _privateConstructorUsedError;
-  String get thumbnailUrl => throw _privateConstructorUsedError; // Added for UI
+  String get thumbnailUrl => throw _privateConstructorUsedError;
   int get likesCount => throw _privateConstructorUsedError;
   int get repsCompleted => throw _privateConstructorUsedError;
   bool get isLiked => throw _privateConstructorUsedError;
   bool get isSaved => throw _privateConstructorUsedError;
-  Duration get duration =>
-      throw _privateConstructorUsedError; // Added missing duration
+  Duration get duration => throw _privateConstructorUsedError;
+  int get startSeconds => throw _privateConstructorUsedError;
+  int? get endSeconds =>
+      throw _privateConstructorUsedError; // ── Content Type ──
+  ContentType get contentType =>
+      throw _privateConstructorUsedError; // ── Flashcard-Specific Fields ──
+  String get flashcardFrontText =>
+      throw _privateConstructorUsedError; // The "teach" side — concept explanation
+  String get flashcardBackText =>
+      throw _privateConstructorUsedError; // Optional back text (revealed after answer)
+  String get flashcardImageUrl =>
+      throw _privateConstructorUsedError; // Optional diagram/illustration URL
+  String get flashcardEmoji =>
+      throw _privateConstructorUsedError; // Visual emoji for the card header
 // ── Adaptive Feed & Spaced Repetition Fields ──
-  String get transcript =>
-      throw _privateConstructorUsedError; // Full text for tutorbot context & quiz gen
-  List<String> get tags =>
-      throw _privateConstructorUsedError; // Searchable tags for discovery
-  List<String> get prerequisiteIds =>
-      throw _privateConstructorUsedError; // Video IDs that should be mastered first
-  int get difficultyLevel => throw _privateConstructorUsedError; // 1-5 scale
-  String get topicId =>
-      throw _privateConstructorUsedError; // Maps to TopicSchema.id
-  String get conceptCluster =>
-      throw _privateConstructorUsedError; // Groups related concepts (e.g. "newton_laws")
+  String get transcript => throw _privateConstructorUsedError;
+  List<String> get tags => throw _privateConstructorUsedError;
+  List<String> get prerequisiteIds => throw _privateConstructorUsedError;
+  int get difficultyLevel => throw _privateConstructorUsedError;
+  String get topicId => throw _privateConstructorUsedError;
+  String get conceptCluster => throw _privateConstructorUsedError;
   String get language => throw _privateConstructorUsedError;
+  List<String> get boards => throw _privateConstructorUsedError;
+  List<String> get grades => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -77,13 +87,22 @@ abstract class $VideoModelCopyWith<$Res> {
       bool isLiked,
       bool isSaved,
       Duration duration,
+      int startSeconds,
+      int? endSeconds,
+      ContentType contentType,
+      String flashcardFrontText,
+      String flashcardBackText,
+      String flashcardImageUrl,
+      String flashcardEmoji,
       String transcript,
       List<String> tags,
       List<String> prerequisiteIds,
       int difficultyLevel,
       String topicId,
       String conceptCluster,
-      String language});
+      String language,
+      List<String> boards,
+      List<String> grades});
 
   $QuestionModelCopyWith<$Res> get question;
 }
@@ -115,6 +134,13 @@ class _$VideoModelCopyWithImpl<$Res, $Val extends VideoModel>
     Object? isLiked = null,
     Object? isSaved = null,
     Object? duration = null,
+    Object? startSeconds = null,
+    Object? endSeconds = freezed,
+    Object? contentType = null,
+    Object? flashcardFrontText = null,
+    Object? flashcardBackText = null,
+    Object? flashcardImageUrl = null,
+    Object? flashcardEmoji = null,
     Object? transcript = null,
     Object? tags = null,
     Object? prerequisiteIds = null,
@@ -122,6 +148,8 @@ class _$VideoModelCopyWithImpl<$Res, $Val extends VideoModel>
     Object? topicId = null,
     Object? conceptCluster = null,
     Object? language = null,
+    Object? boards = null,
+    Object? grades = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -180,6 +208,34 @@ class _$VideoModelCopyWithImpl<$Res, $Val extends VideoModel>
           ? _value.duration
           : duration // ignore: cast_nullable_to_non_nullable
               as Duration,
+      startSeconds: null == startSeconds
+          ? _value.startSeconds
+          : startSeconds // ignore: cast_nullable_to_non_nullable
+              as int,
+      endSeconds: freezed == endSeconds
+          ? _value.endSeconds
+          : endSeconds // ignore: cast_nullable_to_non_nullable
+              as int?,
+      contentType: null == contentType
+          ? _value.contentType
+          : contentType // ignore: cast_nullable_to_non_nullable
+              as ContentType,
+      flashcardFrontText: null == flashcardFrontText
+          ? _value.flashcardFrontText
+          : flashcardFrontText // ignore: cast_nullable_to_non_nullable
+              as String,
+      flashcardBackText: null == flashcardBackText
+          ? _value.flashcardBackText
+          : flashcardBackText // ignore: cast_nullable_to_non_nullable
+              as String,
+      flashcardImageUrl: null == flashcardImageUrl
+          ? _value.flashcardImageUrl
+          : flashcardImageUrl // ignore: cast_nullable_to_non_nullable
+              as String,
+      flashcardEmoji: null == flashcardEmoji
+          ? _value.flashcardEmoji
+          : flashcardEmoji // ignore: cast_nullable_to_non_nullable
+              as String,
       transcript: null == transcript
           ? _value.transcript
           : transcript // ignore: cast_nullable_to_non_nullable
@@ -208,6 +264,14 @@ class _$VideoModelCopyWithImpl<$Res, $Val extends VideoModel>
           ? _value.language
           : language // ignore: cast_nullable_to_non_nullable
               as String,
+      boards: null == boards
+          ? _value.boards
+          : boards // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      grades: null == grades
+          ? _value.grades
+          : grades // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ) as $Val);
   }
 
@@ -243,13 +307,22 @@ abstract class _$$VideoModelImplCopyWith<$Res>
       bool isLiked,
       bool isSaved,
       Duration duration,
+      int startSeconds,
+      int? endSeconds,
+      ContentType contentType,
+      String flashcardFrontText,
+      String flashcardBackText,
+      String flashcardImageUrl,
+      String flashcardEmoji,
       String transcript,
       List<String> tags,
       List<String> prerequisiteIds,
       int difficultyLevel,
       String topicId,
       String conceptCluster,
-      String language});
+      String language,
+      List<String> boards,
+      List<String> grades});
 
   @override
   $QuestionModelCopyWith<$Res> get question;
@@ -280,6 +353,13 @@ class __$$VideoModelImplCopyWithImpl<$Res>
     Object? isLiked = null,
     Object? isSaved = null,
     Object? duration = null,
+    Object? startSeconds = null,
+    Object? endSeconds = freezed,
+    Object? contentType = null,
+    Object? flashcardFrontText = null,
+    Object? flashcardBackText = null,
+    Object? flashcardImageUrl = null,
+    Object? flashcardEmoji = null,
     Object? transcript = null,
     Object? tags = null,
     Object? prerequisiteIds = null,
@@ -287,6 +367,8 @@ class __$$VideoModelImplCopyWithImpl<$Res>
     Object? topicId = null,
     Object? conceptCluster = null,
     Object? language = null,
+    Object? boards = null,
+    Object? grades = null,
   }) {
     return _then(_$VideoModelImpl(
       id: null == id
@@ -345,6 +427,34 @@ class __$$VideoModelImplCopyWithImpl<$Res>
           ? _value.duration
           : duration // ignore: cast_nullable_to_non_nullable
               as Duration,
+      startSeconds: null == startSeconds
+          ? _value.startSeconds
+          : startSeconds // ignore: cast_nullable_to_non_nullable
+              as int,
+      endSeconds: freezed == endSeconds
+          ? _value.endSeconds
+          : endSeconds // ignore: cast_nullable_to_non_nullable
+              as int?,
+      contentType: null == contentType
+          ? _value.contentType
+          : contentType // ignore: cast_nullable_to_non_nullable
+              as ContentType,
+      flashcardFrontText: null == flashcardFrontText
+          ? _value.flashcardFrontText
+          : flashcardFrontText // ignore: cast_nullable_to_non_nullable
+              as String,
+      flashcardBackText: null == flashcardBackText
+          ? _value.flashcardBackText
+          : flashcardBackText // ignore: cast_nullable_to_non_nullable
+              as String,
+      flashcardImageUrl: null == flashcardImageUrl
+          ? _value.flashcardImageUrl
+          : flashcardImageUrl // ignore: cast_nullable_to_non_nullable
+              as String,
+      flashcardEmoji: null == flashcardEmoji
+          ? _value.flashcardEmoji
+          : flashcardEmoji // ignore: cast_nullable_to_non_nullable
+              as String,
       transcript: null == transcript
           ? _value.transcript
           : transcript // ignore: cast_nullable_to_non_nullable
@@ -373,6 +483,14 @@ class __$$VideoModelImplCopyWithImpl<$Res>
           ? _value.language
           : language // ignore: cast_nullable_to_non_nullable
               as String,
+      boards: null == boards
+          ? _value._boards
+          : boards // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      grades: null == grades
+          ? _value._grades
+          : grades // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ));
   }
 }
@@ -382,8 +500,8 @@ class __$$VideoModelImplCopyWithImpl<$Res>
 class _$VideoModelImpl implements _VideoModel {
   const _$VideoModelImpl(
       {required this.id,
-      required this.videoUrl,
-      required this.lockTimestamp,
+      this.videoUrl = '',
+      this.lockTimestamp = 0,
       required this.question,
       this.creatorName = 'StudyReps',
       this.creatorAvatar =
@@ -396,15 +514,26 @@ class _$VideoModelImpl implements _VideoModel {
       this.isLiked = false,
       this.isSaved = false,
       this.duration = Duration.zero,
+      this.startSeconds = 0,
+      this.endSeconds,
+      this.contentType = ContentType.video,
+      this.flashcardFrontText = '',
+      this.flashcardBackText = '',
+      this.flashcardImageUrl = '',
+      this.flashcardEmoji = '',
       this.transcript = '',
       final List<String> tags = const [],
       final List<String> prerequisiteIds = const [],
       this.difficultyLevel = 1,
       this.topicId = '',
       this.conceptCluster = '',
-      this.language = 'en'})
+      this.language = 'en',
+      final List<String> boards = const [],
+      final List<String> grades = const []})
       : _tags = tags,
-        _prerequisiteIds = prerequisiteIds;
+        _prerequisiteIds = prerequisiteIds,
+        _boards = boards,
+        _grades = grades;
 
   factory _$VideoModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$VideoModelImplFromJson(json);
@@ -412,10 +541,13 @@ class _$VideoModelImpl implements _VideoModel {
   @override
   final String id;
   @override
+  @JsonKey()
   final String videoUrl;
+// Empty for flashcards
   @override
+  @JsonKey()
   final int lockTimestamp;
-// Seconds into video where lock occurs
+// Seconds into video where lock occurs (0 for flashcards)
   @override
   final QuestionModel question;
   @override
@@ -431,7 +563,6 @@ class _$VideoModelImpl implements _VideoModel {
   @override
   @JsonKey()
   final String thumbnailUrl;
-// Added for UI
   @override
   @JsonKey()
   final int likesCount;
@@ -447,14 +578,37 @@ class _$VideoModelImpl implements _VideoModel {
   @override
   @JsonKey()
   final Duration duration;
-// Added missing duration
+  @override
+  @JsonKey()
+  final int startSeconds;
+  @override
+  final int? endSeconds;
+// ── Content Type ──
+  @override
+  @JsonKey()
+  final ContentType contentType;
+// ── Flashcard-Specific Fields ──
+  @override
+  @JsonKey()
+  final String flashcardFrontText;
+// The "teach" side — concept explanation
+  @override
+  @JsonKey()
+  final String flashcardBackText;
+// Optional back text (revealed after answer)
+  @override
+  @JsonKey()
+  final String flashcardImageUrl;
+// Optional diagram/illustration URL
+  @override
+  @JsonKey()
+  final String flashcardEmoji;
+// Visual emoji for the card header
 // ── Adaptive Feed & Spaced Repetition Fields ──
   @override
   @JsonKey()
   final String transcript;
-// Full text for tutorbot context & quiz gen
   final List<String> _tags;
-// Full text for tutorbot context & quiz gen
   @override
   @JsonKey()
   List<String> get tags {
@@ -463,9 +617,7 @@ class _$VideoModelImpl implements _VideoModel {
     return EqualUnmodifiableListView(_tags);
   }
 
-// Searchable tags for discovery
   final List<String> _prerequisiteIds;
-// Searchable tags for discovery
   @override
   @JsonKey()
   List<String> get prerequisiteIds {
@@ -474,26 +626,39 @@ class _$VideoModelImpl implements _VideoModel {
     return EqualUnmodifiableListView(_prerequisiteIds);
   }
 
-// Video IDs that should be mastered first
   @override
   @JsonKey()
   final int difficultyLevel;
-// 1-5 scale
   @override
   @JsonKey()
   final String topicId;
-// Maps to TopicSchema.id
   @override
   @JsonKey()
   final String conceptCluster;
-// Groups related concepts (e.g. "newton_laws")
   @override
   @JsonKey()
   final String language;
+  final List<String> _boards;
+  @override
+  @JsonKey()
+  List<String> get boards {
+    if (_boards is EqualUnmodifiableListView) return _boards;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_boards);
+  }
+
+  final List<String> _grades;
+  @override
+  @JsonKey()
+  List<String> get grades {
+    if (_grades is EqualUnmodifiableListView) return _grades;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_grades);
+  }
 
   @override
   String toString() {
-    return 'VideoModel(id: $id, videoUrl: $videoUrl, lockTimestamp: $lockTimestamp, question: $question, creatorName: $creatorName, creatorAvatar: $creatorAvatar, title: $title, subject: $subject, thumbnailUrl: $thumbnailUrl, likesCount: $likesCount, repsCompleted: $repsCompleted, isLiked: $isLiked, isSaved: $isSaved, duration: $duration, transcript: $transcript, tags: $tags, prerequisiteIds: $prerequisiteIds, difficultyLevel: $difficultyLevel, topicId: $topicId, conceptCluster: $conceptCluster, language: $language)';
+    return 'VideoModel(id: $id, videoUrl: $videoUrl, lockTimestamp: $lockTimestamp, question: $question, creatorName: $creatorName, creatorAvatar: $creatorAvatar, title: $title, subject: $subject, thumbnailUrl: $thumbnailUrl, likesCount: $likesCount, repsCompleted: $repsCompleted, isLiked: $isLiked, isSaved: $isSaved, duration: $duration, startSeconds: $startSeconds, endSeconds: $endSeconds, contentType: $contentType, flashcardFrontText: $flashcardFrontText, flashcardBackText: $flashcardBackText, flashcardImageUrl: $flashcardImageUrl, flashcardEmoji: $flashcardEmoji, transcript: $transcript, tags: $tags, prerequisiteIds: $prerequisiteIds, difficultyLevel: $difficultyLevel, topicId: $topicId, conceptCluster: $conceptCluster, language: $language, boards: $boards, grades: $grades)';
   }
 
   @override
@@ -524,6 +689,20 @@ class _$VideoModelImpl implements _VideoModel {
             (identical(other.isSaved, isSaved) || other.isSaved == isSaved) &&
             (identical(other.duration, duration) ||
                 other.duration == duration) &&
+            (identical(other.startSeconds, startSeconds) ||
+                other.startSeconds == startSeconds) &&
+            (identical(other.endSeconds, endSeconds) ||
+                other.endSeconds == endSeconds) &&
+            (identical(other.contentType, contentType) ||
+                other.contentType == contentType) &&
+            (identical(other.flashcardFrontText, flashcardFrontText) ||
+                other.flashcardFrontText == flashcardFrontText) &&
+            (identical(other.flashcardBackText, flashcardBackText) ||
+                other.flashcardBackText == flashcardBackText) &&
+            (identical(other.flashcardImageUrl, flashcardImageUrl) ||
+                other.flashcardImageUrl == flashcardImageUrl) &&
+            (identical(other.flashcardEmoji, flashcardEmoji) ||
+                other.flashcardEmoji == flashcardEmoji) &&
             (identical(other.transcript, transcript) ||
                 other.transcript == transcript) &&
             const DeepCollectionEquality().equals(other._tags, _tags) &&
@@ -535,7 +714,9 @@ class _$VideoModelImpl implements _VideoModel {
             (identical(other.conceptCluster, conceptCluster) ||
                 other.conceptCluster == conceptCluster) &&
             (identical(other.language, language) ||
-                other.language == language));
+                other.language == language) &&
+            const DeepCollectionEquality().equals(other._boards, _boards) &&
+            const DeepCollectionEquality().equals(other._grades, _grades));
   }
 
   @JsonKey(ignore: true)
@@ -556,13 +737,22 @@ class _$VideoModelImpl implements _VideoModel {
         isLiked,
         isSaved,
         duration,
+        startSeconds,
+        endSeconds,
+        contentType,
+        flashcardFrontText,
+        flashcardBackText,
+        flashcardImageUrl,
+        flashcardEmoji,
         transcript,
         const DeepCollectionEquality().hash(_tags),
         const DeepCollectionEquality().hash(_prerequisiteIds),
         difficultyLevel,
         topicId,
         conceptCluster,
-        language
+        language,
+        const DeepCollectionEquality().hash(_boards),
+        const DeepCollectionEquality().hash(_grades)
       ]);
 
   @JsonKey(ignore: true)
@@ -582,8 +772,8 @@ class _$VideoModelImpl implements _VideoModel {
 abstract class _VideoModel implements VideoModel {
   const factory _VideoModel(
       {required final String id,
-      required final String videoUrl,
-      required final int lockTimestamp,
+      final String videoUrl,
+      final int lockTimestamp,
       required final QuestionModel question,
       final String creatorName,
       final String creatorAvatar,
@@ -595,13 +785,22 @@ abstract class _VideoModel implements VideoModel {
       final bool isLiked,
       final bool isSaved,
       final Duration duration,
+      final int startSeconds,
+      final int? endSeconds,
+      final ContentType contentType,
+      final String flashcardFrontText,
+      final String flashcardBackText,
+      final String flashcardImageUrl,
+      final String flashcardEmoji,
       final String transcript,
       final List<String> tags,
       final List<String> prerequisiteIds,
       final int difficultyLevel,
       final String topicId,
       final String conceptCluster,
-      final String language}) = _$VideoModelImpl;
+      final String language,
+      final List<String> boards,
+      final List<String> grades}) = _$VideoModelImpl;
 
   factory _VideoModel.fromJson(Map<String, dynamic> json) =
       _$VideoModelImpl.fromJson;
@@ -610,9 +809,9 @@ abstract class _VideoModel implements VideoModel {
   String get id;
   @override
   String get videoUrl;
-  @override
+  @override // Empty for flashcards
   int get lockTimestamp;
-  @override // Seconds into video where lock occurs
+  @override // Seconds into video where lock occurs (0 for flashcards)
   QuestionModel get question;
   @override
   String get creatorName;
@@ -624,7 +823,7 @@ abstract class _VideoModel implements VideoModel {
   String get subject;
   @override
   String get thumbnailUrl;
-  @override // Added for UI
+  @override
   int get likesCount;
   @override
   int get repsCompleted;
@@ -634,21 +833,39 @@ abstract class _VideoModel implements VideoModel {
   bool get isSaved;
   @override
   Duration get duration;
-  @override // Added missing duration
+  @override
+  int get startSeconds;
+  @override
+  int? get endSeconds;
+  @override // ── Content Type ──
+  ContentType get contentType;
+  @override // ── Flashcard-Specific Fields ──
+  String get flashcardFrontText;
+  @override // The "teach" side — concept explanation
+  String get flashcardBackText;
+  @override // Optional back text (revealed after answer)
+  String get flashcardImageUrl;
+  @override // Optional diagram/illustration URL
+  String get flashcardEmoji;
+  @override // Visual emoji for the card header
 // ── Adaptive Feed & Spaced Repetition Fields ──
   String get transcript;
-  @override // Full text for tutorbot context & quiz gen
+  @override
   List<String> get tags;
-  @override // Searchable tags for discovery
+  @override
   List<String> get prerequisiteIds;
-  @override // Video IDs that should be mastered first
+  @override
   int get difficultyLevel;
-  @override // 1-5 scale
+  @override
   String get topicId;
-  @override // Maps to TopicSchema.id
+  @override
   String get conceptCluster;
-  @override // Groups related concepts (e.g. "newton_laws")
+  @override
   String get language;
+  @override
+  List<String> get boards;
+  @override
+  List<String> get grades;
   @override
   @JsonKey(ignore: true)
   _$$VideoModelImplCopyWith<_$VideoModelImpl> get copyWith =>

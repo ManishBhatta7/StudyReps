@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -17,6 +19,13 @@ import '../widgets/lock_overlay.dart';
 import '../widgets/mascot_reactor.dart';
 import '../widgets/video_tutorbot_sheet.dart';
 import '../widgets/comment_section.dart';
+import '../widgets/explain_storyboard_sheet.dart';
+import '../widgets/drill_flashcard_sheet.dart';
+import '../widgets/quiz_assessment_sheet.dart';
+import '../widgets/xp_reward_overlay.dart';
+import '../widgets/achievement_unlock_toast.dart';
+import '../providers/achievement_provider.dart';
+import '../widgets/flashcard_feed_item.dart';
 
 
 /// Swipe-Gated Video Feed Screen
@@ -114,7 +123,7 @@ class _SwipeGatedFeedScreenState extends ConsumerState<SwipeGatedFeedScreen> {
     });
 
     return Scaffold(
-      backgroundColor: StudyRepsTheme.bgPrimary,
+      backgroundColor: StudyRepsTheme.warmCream,
       body: Stack(
         children: [
           if (_videos.isEmpty)
@@ -168,21 +177,26 @@ class _SwipeGatedFeedScreenState extends ConsumerState<SwipeGatedFeedScreen> {
           const SizedBox(height: 24),
           Text(
             'No Reps Yet!',
-            style: StudyRepsTheme.darkTheme.textTheme.headlineLarge,
+            style: GoogleFonts.outfit(
+              fontSize: 32,
+              fontWeight: FontWeight.w800,
+              color: StudyRepsTheme.warmTextDark,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
             'Create your first spaced repetition\nvideo to get started.',
             textAlign: TextAlign.center,
-            style: StudyRepsTheme.darkTheme.textTheme.bodyLarge?.copyWith(
-              color: StudyRepsTheme.textSecondary,
+            style: GoogleFonts.outfit(
+              fontSize: 17,
+              color: StudyRepsTheme.warmTextMedium,
             ),
           ),
           const SizedBox(height: 48),
           // Arrow pointing to FAB
           const Icon(
             Icons.arrow_downward_rounded,
-            color: StudyRepsTheme.primaryPurple,
+            color: StudyRepsTheme.warmOrange,
             size: 32,
           ),
         ],
@@ -215,8 +229,9 @@ class SwipeGatedVideoItem extends ConsumerStatefulWidget {
 class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem> 
     with SingleTickerProviderStateMixin {
   VideoPlayerController? _controller;
+  YoutubePlayerController? _ytController;
   bool _isInitialized = false;
-  
+  bool _isYoutube = false;
   // Loop tracking
   int _loopCount = 0;
   static const int _maxLoops = 2;
@@ -228,6 +243,10 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
   bool _isCorrect = false;
   bool _isIncorrect = false;
   String? _aiFeedback;
+  QuestionModel? _dynamicQuestion; // 🎯 AI-generated question context
+  
+  // ── Expert Video vs AI Coaching Toggle ──
+  bool _isAiCoachingMode = false;
   
   // Interaction State
   late bool _isLiked;
@@ -253,18 +272,35 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
     if (_showGate) return; // Don't toggle if gate is active
 
     setState(() {
-      if (_controller!.value.isPlaying) {
-        _controller!.pause();
-        _isPlaying = false;
-        _overlayIcon = Icons.play_arrow_rounded; // Show Play icon when paused
-        _showPlayPauseOverlay = true; // Keep visible while paused
-      } else {
-        _controller!.play();
-        _isPlaying = true;
-        _overlayIcon = Icons.pause_rounded; // Flash pause icon
+      if (_isYoutube && _ytController != null) {
+        // Toggle YT playback
+        // Note: YT player iframe doesn't have a simple isPlaying property easily accessible, 
+        // we'll toggle based on our local state which is updated via listener or just by calling play/pause.
+        if (_isPlaying) {
+          _ytController!.pauseVideo();
+          _isPlaying = false;
+          _overlayIcon = Icons.play_arrow_rounded;
+        } else {
+          _ytController!.playVideo();
+          _isPlaying = true;
+          _overlayIcon = Icons.pause_rounded;
+        }
         _showPlayPauseOverlay = true;
-        
-        // Hide overlay after animation when resuming
+      } else if (_controller != null && _controller!.value.isInitialized) {
+        if (_controller!.value.isPlaying) {
+          _controller!.pause();
+          _isPlaying = false;
+          _overlayIcon = Icons.play_arrow_rounded;
+        } else {
+          _controller!.play();
+          _isPlaying = true;
+          _overlayIcon = Icons.pause_rounded;
+        }
+        _showPlayPauseOverlay = true;
+      }
+      
+      // Hide overlay after animation
+      if (_isPlaying) {
         Future.delayed(const Duration(milliseconds: 600), () {
           if (mounted && _isPlaying) {
             setState(() => _showPlayPauseOverlay = false);
@@ -287,39 +323,100 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
     );
     _dwellStopwatch.start();
     _initializeVideo();
+    _prefetchDynamicQuestion(); // 🎯 Start AI generation in background
   }
 
-  Future<void> _initializeVideo() async {
-    try {
-      // On web, dart:io File is not available. Always use network URL.
-      if (kIsWeb || widget.video.videoUrl.startsWith('http')) {
-        _controller = VideoPlayerController.networkUrl(
-          Uri.parse(widget.video.videoUrl),
-        );
-      } else {
-        // Mobile/Desktop only: local file playback
-        _controller = VideoPlayerController.networkUrl(
-          Uri.parse(widget.video.videoUrl), // Fallback to network for safety
-        );
+  Future<void> _prefetchDynamicQuestion() async {
+    // Only generate if we have a transcript to work with
+    if (widget.video.transcript.isNotEmpty) {
+      try {
+        final aiQuestion = await GeminiCoachService.generateDynamicQuestion(widget.video);
+        if (mounted) {
+          setState(() {
+            _dynamicQuestion = aiQuestion;
+          });
+          debugPrint('✨ AI Question Generated for ${widget.video.id}: ${aiQuestion.prompt}');
+        }
+      } catch (e) {
+        debugPrint('⚠️ AI Question Prefetch failed: $e');
       }
+    }
+  }
 
-      await _controller!.initialize();
-      _controller!.setLooping(false); // We manage looping manually
-      
-      // Listen for video completion
-      _controller!.addListener(_onVideoProgress);
+  /// Use the dynamic question if available, otherwise fallback to hardcoded
+  QuestionModel get _activeQuestion => _dynamicQuestion ?? widget.video.question;
 
-      if (mounted) {
-        setState(() => _isInitialized = true);
-        if (widget.isActive) {
-          _controller!.play();
-          ref.read(videosRepositoryProvider).logView(widget.video.id);
+  Future<void> _initializeVideo() async {
+    final url = widget.video.videoUrl;
+    _isYoutube = url.contains('youtube.com') || url.contains('youtu.be');
+
+    try {
+      if (_isYoutube) {
+        final videoId = YoutubePlayerController.convertUrlToId(url);
+        if (videoId != null) {
+          _ytController = YoutubePlayerController.fromVideoId(
+            videoId: videoId,
+            autoPlay: false, // Wait for activation
+            startSeconds: widget.video.startSeconds.toDouble(),
+            endSeconds: widget.video.endSeconds?.toDouble(),
+            params: const YoutubePlayerParams(
+              showControls: false, // We use our own UI
+              showFullscreenButton: false,
+              mute: false,
+              loop: false, // We handle loop
+              pointerEvents: PointerEvents.none, // Allow our taps to pass through
+            ),
+          );
+
+          // YT states: unStarted(-1), ended(0), playing(1), paused(2), buffering(3), videoCued(5)
+          _ytController!.listen((state) async {
+             // 🎯 Lock at specific timestamp if set (Active Recall)
+             final position = await _ytController!.currentTime;
+             if (widget.video.lockTimestamp > 0 && 
+                 position >= widget.video.lockTimestamp && 
+                 !_isAnswered && !_showGate) {
+                _ytController!.pauseVideo();
+                if (mounted) setState(() => _showGate = true);
+                widget.onLockTriggered();
+             }
+
+             if (state.playerState == PlayerState.ended) {
+                _handleLoopComplete();
+             }
+          });
+
+          if (mounted) {
+            setState(() => _isInitialized = true);
+            if (widget.isActive) {
+              _ytController!.playVideo();
+              ref.read(videosRepositoryProvider).logView(widget.video.id);
+            }
+          }
+        }
+      } else {
+        // Native video_player initialization logic
+        if (kIsWeb || url.startsWith('http')) {
+          _controller = VideoPlayerController.networkUrl(Uri.parse(url));
+        } else {
+          _controller = VideoPlayerController.networkUrl(Uri.parse(url));
+        }
+
+        await _controller!.initialize();
+        _controller!.setLooping(false);
+        _controller!.addListener(_onVideoProgress);
+
+        if (mounted) {
+          setState(() => _isInitialized = true);
+          if (widget.isActive) {
+            _controller!.play();
+            ref.read(videosRepositoryProvider).logView(widget.video.id);
+          }
         }
       }
     } catch (e) {
       debugPrint('❌ Error initializing video: $e');
       if (mounted) {
-        setState(() => _isInitialized = false); // Keep false to show error/loading
+        setState(() => _isInitialized = false);
       }
     }
   }
@@ -330,6 +427,16 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
     final position = _controller!.value.position;
     final duration = _controller!.value.duration;
     
+    // 🎯 Lock at specific timestamp if set (Active Recall)
+    if (widget.video.lockTimestamp > 0 && 
+        position.inSeconds >= widget.video.lockTimestamp && 
+        !_isAnswered && !_showGate) {
+      _controller!.pause();
+      setState(() => _showGate = true);
+      widget.onLockTriggered();
+      return;
+    }
+
     // Check if video completed a loop
     if (position >= duration - const Duration(milliseconds: 200)) {
       _handleLoopComplete();
@@ -340,17 +447,28 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
     _loopCount++;
     // debugPrint('🔄 Loop $_loopCount completed');
     
-    if (_loopCount >= _maxLoops && !_isAnswered) {
-      // LOCK THE FEED
-      _controller!.pause();
-      setState(() => _showGate = true);
-      widget.onLockTriggered();
-      // debugPrint('🔒 GATE LOCKED - Answer required!');
-    } else if (!_isAnswered) {
-      // Restart for next loop
-      _controller!.seekTo(Duration.zero);
-      _controller!.play();
-      setState(() {}); // Trigger dim update
+    if (_isYoutube) {
+      if (_loopCount >= _maxLoops && !_isAnswered) {
+        _ytController!.pauseVideo();
+        setState(() => _showGate = true);
+        widget.onLockTriggered();
+      } else if (!_isAnswered) {
+        _ytController!.seekTo(seconds: 0);
+        _ytController!.playVideo();
+        setState(() {});
+      }
+    } else {
+      if (_loopCount >= _maxLoops && !_isAnswered) {
+        // LOCK THE FEED
+        _controller!.pause();
+        setState(() => _showGate = true);
+        widget.onLockTriggered();
+      } else if (!_isAnswered) {
+        // Restart for next loop
+        _controller!.seekTo(Duration.zero);
+        _controller!.play();
+        setState(() {}); // Trigger dim update
+      }
     }
   }
 
@@ -367,8 +485,8 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
     try {
       final result = await GeminiCoachService.validateAnswer(
         userAnswer: answer,
-        correctAnswer: widget.video.question.correctAnswer,
-        questionPrompt: widget.video.question.prompt,
+        correctAnswer: _activeQuestion.correctAnswer,
+        questionPrompt: _activeQuestion.prompt,
       );
 
       if (!mounted) return;
@@ -408,19 +526,81 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
       quality: _attemptCount <= 1 ? 5 : 3, // Perfect if first try
     );
 
+    // Capture old XP state BEFORE awarding
+    final oldXpState = ref.read(xpProvider).valueOrNull;
+    final oldLevel = oldXpState?.currentLevel ?? 1;
+
     // Track the streak & rep completion
     ref.read(streakProvider.notifier).logRep();
     
-    // Add XP! Optionally award streak bonus if they hit the daily goal, but handled simply here.
+    // Add XP!
     ref.read(xpProvider.notifier).addXp();
     
+    // Show XP reward overlay with level-up detection
+    Future.delayed(const Duration(milliseconds: 400), () {
+      if (!mounted) return;
+      final newXpState = ref.read(xpProvider).valueOrNull;
+      final newLevel = newXpState?.currentLevel ?? oldLevel;
+      final xpGained = newXpState?.recentXpGain ?? 15;
+      final streakState = ref.read(streakProvider).valueOrNull;
+      final hitDailyGoal = streakState?.todayReps == 10; // Exactly hit the goal
+
+      XpRewardOverlay.show(
+        context,
+        xpGained: xpGained,
+        newLevel: newLevel,
+        oldLevel: oldLevel,
+        currentStreak: streakState?.currentStreak,
+        hitDailyGoal: hitDailyGoal,
+      );
+
+      // Check for newly unlocked achievements
+      _checkAchievementUnlocks();
+    });
+    
     // After delay, unlock and advance
-    Future.delayed(const Duration(milliseconds: 1500), () {
+    Future.delayed(const Duration(milliseconds: 2500), () {
       if (mounted) {
         setState(() => _showGate = false);
         widget.onUnlockAndAdvance();
       }
     });
+  }
+
+  /// Check if any achievements were just unlocked and show toasts
+  Future<void> _checkAchievementUnlocks() async {
+    try {
+      // Force a refresh of achievements after XP/streak update
+      ref.invalidate(achievementProvider);
+      
+      // Small delay to let the provider rebuild
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (!mounted) return;
+
+      final achievements = ref.read(achievementProvider).valueOrNull ?? [];
+      final newlyUnlocked = achievements.where(
+        (a) => a.isUnlocked && a.unlockedAt != null &&
+               DateTime.now().difference(a.unlockedAt!).inSeconds < 10,
+      ).toList();
+
+      // Show toast for each newly unlocked achievement (stagger them)
+      for (int i = 0; i < newlyUnlocked.length; i++) {
+        final ach = newlyUnlocked[i];
+        Future.delayed(Duration(milliseconds: i * 1500), () {
+          if (mounted) {
+            AchievementUnlockToast.show(
+              context,
+              title: ach.title,
+              emoji: ach.icon,
+              description: ach.description,
+            );
+          }
+        });
+      }
+    } catch (e) {
+      // Silently fail — achievements are nice-to-have, not critical
+      debugPrint('🏆 Achievement check error: $e');
+    }
   }
 
   void _handleWrongAnswer() {
@@ -509,10 +689,18 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
       if (widget.isActive && !_showGate) {
-        _controller?.play();
+        if (_isYoutube) {
+           _ytController?.playVideo();
+        } else {
+           _controller?.play();
+        }
         ref.read(videosRepositoryProvider).logView(widget.video.id);
       } else {
-        _controller?.pause();
+        if (_isYoutube) {
+           _ytController?.pauseVideo();
+        } else {
+           _controller?.pause();
+        }
       }
     }
   }
@@ -522,132 +710,531 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
     _shakeController.dispose();
     _controller?.removeListener(_onVideoProgress);
     _controller?.dispose();
+    _ytController?.close();
     super.dispose();
+  }
+
+  // ── Toggle between Expert Video and AI Coaching ──
+  void _switchToAiCoaching() {
+    if (_isAiCoachingMode) return;
+    // Pause the video before switching
+    if (_isYoutube && _ytController != null) {
+      _ytController!.pauseVideo();
+    } else if (_controller != null) {
+      _controller!.pause();
+    }
+    setState(() {
+      _isAiCoachingMode = true;
+      _isPlaying = false;
+    });
+  }
+
+  void _switchToExpertVideo() {
+    if (!_isAiCoachingMode) return;
+    setState(() {
+      _isAiCoachingMode = false;
+    });
+    // Resume video playback
+    if (widget.isActive) {
+      if (_isYoutube && _ytController != null) {
+        _ytController!.playVideo();
+      } else if (_controller != null) {
+        _controller!.play();
+      }
+      setState(() => _isPlaying = true);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black,
+      color: _isAiCoachingMode ? const Color(0xFF1C1C1E) : Colors.black,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Video Player with Dim Effect
-          if (_isInitialized)
-            AnimatedOpacity(
-              duration: const Duration(milliseconds: 300),
-              opacity: _dimFactor,
-              child: Center(
-                child: AspectRatio(
-                  aspectRatio: _controller!.value.aspectRatio,
-                  child: VideoPlayer(_controller!),
-                ),
-              ),
+          // ── AI COACHING MODE (Full Screen) ──
+          if (_isAiCoachingMode)
+            Positioned.fill(
+              top: 90, // space for the toggle
+              child: _buildAiCoachingView(),
             )
-          else
-            const Center(
-              child: CircularProgressIndicator(
-                color: StudyRepsTheme.primaryPurple,
-              ),
-            ),
-
-          // 👆 Tap Area (Full Screen)
-          Positioned.fill(
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: _togglePlayPause,
-              child: Container(color: Colors.transparent),
-            ),
-          ),
-
-          // Gradient Overlay for Readability (Reels Style)
-          Positioned.fill(
-            child: IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      StudyRepsTheme.bgPrimary.withOpacity(0.6),
-                      Colors.transparent,
-                      Colors.transparent,
-                      StudyRepsTheme.bgPrimary.withOpacity(0.95),
-                    ],
-                    stops: const [0.0, 0.2, 0.7, 1.0],
-                  ),
+          else ...[
+            // ── EXPERT VIDEO MODE ──
+            // Video Player with Dim Effect
+            if (_isInitialized)
+              AnimatedOpacity(
+                duration: const Duration(milliseconds: 300),
+                opacity: _dimFactor,
+                child: Center(
+                  child: _isYoutube 
+                    ? YoutubePlayer(controller: _ytController!)
+                    : AspectRatio(
+                        aspectRatio: _controller!.value.aspectRatio,
+                        child: VideoPlayer(_controller!),
+                      ),
+                ),
+              )
+            else
+              const Center(
+                child: CircularProgressIndicator(
+                  color: StudyRepsTheme.warmOrange,
                 ),
               ),
-            ),
-          ),
 
-          // Loop 2 Toast
-          if (_loopCount >= 1 && !_showGate && !_isAnswered)
-            Positioned(
-              bottom: 150,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: _buildLoopToast(),
+            // 👆 Tap Area (Full Screen)
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: _togglePlayPause,
+                child: Container(color: Colors.transparent),
               ),
             ),
 
-          // Play/Pause Icon Overlay
-          if (_showPlayPauseOverlay)
-            IgnorePointer( // Allow clicks to pass through to screen tap handler
-              child: Center(
-                child: TweenAnimationBuilder<double>(
-                  key: ValueKey(_overlayIcon), // Force restart on icon change
-                  tween: Tween(begin: 1.5, end: 1.0),
-                  duration: const Duration(milliseconds: 400),
-                  curve: Curves.elasticOut,
-                  builder: (context, scale, child) => Transform.scale(
-                    scale: scale,
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.4),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        _overlayIcon,
-                        size: 60,
-                        color: Colors.white.withOpacity(0.9),
-                      ),
+            // Gradient Overlay for Readability (Reels Style)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        StudyRepsTheme.warmTextDark.withOpacity(0.6),
+                        Colors.transparent,
+                        Colors.transparent,
+                        StudyRepsTheme.warmTextDark.withOpacity(0.95),
+                      ],
+                      stops: const [0.0, 0.2, 0.7, 1.0],
                     ),
                   ),
                 ),
               ),
             ),
 
-          // Video Info Overlay
-          _buildVideoInfo(),
+            // Loop 2 Toast
+            if (_loopCount >= 1 && !_showGate && !_isAnswered)
+              Positioned(
+                bottom: 150,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: _buildLoopToast(),
+                ),
+              ),
 
-          // Right side action bar (Tutorbot, Comments, Accessibility)
-          _buildActionBar(),
+            // Play/Pause Icon Overlay
+            if (_showPlayPauseOverlay)
+              IgnorePointer(
+                child: Center(
+                  child: TweenAnimationBuilder<double>(
+                    key: ValueKey(_overlayIcon),
+                    tween: Tween(begin: 1.5, end: 1.0),
+                    duration: const Duration(milliseconds: 400),
+                    curve: Curves.elasticOut,
+                    builder: (context, scale, child) => Transform.scale(
+                      scale: scale,
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.4),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          _overlayIcon,
+                          size: 60,
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
 
-          // Progress Indicator
-          if (_isInitialized)
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: VideoProgressIndicator(
-                _controller!,
-                allowScrubbing: true, // Enable user seeking/rewinding
-                padding: const EdgeInsets.only(top: 12, bottom: 8), // Increase hit area
-                colors: VideoProgressColors(
-                  playedColor: StudyRepsTheme.primaryPurple,
-                  bufferedColor: Colors.white.withOpacity(0.5),
-                  backgroundColor: Colors.white.withOpacity(0.2),
+            // Video Info Overlay
+            _buildVideoInfo(),
+
+            // Right side action bar (Tutorbot, Comments, Accessibility)
+            _buildActionBar(),
+
+            // Progress Indicator
+            if (_isInitialized && !_isYoutube)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: VideoProgressIndicator(
+                  _controller!,
+                  allowScrubbing: true,
+                  padding: const EdgeInsets.only(top: 12, bottom: 8),
+                  colors: VideoProgressColors(
+                    playedColor: StudyRepsTheme.warmOrange,
+                    bufferedColor: Colors.white.withOpacity(0.5),
+                    backgroundColor: Colors.white.withOpacity(0.2),
+                  ),
+                ),
+              ),
+
+            // THE QUESTION GATE
+            if (_showGate)
+              _buildQuestionGate(),
+          ],
+
+          // ── Expert vs AI Toggle (always visible at top) ──
+          _buildModeToggle(),
+        ],
+      ),
+    );
+  }
+
+  /// Premium segmented control: "Expert Video" vs "AI Coaching"
+  Widget _buildModeToggle() {
+    return Positioned(
+      top: MediaQuery.of(context).padding.top + 12,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            color: _isAiCoachingMode
+                ? Colors.white.withOpacity(0.12)
+                : Colors.black.withOpacity(0.45),
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: _isAiCoachingMode
+                  ? StudyRepsTheme.warmOrange.withOpacity(0.4)
+                  : Colors.white.withOpacity(0.15),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Expert Video Tab
+              GestureDetector(
+                onTap: _switchToExpertVideo,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: !_isAiCoachingMode
+                        ? Colors.white
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(26),
+                    boxShadow: !_isAiCoachingMode
+                        ? [BoxShadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          )]
+                        : null,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.play_circle_fill_rounded,
+                        size: 16,
+                        color: !_isAiCoachingMode
+                            ? StudyRepsTheme.warmOrange
+                            : Colors.white.withOpacity(0.5),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Expert Video',
+                        style: GoogleFonts.outfit(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: !_isAiCoachingMode
+                              ? StudyRepsTheme.warmTextDark
+                              : Colors.white.withOpacity(0.5),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 2),
+              // AI Coaching Tab
+              GestureDetector(
+                onTap: _switchToAiCoaching,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: _isAiCoachingMode
+                        ? StudyRepsTheme.warmOrange
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(26),
+                    boxShadow: _isAiCoachingMode
+                        ? [BoxShadow(
+                            color: StudyRepsTheme.warmOrange.withOpacity(0.4),
+                            blurRadius: 12,
+                            offset: const Offset(0, 2),
+                          )]
+                        : null,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.psychology_rounded,
+                        size: 16,
+                        color: _isAiCoachingMode
+                            ? Colors.white
+                            : Colors.white.withOpacity(0.5),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'AI Coaching',
+                        style: GoogleFonts.outfit(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: _isAiCoachingMode
+                              ? Colors.white
+                              : Colors.white.withOpacity(0.5),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Full-screen AI Coaching view (replaces the video)
+  Widget _buildAiCoachingView() {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF1C1C1E),
+      ),
+      child: Column(
+        children: [
+          // Context banner
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  StudyRepsTheme.warmOrange.withOpacity(0.15),
+                  Colors.transparent,
+                ],
+              ),
+              border: Border(
+                bottom: BorderSide(
+                  color: StudyRepsTheme.warmOrange.withOpacity(0.2),
                 ),
               ),
             ),
-
-          // THE QUESTION GATE
-          if (_showGate)
-            _buildQuestionGate(),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: StudyRepsTheme.warmOrange.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.psychology_rounded,
+                    color: StudyRepsTheme.warmOrange,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'AI Coach • ${widget.video.subject}',
+                        style: GoogleFonts.outfit(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Ask anything about "${widget.video.title}"',
+                        style: GoogleFonts.outfit(
+                          fontSize: 12,
+                          color: Colors.white.withOpacity(0.5),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Quick action chips
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                _buildQuickActionChip(
+                  icon: Icons.lightbulb_outline_rounded,
+                  label: 'Explain this',
+                  onTap: () {
+                    ExplainStoryboardSheet.show(context, widget.video);
+                  },
+                ),
+                const SizedBox(width: 8),
+                _buildQuickActionChip(
+                  icon: Icons.fitness_center_rounded,
+                  label: 'Drill me',
+                  onTap: () {
+                    DrillFlashcardSheet.show(context, widget.video);
+                  },
+                ),
+                const SizedBox(width: 8),
+                _buildQuickActionChip(
+                  icon: Icons.quiz_rounded,
+                  label: 'Quiz',
+                  onTap: () {
+                    QuizAssessmentSheet.show(context, widget.video);
+                  },
+                ),
+              ],
+            ),
+          ),
+          // Main AI Chat Area
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.08),
+                ),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: StudyRepsTheme.warmOrange.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.psychology_rounded,
+                        color: StudyRepsTheme.warmOrange,
+                        size: 40,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Your AI Coach is ready',
+                      style: GoogleFonts.outfit(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 40),
+                      child: Text(
+                        'Tap a quick action or open full chat to get instant explanations, drills, and tutoring.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.outfit(
+                          fontSize: 14,
+                          color: Colors.white.withOpacity(0.5),
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    // Open Full Chat Button
+                    GestureDetector(
+                      onTap: () => VideoTutorbotSheet.show(context, widget.video),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [StudyRepsTheme.warmOrange, StudyRepsTheme.warmOrangeDark],
+                          ),
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: StudyRepsTheme.warmOrange.withOpacity(0.4),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.chat_rounded, color: Colors.white, size: 18),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Open Full Chat',
+                              style: GoogleFonts.outfit(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
         ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionChip({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.1),
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: StudyRepsTheme.warmOrange, size: 20),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: GoogleFonts.outfit(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white.withOpacity(0.7),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -659,7 +1246,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
         color: Colors.black.withOpacity(0.7),
         borderRadius: BorderRadius.circular(30),
         border: Border.all(
-          color: StudyRepsTheme.primaryPurple.withOpacity(0.5),
+          color: StudyRepsTheme.warmOrange.withOpacity(0.5),
         ),
       ),
       child: Row(
@@ -667,7 +1254,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
         children: [
           const Icon(
             Icons.swipe_up_rounded,
-            color: StudyRepsTheme.primaryPurple,
+            color: StudyRepsTheme.warmOrange,
             size: 20,
           ),
           const SizedBox(width: 8),
@@ -700,7 +1287,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [StudyRepsTheme.primaryPurple, StudyRepsTheme.accentCyan],
+                  colors: [StudyRepsTheme.warmOrange, StudyRepsTheme.warmOrangeDark],
                 ),
                 borderRadius: BorderRadius.circular(4),
               ),
@@ -727,7 +1314,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
                 ),
               ),
               const SizedBox(width: 6),
-              const Icon(Icons.verified, color: Colors.blueAccent, size: 14),
+              const Icon(Icons.verified, color: StudyRepsTheme.warmOrange, size: 14),
             ],
           ),
           const SizedBox(height: 8),
@@ -846,7 +1433,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
         children: [
           Icon(
             _isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-            color: _isSaved ? StudyRepsTheme.accentCyan : Colors.white,
+            color: _isSaved ? StudyRepsTheme.warmOrange : Colors.white,
             size: 32,
             shadows: const [
               Shadow(color: Colors.black54, offset: Offset(0, 2), blurRadius: 6),
@@ -859,7 +1446,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
           Text(
             _isSaved ? 'Saved' : 'Save',
             style: TextStyle(
-              color: _isSaved ? StudyRepsTheme.accentCyan : Colors.white,
+              color: _isSaved ? StudyRepsTheme.warmOrange : Colors.white,
               fontSize: 12,
               fontWeight: FontWeight.w500,
               shadows: const [
@@ -951,7 +1538,7 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
 
   Widget _buildQuestionGate() {
     return LockOverlay(
-      video: widget.video,
+      video: widget.video.copyWith(question: _activeQuestion), // 🎯 Pass enriched question
       isChecking: _isChecking,
       isCorrect: _isCorrect,
       isIncorrect: _isIncorrect,
@@ -1000,6 +1587,17 @@ class _HorizontalMatrixItemState extends State<HorizontalMatrixItem> {
 
   @override
   Widget build(BuildContext context) {
+    // ── Flashcard: single-page (no horizontal deep dives) ──
+    if (widget.video.contentType == ContentType.flashcard) {
+      return FlashcardFeedItem(
+        video: widget.video,
+        isActive: widget.isActive,
+        onLockTriggered: widget.onLockTriggered,
+        onUnlockAndAdvance: widget.onUnlockAndAdvance,
+      );
+    }
+
+    // ── Video: horizontal matrix (drawer, main, deep dives) ──
     bool isCenterActive = widget.isActive && _currentHorizontalPage == 1;
 
     return PageView.builder(
@@ -1041,18 +1639,22 @@ class StudyDrawerPane extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: StudyRepsTheme.bgPrimary,
+      color: StudyRepsTheme.warmCream,
       padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.menu_book_rounded, color: StudyRepsTheme.primaryPurple, size: 28),
+              const Icon(Icons.menu_book_rounded, color: StudyRepsTheme.warmOrange, size: 28),
               const SizedBox(width: 12),
               Text(
                 'Study Drawer',
-                style: StudyRepsTheme.darkTheme.textTheme.headlineSmall,
+                style: GoogleFonts.outfit(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: StudyRepsTheme.warmTextDark,
+                ),
               ),
             ],
           ),
@@ -1061,7 +1663,7 @@ class StudyDrawerPane extends StatelessWidget {
             'Resources for: ${video.title}',
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Colors.white70, fontSize: 14),
+            style: const TextStyle(color: StudyRepsTheme.warmTextMedium, fontSize: 14),
           ),
           const SizedBox(height: 32),
           
@@ -1134,9 +1736,9 @@ class StudyDrawerPane extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(title, style: const TextStyle(color: StudyRepsTheme.warmTextDark, fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                  Text(subtitle, style: const TextStyle(color: StudyRepsTheme.warmTextMedium, fontSize: 12)),
                 ],
               ),
             ),
@@ -1186,18 +1788,18 @@ class DeepDiveVideoItem extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: StudyRepsTheme.bgPrimary.withOpacity(0.85),
+              color: StudyRepsTheme.warmCream.withOpacity(0.85),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: StudyRepsTheme.primaryPurple, width: 1.5),
+              border: Border.all(color: StudyRepsTheme.warmOrange, width: 1.5),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.explore_rounded, color: StudyRepsTheme.primaryPurple, size: 18),
+                const Icon(Icons.explore_rounded, color: StudyRepsTheme.warmOrange, size: 18),
                 const SizedBox(width: 6),
                 Text(
                   'Deep Dive • $partName',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(color: StudyRepsTheme.warmTextDark, fontWeight: FontWeight.bold, fontSize: 13),
                 ),
               ],
             ),

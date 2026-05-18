@@ -26,10 +26,18 @@ class AppConstants {
   static const bool enableThinking = true;
   static const int thinkingBudget = 1024; // Token budget for internal reasoning
 
-  // ElevenLabs TTS Configuration
+  // ElevenLabs TTS Configuration (deprecated — credits exhausted)
   static String get elevenLabsApiKey => dotenv.env['ELEVENLABS_API_KEY'] ?? '';
   static const String elevenLabsVoiceId = 'Xb7hH8MSUJpSbSDYk0k2'; // Alice - Clear, Engaging Educator (Free Tier Compatible)
   static const String elevenLabsBaseUrl = 'https://api.elevenlabs.io/v1';
+
+  // Google Cloud Text-to-Speech Configuration
+  // Free tier: 1M chars/month (WaveNet/Neural2), 4M chars/month (Standard)
+  // Enable API: https://console.cloud.google.com/apis/library/texttospeech.googleapis.com
+  // Uses the same Google Cloud project as Gemini — may use the same API key if TTS API is enabled.
+  static String get googleTtsApiKey => dotenv.env['GOOGLE_TTS_API_KEY'] ?? dotenv.env['GEMINI_API_KEY'] ?? '';
+  static const String googleTtsVoiceName = 'en-IN-Wavenet-A'; // Natural Indian English female voice
+  static const String googleTtsLanguageCode = 'en-IN';
   
   // Gemini Prompt Templates
   static const String coachPrompt = '''

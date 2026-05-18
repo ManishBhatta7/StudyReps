@@ -78,6 +78,12 @@ class SupabaseAuthRepository implements AuthRepository {
   }) async {
     debugPrint('🔐 AuthRepo: Attempting sign up for $email...');
     debugPrint('   Name: $fullName, Role: ${role.name}');
+
+    if (password.length < 8) {
+      debugPrint('❌ AuthRepo: Sign up error - Password too short');
+      throw RepositoryException(message: 'Password must be at least 8 characters long.');
+    }
+
     try {
       final response = await _client.auth.signUp(
         email: email,

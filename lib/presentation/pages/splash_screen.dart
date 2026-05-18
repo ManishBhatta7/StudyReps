@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../core/theme/retain_learn_theme.dart';
+import '../../core/theme/study_reps_theme.dart';
 
 /// Splash Screen - Shown while checking auth state
 ///
@@ -13,7 +13,7 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: RetainLearnTheme.paperOffWhite,
+      backgroundColor: StudyRepsTheme.warmCream,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -22,11 +22,11 @@ class SplashScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: RetainLearnTheme.tealPrimary,
+                color: StudyRepsTheme.warmOrange,
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: RetainLearnTheme.tealPrimary.withOpacity(0.3),
+                    color: StudyRepsTheme.warmOrange.withOpacity(0.3),
                     blurRadius: 24,
                     offset: const Offset(0, 8),
                   ),
@@ -42,19 +42,19 @@ class SplashScreen extends StatelessWidget {
             
             // App Name
             Text(
-              'RetainLearn',
-              style: GoogleFonts.merriweather(
+              'StudyReps',
+              style: GoogleFonts.outfit(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: RetainLearnTheme.textDark,
+                color: StudyRepsTheme.warmTextDark,
               ),
             ),
             const SizedBox(height: 8),
             const Text(
-              'Your Intelligent Notebook',
+              'Repetition for Retention',
               style: TextStyle(
                 fontSize: 14,
-                color: RetainLearnTheme.textMedium,
+                color: StudyRepsTheme.warmTextMedium,
               ),
             ),
             const SizedBox(height: 48),
@@ -65,7 +65,7 @@ class SplashScreen extends StatelessWidget {
               height: 40,
               child: CircularProgressIndicator(
                 strokeWidth: 3,
-                color: RetainLearnTheme.tealPrimary,
+                color: StudyRepsTheme.warmOrange,
               ),
             ),
             const SizedBox(height: 16),
@@ -73,7 +73,7 @@ class SplashScreen extends StatelessWidget {
               'Loading...',
               style: TextStyle(
                 fontSize: 13,
-                color: RetainLearnTheme.textLight,
+                color: StudyRepsTheme.warmTextLight,
               ),
             ),
           ],

@@ -42,6 +42,7 @@ class UserPreferences with _$UserPreferences {
   const factory UserPreferences({
     @JsonKey(name: 'user_type') String? userType,
     String? board,
+    String? grade,
     String? subject,
     @Default('light') String theme,
     @Default(true) bool notifications,

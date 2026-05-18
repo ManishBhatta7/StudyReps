@@ -1,7 +1,8 @@
-import 'dart:ui'; // Required for ImageFilter.blur() in BackdropFilter widgets
+// Required for ImageFilter.blur() in BackdropFilter widgets
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/study_reps_theme.dart';
 import 'login_screen.dart';
@@ -16,242 +17,177 @@ final notificationsEnabledProvider = StateProvider<bool>((ref) => true);
 final dailyGoalProvider = StateProvider<int>((ref) => 10);
 final streakReminderTimeProvider = StateProvider<String>((ref) => '09:00 AM');
 
-/// Settings Screen
-///
-/// An expert-level Flutter UI demonstrating:
-/// - Deep Glassmorphism (BackdropFilter)
-/// - Accessibility (Semantics)
-/// - Performance (const widgets, minimal rebuilds)
-/// - Custom implicit animations
+/// Settings Screen — BoldVoice warm cream design
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: StudyRepsTheme.bgPrimary,
-      extendBodyBehindAppBar: true,
-      appBar: const _GlassAppBar(title: 'Settings'),
-      body: Stack(
-        children: [
-          // Background ambient glows
-          Positioned(
-            top: -100,
-            left: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: StudyRepsTheme.primaryIndigo.withOpacity(0.15),
-              ),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-                child: const SizedBox.shrink(),
-              ),
-            ),
-          ).animate(onPlay: (controller) => controller.repeat(reverse: true))
-           .scaleXY(begin: 1.0, end: 1.2, duration: 4.seconds, curve: Curves.easeInOut),
-          
-          Positioned(
-            bottom: 100,
-            right: -50,
-            child: Container(
-              width: 250,
-              height: 250,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: StudyRepsTheme.accentCyan.withOpacity(0.1),
-              ),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
-                child: const SizedBox.shrink(),
-              ),
-            ),
+      backgroundColor: StudyRepsTheme.warmCream,
+      appBar: AppBar(
+        backgroundColor: StudyRepsTheme.warmCream,
+        elevation: 0,
+        leading: Semantics(
+          button: true,
+          label: 'Go back',
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                color: StudyRepsTheme.warmTextDark, size: 20),
+            onPressed: () => Navigator.pop(context),
           ),
+        ),
+        title: Text(
+          'Settings',
+          style: GoogleFonts.outfit(
+            color: StudyRepsTheme.warmTextDark,
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        bottom: false,
+        child: ListView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.only(top: 16, bottom: 40),
+          children: [
+            const _ProfileSection(),
+            const SizedBox(height: 24),
 
-          // Main scrollable content
-          SafeArea(
-            bottom: false,
-            child: ListView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.only(top: 16, bottom: 40),
+            _buildSectionHeader('Learning Preferences'),
+            _WarmSettingsCard(
               children: [
-                const _ProfileSection(),
-                const SizedBox(height: 24),
-
-                _buildSectionHeader('Learning Preferences'),
-                _GlassSettingsCard(
-                  children: [
-                    _SettingToggle(
-                      icon: Icons.lock_clock_rounded,
-                      title: 'Auto Lock',
-                      subtitle: 'Pause videos at lock points',
-                      provider: autoLockEnabledProvider,
-                    ),
-                    const _Divider(),
-                    _SettingsSlider(
-                      icon: Icons.flag_rounded,
-                      title: 'Daily Goal',
-                      provider: dailyGoalProvider,
-                      min: 5,
-                      max: 50,
-                    ),
-                    const _Divider(),
-                    _SettingOption(
-                      icon: Icons.alarm_rounded,
-                      title: 'Reminder Time',
-                      valueProvider: streakReminderTimeProvider,
-                      onTap: () => _showTimePicker(context, ref),
-                    ),
-                  ],
+                _SettingToggle(
+                  icon: Icons.lock_clock_rounded,
+                  title: 'Auto Lock',
+                  subtitle: 'Pause videos at lock points',
+                  provider: autoLockEnabledProvider,
                 ),
-                const SizedBox(height: 24),
-
-                _buildSectionHeader('Playback'),
-                _GlassSettingsCard(
-                  children: [
-                    _SettingToggle(
-                      icon: Icons.play_circle_outlined,
-                      title: 'Auto-play Videos',
-                      subtitle: 'Play next video automatically',
-                      provider: autoPlayVideosProvider,
-                    ),
-                    const _Divider(),
-                    _SettingToggle(
-                      icon: Icons.surround_sound_rounded,
-                      title: 'Sound Effects',
-                      subtitle: 'UI sounds and feedback',
-                      provider: soundEffectsEnabledProvider,
-                    ),
-                    const _Divider(),
-                    _SettingToggle(
-                      icon: Icons.vibration_rounded,
-                      title: 'Haptic Feedback',
-                      subtitle: 'Vibrate on interactions',
-                      provider: hapticFeedbackEnabledProvider,
-                    ),
-                  ],
+                const _WarmDivider(),
+                _SettingsSlider(
+                  icon: Icons.flag_rounded,
+                  title: 'Daily Goal',
+                  provider: dailyGoalProvider,
+                  min: 5,
+                  max: 50,
                 ),
-                const SizedBox(height: 24),
-
-                _buildSectionHeader('Appearance'),
-                _GlassSettingsCard(
-                  children: [
-                    _SettingToggle(
-                      icon: Icons.dark_mode_rounded,
-                      title: 'Dark Mode',
-                      subtitle: 'Always on for the best experience',
-                      provider: darkModeEnabledProvider,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                _buildSectionHeader('Notifications'),
-                _GlassSettingsCard(
-                  children: [
-                    _SettingToggle(
-                      icon: Icons.notifications_active_rounded,
-                      title: 'Push Notifications',
-                      subtitle: 'Streak reminders & updates',
-                      provider: notificationsEnabledProvider,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                _buildSectionHeader('Account'),
-                _GlassSettingsCard(
-                  children: [
-                    _SettingNavItem(
-                      icon: Icons.person_rounded,
-                      title: 'Edit Profile',
-                      onTap: () {},
-                    ),
-                    const _Divider(),
-                    _SettingNavItem(
-                      icon: Icons.lock_outline_rounded,
-                      title: 'Change Password',
-                      onTap: () {},
-                    ),
-                    const _Divider(),
-                    _SettingNavItem(
-                      icon: Icons.help_outline_rounded,
-                      title: 'Help & Support',
-                      onTap: () {},
-                    ),
-                    const _Divider(),
-                    _SettingNavItem(
-                      icon: Icons.info_outline_rounded,
-                      title: 'About',
-                      onTap: () {},
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-
-                // Logout Button
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Semantics(
-                    button: true,
-                    label: 'Log out of your account',
-                    child: OutlinedButton.icon(
-                      onPressed: () async {
-                        await Supabase.instance.client.auth.signOut();
-                        if (context.mounted) {
-                          Navigator.of(context, rootNavigator: true)
-                              .pushAndRemoveUntil(
-                            MaterialPageRoute(
-                                builder: (_) => const LoginScreen()),
-                            (route) => false,
-                          );
-                        }
-                      },
-                      icon: const Icon(Icons.logout_rounded,
-                          color: StudyRepsTheme.errorPink),
-                      label: const Text(
-                        'Log Out',
-                        style: TextStyle(
-                          color: StudyRepsTheme.errorPink,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(
-                            color: StudyRepsTheme.errorPink.withOpacity(0.5)),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ).copyWith(
-                        overlayColor: WidgetStateProperty.all(
-                            StudyRepsTheme.errorPink.withOpacity(0.1)),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // App Version
-                Semantics(
-                  label: 'App version 1.0.0',
-                  child: const Center(
-                    child: Text(
-                      'StudyReps v1.0.0',
-                      style: TextStyle(
-                        color: StudyRepsTheme.textMuted,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
+                const _WarmDivider(),
+                _SettingOption(
+                  icon: Icons.alarm_rounded,
+                  title: 'Reminder Time',
+                  valueProvider: streakReminderTimeProvider,
+                  onTap: () => _showTimePicker(context, ref),
                 ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 24),
+
+            _buildSectionHeader('Playback'),
+            _WarmSettingsCard(
+              children: [
+                _SettingToggle(
+                  icon: Icons.play_circle_outlined,
+                  title: 'Auto-play Videos',
+                  subtitle: 'Play next video automatically',
+                  provider: autoPlayVideosProvider,
+                ),
+                const _WarmDivider(),
+                _SettingToggle(
+                  icon: Icons.surround_sound_rounded,
+                  title: 'Sound Effects',
+                  subtitle: 'UI sounds and feedback',
+                  provider: soundEffectsEnabledProvider,
+                ),
+                const _WarmDivider(),
+                _SettingToggle(
+                  icon: Icons.vibration_rounded,
+                  title: 'Haptic Feedback',
+                  subtitle: 'Vibrate on interactions',
+                  provider: hapticFeedbackEnabledProvider,
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            _buildSectionHeader('Notifications'),
+            _WarmSettingsCard(
+              children: [
+                _SettingToggle(
+                  icon: Icons.notifications_active_rounded,
+                  title: 'Push Notifications',
+                  subtitle: 'Streak reminders & updates',
+                  provider: notificationsEnabledProvider,
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            _buildSectionHeader('Account'),
+            _WarmSettingsCard(
+              children: [
+                _SettingNavItem(icon: Icons.person_rounded, title: 'Edit Profile', onTap: () {}),
+                const _WarmDivider(),
+                _SettingNavItem(icon: Icons.lock_outline_rounded, title: 'Change Password', onTap: () {}),
+                const _WarmDivider(),
+                _SettingNavItem(icon: Icons.help_outline_rounded, title: 'Help & Support', onTap: () {}),
+                const _WarmDivider(),
+                _SettingNavItem(icon: Icons.info_outline_rounded, title: 'About', onTap: () {}),
+              ],
+            ),
+            const SizedBox(height: 32),
+
+            // Logout Button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Semantics(
+                button: true,
+                label: 'Log out of your account',
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    await Supabase.instance.client.auth.signOut();
+                    if (context.mounted) {
+                      Navigator.of(context, rootNavigator: true)
+                          .pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                        (route) => false,
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.logout_rounded, color: Color(0xFFE57373)),
+                  label: Text(
+                    'Log Out',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFE57373),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: const Color(0xFFE57373).withOpacity(0.5)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ).copyWith(
+                    overlayColor: WidgetStateProperty.all(const Color(0xFFE57373).withOpacity(0.08)),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // App Version
+            Center(
+              child: Text(
+                'StudyReps v1.0.0',
+                style: GoogleFonts.outfit(
+                  color: StudyRepsTheme.warmTextLight,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -263,8 +199,8 @@ class SettingsScreen extends ConsumerWidget {
         header: true,
         child: Text(
           title.toUpperCase(),
-          style: const TextStyle(
-            color: StudyRepsTheme.textMuted,
+          style: GoogleFonts.outfit(
+            color: StudyRepsTheme.warmTextLight,
             fontSize: 12,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.2,
@@ -284,48 +220,7 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
-/// Glassmorphic App Bar
-class _GlassAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
-
-  const _GlassAppBar({required this.title});
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: AppBar(
-          backgroundColor: StudyRepsTheme.bgPrimary.withOpacity(0.7),
-          elevation: 0,
-          leading: Semantics(
-            button: true,
-            label: 'Go back',
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                  color: StudyRepsTheme.textPrimary, size: 20),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-          title: Text(
-            title,
-            style: const TextStyle(
-              color: StudyRepsTheme.textPrimary,
-              fontWeight: FontWeight.w700,
-              fontSize: 20,
-            ),
-          ),
-          centerTitle: true,
-        ),
-      ),
-    );
-  }
-}
-
-/// Profile Section with Glassmorphism
+/// Profile Section — warm card
 class _ProfileSection extends StatelessWidget {
   const _ProfileSection();
 
@@ -337,66 +232,57 @@ class _ProfileSection extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 20),
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: StudyRepsTheme.bgSecondary.withOpacity(0.6),
+          color: StudyRepsTheme.warmDarkCard,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: StudyRepsTheme.borderSubtle.withOpacity(0.5)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withOpacity(0.12),
               blurRadius: 20,
               offset: const Offset(0, 10),
-            )
+            ),
           ],
         ),
         child: Row(
           children: [
             Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
+              width: 60,
+              height: 60,
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: const LinearGradient(
-                  colors: [StudyRepsTheme.primaryIndigo, StudyRepsTheme.accentCyan],
+                gradient: LinearGradient(
+                  colors: [StudyRepsTheme.warmOrange, StudyRepsTheme.warmOrangeDark],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: StudyRepsTheme.primaryIndigo.withOpacity(0.3),
-                    blurRadius: 12,
-                    spreadRadius: 2,
-                  )
-                ],
               ),
-              padding: const EdgeInsets.all(2), // Gradient border width
+              padding: const EdgeInsets.all(2),
               child: Container(
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: StudyRepsTheme.bgTertiary,
+                  color: StudyRepsTheme.warmDarkCard,
                 ),
-                child: const Icon(Icons.person_rounded,
-                    color: StudyRepsTheme.textPrimary, size: 32),
+                child: const Icon(Icons.person_rounded, color: StudyRepsTheme.warmTextOnDark, size: 28),
               ),
             ),
-            const SizedBox(width: 20),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     '@StudentPro',
-                    style: TextStyle(
-                      color: StudyRepsTheme.textPrimary,
+                    style: GoogleFonts.outfit(
+                      color: StudyRepsTheme.warmTextOnDark,
                       fontWeight: FontWeight.w800,
-                      fontSize: 20,
+                      fontSize: 18,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'student@example.com',
-                    style: TextStyle(
-                      color: StudyRepsTheme.textSecondary.withOpacity(0.9),
-                      fontSize: 14,
+                    style: GoogleFonts.outfit(
+                      color: StudyRepsTheme.warmTextMutedOnDark,
+                      fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -406,18 +292,14 @@ class _ProfileSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                gradient: StudyRepsTheme.primaryGradient,
+                gradient: const LinearGradient(
+                  colors: [StudyRepsTheme.warmOrange, StudyRepsTheme.warmOrangeDark],
+                ),
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                      color: StudyRepsTheme.primaryIndigo.withOpacity(0.4),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4))
-                ],
               ),
-              child: const Text(
+              child: Text(
                 'PRO',
-                style: TextStyle(
+                style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontWeight: FontWeight.w800,
                   fontSize: 12,
@@ -432,29 +314,32 @@ class _ProfileSection extends StatelessWidget {
   }
 }
 
-/// Glassmorphic Card Container for settings groups
-class _GlassSettingsCard extends StatelessWidget {
+/// Warm Card Container for settings groups
+class _WarmSettingsCard extends StatelessWidget {
   final List<Widget> children;
 
-  const _GlassSettingsCard({required this.children});
+  const _WarmSettingsCard({required this.children});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: StudyRepsTheme.bgSecondary.withOpacity(0.6),
+        color: StudyRepsTheme.warmCard,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: StudyRepsTheme.borderSubtle.withOpacity(0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: children,
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: children,
         ),
       ),
     ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.05);
@@ -498,17 +383,17 @@ class _SettingToggle extends ConsumerWidget {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
-                          color: StudyRepsTheme.textPrimary,
+                        style: GoogleFonts.outfit(
+                          color: StudyRepsTheme.warmTextDark,
                           fontWeight: FontWeight.w600,
-                          fontSize: 16,
+                          fontSize: 15,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
-                        style: const TextStyle(
-                          color: StudyRepsTheme.textMuted,
+                        style: GoogleFonts.outfit(
+                          color: StudyRepsTheme.warmTextLight,
                           fontSize: 13,
                         ),
                       ),
@@ -517,12 +402,11 @@ class _SettingToggle extends ConsumerWidget {
                 ),
                 Switch.adaptive(
                   value: isEnabled,
-                  onChanged: (value) =>
-                      ref.read(provider.notifier).state = value,
-                  activeColor: StudyRepsTheme.primaryIndigoLight,
-                  activeTrackColor: StudyRepsTheme.primaryIndigo.withOpacity(0.4),
-                  inactiveThumbColor: StudyRepsTheme.textSecondary,
-                  inactiveTrackColor: StudyRepsTheme.bgTertiary,
+                  onChanged: (value) => ref.read(provider.notifier).state = value,
+                  activeColor: StudyRepsTheme.warmOrange,
+                  activeTrackColor: StudyRepsTheme.warmOrange.withOpacity(0.3),
+                  inactiveThumbColor: StudyRepsTheme.warmTextLight,
+                  inactiveTrackColor: StudyRepsTheme.warmBorder,
                 ),
               ],
             ),
@@ -533,7 +417,7 @@ class _SettingToggle extends ConsumerWidget {
   }
 }
 
-/// Custom Slider Setting for numeric preferences
+/// Custom Slider Setting
 class _SettingsSlider extends ConsumerWidget {
   final IconData icon;
   final String title;
@@ -569,10 +453,10 @@ class _SettingsSlider extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(
-                      color: StudyRepsTheme.textPrimary,
+                    style: GoogleFonts.outfit(
+                      color: StudyRepsTheme.warmTextDark,
                       fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                      fontSize: 15,
                     ),
                   ),
                 ),
@@ -580,15 +464,14 @@ class _SettingsSlider extends ConsumerWidget {
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: StudyRepsTheme.primaryIndigo.withOpacity(0.15),
+                    color: StudyRepsTheme.warmOrange.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: StudyRepsTheme.primaryIndigo.withOpacity(0.3)),
+                    border: Border.all(color: StudyRepsTheme.warmOrange.withOpacity(0.25)),
                   ),
                   child: Text(
                     '$value reps',
-                    style: const TextStyle(
-                      color: StudyRepsTheme.primaryIndigoLight,
+                    style: GoogleFonts.outfit(
+                      color: StudyRepsTheme.warmOrange,
                       fontWeight: FontWeight.w700,
                       fontSize: 13,
                     ),
@@ -599,10 +482,10 @@ class _SettingsSlider extends ConsumerWidget {
             const SizedBox(height: 8),
             SliderTheme(
               data: SliderThemeData(
-                activeTrackColor: StudyRepsTheme.primaryIndigo,
-                inactiveTrackColor: StudyRepsTheme.bgTertiary,
-                thumbColor: StudyRepsTheme.textPrimary,
-                overlayColor: StudyRepsTheme.primaryIndigo.withOpacity(0.2),
+                activeTrackColor: StudyRepsTheme.warmOrange,
+                inactiveTrackColor: StudyRepsTheme.warmBorder,
+                thumbColor: StudyRepsTheme.warmOrange,
+                overlayColor: StudyRepsTheme.warmOrange.withOpacity(0.2),
                 trackHeight: 4,
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
               ),
@@ -622,7 +505,7 @@ class _SettingsSlider extends ConsumerWidget {
   }
 }
 
-/// A generic Setting Item that displays a value and can be tapped (e.g., Time Picker)
+/// A generic Setting Item that displays a value and can be tapped
 class _SettingOption extends ConsumerWidget {
   final IconData icon;
   final String title;
@@ -639,7 +522,7 @@ class _SettingOption extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final value = ref.watch(valueProvider);
-    
+
     return Semantics(
       button: true,
       label: '$title, current value is $value',
@@ -656,24 +539,24 @@ class _SettingOption extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(
-                      color: StudyRepsTheme.textPrimary,
+                    style: GoogleFonts.outfit(
+                      color: StudyRepsTheme.warmTextDark,
                       fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                      fontSize: 15,
                     ),
                   ),
                 ),
                 Text(
                   value,
-                  style: const TextStyle(
-                    color: StudyRepsTheme.textSecondary,
+                  style: GoogleFonts.outfit(
+                    color: StudyRepsTheme.warmTextMedium,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(width: 8),
                 const Icon(Icons.chevron_right_rounded,
-                    color: StudyRepsTheme.textMuted, size: 20),
+                    color: StudyRepsTheme.warmTextLight, size: 20),
               ],
             ),
           ),
@@ -683,7 +566,7 @@ class _SettingOption extends ConsumerWidget {
   }
 }
 
-/// A Navigation Item for settings (e.g., Edit Profile, About)
+/// A Navigation Item for settings
 class _SettingNavItem extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -713,15 +596,15 @@ class _SettingNavItem extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(
-                      color: StudyRepsTheme.textPrimary,
+                    style: GoogleFonts.outfit(
+                      color: StudyRepsTheme.warmTextDark,
                       fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                      fontSize: 15,
                     ),
                   ),
                 ),
                 const Icon(Icons.chevron_right_rounded,
-                    color: StudyRepsTheme.textMuted, size: 20),
+                    color: StudyRepsTheme.warmTextLight, size: 20),
               ],
             ),
           ),
@@ -731,7 +614,7 @@ class _SettingNavItem extends StatelessWidget {
   }
 }
 
-/// Small reusable widget for the consistent icon boxes
+/// Small reusable icon box
 class _IconBox extends StatelessWidget {
   final IconData icon;
   final bool isActive;
@@ -746,39 +629,39 @@ class _IconBox extends StatelessWidget {
       height: 40,
       decoration: BoxDecoration(
         color: isActive
-            ? StudyRepsTheme.primaryIndigo.withOpacity(0.15)
-            : StudyRepsTheme.bgTertiary.withOpacity(0.5),
+            ? StudyRepsTheme.warmOrange.withOpacity(0.12)
+            : StudyRepsTheme.warmChipBg,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isActive
-              ? StudyRepsTheme.primaryIndigo.withOpacity(0.3)
+              ? StudyRepsTheme.warmOrange.withOpacity(0.25)
               : Colors.transparent,
         ),
       ),
       child: Icon(
         icon,
-        color: isActive ? StudyRepsTheme.primaryIndigoLight : StudyRepsTheme.textSecondary,
+        color: isActive ? StudyRepsTheme.warmOrange : StudyRepsTheme.warmTextMedium,
         size: 20,
       ),
     );
   }
 }
 
-/// Custom Divider
-class _Divider extends StatelessWidget {
-  const _Divider();
+/// Warm Divider
+class _WarmDivider extends StatelessWidget {
+  const _WarmDivider();
 
   @override
   Widget build(BuildContext context) {
     return Divider(
-      color: StudyRepsTheme.borderSubtle.withOpacity(0.3),
+      color: StudyRepsTheme.warmBorder.withOpacity(0.5),
       height: 1,
       indent: 76,
     );
   }
 }
 
-/// Modern Time Picker Bottom Sheet
+/// Time Picker Bottom Sheet
 class _TimePickerSheet extends ConsumerWidget {
   const _TimePickerSheet();
 
@@ -786,27 +669,26 @@ class _TimePickerSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: const BoxDecoration(
-        color: StudyRepsTheme.bgSecondary,
+        color: StudyRepsTheme.warmCream,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 12),
-          // Drag handle
           Container(
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: StudyRepsTheme.borderSubtle,
+              color: StudyRepsTheme.warmBorder,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'Set Reminder Time',
-            style: TextStyle(
-              color: StudyRepsTheme.textPrimary,
+            style: GoogleFonts.outfit(
+              color: StudyRepsTheme.warmTextDark,
               fontSize: 20,
               fontWeight: FontWeight.w800,
             ),
@@ -829,14 +711,14 @@ class _TimePickerSheet extends ConsumerWidget {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 4),
                   title: Text(
                     time,
-                    style: TextStyle(
-                      color: isSelected ? StudyRepsTheme.textPrimary : StudyRepsTheme.textSecondary,
+                    style: GoogleFonts.outfit(
+                      color: isSelected ? StudyRepsTheme.warmTextDark : StudyRepsTheme.warmTextMedium,
                       fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                       fontSize: 16,
                     ),
                   ),
                   trailing: isSelected
-                      ? const Icon(Icons.check_circle_rounded, color: StudyRepsTheme.primaryIndigo)
+                      ? const Icon(Icons.check_circle_rounded, color: StudyRepsTheme.warmOrange)
                       : null,
                   onTap: () {
                     ref.read(streakReminderTimeProvider.notifier).state = time;

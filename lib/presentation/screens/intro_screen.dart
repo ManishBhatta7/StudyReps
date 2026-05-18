@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:video_player/video_player.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/theme/study_reps_theme.dart';
 import 'main_navigation_shell.dart';
 import 'student_onboarding_screen.dart';
 
-/// Intro Screen - App introduction with video background
-/// 
-/// Showcases the app's key features with beautiful animations
+/// Intro Screen — BoldVoice warm cream design
 class IntroScreen extends ConsumerStatefulWidget {
   const IntroScreen({super.key});
 
@@ -27,25 +26,25 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
       icon: Icons.play_circle_outline_rounded,
       title: 'Learn by Watching',
       subtitle: 'Swipe through bite-sized educational videos from expert creators',
-      gradient: [StudyRepsTheme.primaryIndigo, StudyRepsTheme.accentCyan],
+      gradient: [StudyRepsTheme.warmOrange, StudyRepsTheme.warmOrangeLight],
     ),
     IntroSlide(
       icon: Icons.lock_outline_rounded,
       title: 'The Lock',
       subtitle: 'Videos pause with a question. Answer correctly to unlock and continue',
-      gradient: [StudyRepsTheme.primaryIndigo, Colors.purple],
+      gradient: [StudyRepsTheme.warmOrange, StudyRepsTheme.warmOrangeDark],
     ),
     IntroSlide(
       icon: Icons.fitness_center_rounded,
       title: 'Get Your Reps In',
       subtitle: 'Build knowledge through repetition. Track your streaks and level up',
-      gradient: [Colors.orange, StudyRepsTheme.errorPink],
+      gradient: [StudyRepsTheme.warmOrangeLight, StudyRepsTheme.warmOrange],
     ),
     IntroSlide(
       icon: Icons.psychology_rounded,
       title: 'AI-Powered Feedback',
       subtitle: 'Get personalized coaching and explanations when you need help',
-      gradient: [StudyRepsTheme.successGreen, StudyRepsTheme.accentCyan],
+      gradient: [StudyRepsTheme.warmOrange, StudyRepsTheme.warmGreen],
     ),
   ];
 
@@ -57,7 +56,6 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
   }
 
   Future<void> _initVideoPlayer() async {
-    // Using a sample loop video for background
     _videoController = VideoPlayerController.networkUrl(
       Uri.parse('https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'),
     );
@@ -109,7 +107,7 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const MainNavigationShell(initialIndex: 1), // 1 is Discover tab
+        pageBuilder: (_, __, ___) => const MainNavigationShell(initialIndex: 1),
         transitionDuration: const Duration(milliseconds: 500),
         transitionsBuilder: (_, animation, __, child) {
           return FadeTransition(opacity: animation, child: child);
@@ -121,23 +119,15 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: StudyRepsTheme.bgPrimary,
+      backgroundColor: StudyRepsTheme.warmCream,
       body: Stack(
         children: [
-          // Video Background
           _buildVideoBackground(),
-          
-          // Gradient Overlay
           _buildGradientOverlay(),
-          
-          // Content
           SafeArea(
             child: Column(
               children: [
-                // Skip Button
                 _buildSkipButton(),
-                
-                // Page Content
                 Expanded(
                   child: PageView.builder(
                     controller: _pageController,
@@ -146,8 +136,6 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
                     itemBuilder: (context, index) => _buildSlide(_slides[index], index),
                   ),
                 ),
-                
-                // Bottom Section
                 _buildBottomSection(),
               ],
             ),
@@ -159,7 +147,7 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
 
   Widget _buildVideoBackground() {
     if (_videoController == null || !_videoController!.value.isInitialized) {
-      return Container(color: StudyRepsTheme.bgPrimary);
+      return Container(color: StudyRepsTheme.warmCream);
     }
     
     return SizedBox.expand(
@@ -181,10 +169,10 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            StudyRepsTheme.bgPrimary.withOpacity(0.7),
-            StudyRepsTheme.bgPrimary.withOpacity(0.85),
-            StudyRepsTheme.bgPrimary.withOpacity(0.95),
-            StudyRepsTheme.bgPrimary,
+            StudyRepsTheme.warmCream.withOpacity(0.7),
+            StudyRepsTheme.warmCream.withOpacity(0.85),
+            StudyRepsTheme.warmCream.withOpacity(0.95),
+            StudyRepsTheme.warmCream,
           ],
           stops: const [0.0, 0.3, 0.6, 0.8],
         ),
@@ -199,21 +187,21 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
         padding: const EdgeInsets.all(16),
         child: TextButton(
           onPressed: _skipIntro,
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 'Skip',
-                style: TextStyle(
-                  color: StudyRepsTheme.textSecondary,
+                style: GoogleFonts.outfit(
+                  color: StudyRepsTheme.warmTextMedium,
                   fontWeight: FontWeight.w600,
                   fontSize: 15,
                 ),
               ),
-              SizedBox(width: 4),
-              Icon(
+              const SizedBox(width: 4),
+              const Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: StudyRepsTheme.textSecondary,
+                color: StudyRepsTheme.warmTextMedium,
                 size: 14,
               ),
             ],
@@ -229,7 +217,6 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Icon with gradient background
           Container(
             width: 120,
             height: 120,
@@ -238,17 +225,13 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: slide.gradient.first.withOpacity(0.4),
+                  color: slide.gradient.first.withOpacity(0.3),
                   blurRadius: 30,
                   spreadRadius: 5,
                 ),
               ],
             ),
-            child: Icon(
-              slide.icon,
-              color: Colors.white,
-              size: 56,
-            ),
+            child: Icon(slide.icon, color: Colors.white, size: 56),
           )
               .animate(delay: 200.ms)
               .scale(begin: const Offset(0.8, 0.8))
@@ -256,11 +239,10 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
           
           const SizedBox(height: 48),
           
-          // Title
           Text(
             slide.title,
-            style: const TextStyle(
-              color: StudyRepsTheme.textPrimary,
+            style: GoogleFonts.outfit(
+              color: StudyRepsTheme.warmTextDark,
               fontSize: 32,
               fontWeight: FontWeight.w800,
               letterSpacing: -1,
@@ -270,11 +252,10 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
           
           const SizedBox(height: 16),
           
-          // Subtitle
           Text(
             slide.subtitle,
-            style: const TextStyle(
-              color: StudyRepsTheme.textSecondary,
+            style: GoogleFonts.outfit(
+              color: StudyRepsTheme.warmTextMedium,
               fontSize: 17,
               height: 1.5,
             ),
@@ -302,8 +283,8 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
                 height: 10,
                 decoration: BoxDecoration(
                   color: _currentPage == index
-                      ? StudyRepsTheme.primaryIndigo
-                      : StudyRepsTheme.textMuted.withOpacity(0.3),
+                      ? StudyRepsTheme.warmOrange
+                      : StudyRepsTheme.warmBorder,
                   borderRadius: BorderRadius.circular(5),
                 ),
               ),
@@ -318,20 +299,18 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
             child: ElevatedButton(
               onPressed: _nextPage,
               style: ElevatedButton.styleFrom(
-                backgroundColor: StudyRepsTheme.primaryIndigo,
+                backgroundColor: StudyRepsTheme.warmOrange,
                 padding: const EdgeInsets.symmetric(vertical: 18),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 8,
-                shadowColor: StudyRepsTheme.primaryIndigo.withOpacity(0.4),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 4,
+                shadowColor: StudyRepsTheme.warmOrange.withOpacity(0.4),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     _currentPage == _slides.length - 1 ? 'Get Started' : 'Next',
-                    style: const TextStyle(
+                    style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
                       fontSize: 18,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:video_player/video_player.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -12,10 +13,12 @@ import 'login_screen.dart';
 final onboardingNameProvider = StateProvider<String>((ref) => '');
 final onboardingSubjectsProvider = StateProvider<List<String>>((ref) => []);
 final onboardingGoalProvider = StateProvider<int>((ref) => 10);
+final onboardingBoardProvider = StateProvider<String?>((ref) => null);
+final onboardingGradeProvider = StateProvider<String?>((ref) => null);
 
-/// Student Onboarding Screen - Interactive & Concise
-/// 
-/// 3 quick steps: Name → Subjects → Daily Goal → Done!
+/// Student Onboarding Screen — BoldVoice warm cream design
+///
+/// 4 quick steps: Name → Curriculum → Subjects → Daily Goal → Done!
 class StudentOnboardingScreen extends ConsumerStatefulWidget {
   const StudentOnboardingScreen({super.key});
 
@@ -71,7 +74,7 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
   }
 
   void _nextStep() {
-    if (_currentStep < 2) {
+    if (_currentStep < 3) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
@@ -82,33 +85,33 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
   }
 
   void _completeOnboarding() async {
-    // 1. Mark onboarding as complete in SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('has_completed_onboarding', true);
 
-    // 2. Try to save preferences to Supabase if user is logged in
     try {
       final user = Supabase.instance.client.auth.currentUser;
       if (user != null) {
         final name = ref.read(onboardingNameProvider);
         final subjects = ref.read(onboardingSubjectsProvider);
         final goal = ref.read(onboardingGoalProvider);
+        final board = ref.read(onboardingBoardProvider);
+        final grade = ref.read(onboardingGradeProvider);
         
         await Supabase.instance.client.from('profiles').upsert({
           'id': user.id,
           'full_name': name.isNotEmpty ? name : null,
           'preferred_subjects': subjects,
           'daily_goal': goal,
+          'board': board,
+          'grade': grade,
           'has_onboarded': true,
         });
         debugPrint('\u2705 Onboarding preferences saved to Supabase');
       }
     } catch (e) {
       debugPrint('\u26a0\ufe0f Could not save onboarding prefs to Supabase: $e');
-      // Non-blocking — prefs are saved locally anyway
     }
 
-    // 3. Navigate to login
     if (!mounted) return;
     Navigator.pushReplacement(
       context,
@@ -130,7 +133,7 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const MainNavigationShell(initialIndex: 1), // 1 is Discover tab
+        pageBuilder: (_, __, ___) => const MainNavigationShell(initialIndex: 1),
         transitionDuration: const Duration(milliseconds: 500),
         transitionsBuilder: (_, animation, __, child) {
           return FadeTransition(opacity: animation, child: child);
@@ -142,7 +145,7 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: StudyRepsTheme.bgPrimary,
+      backgroundColor: StudyRepsTheme.warmCream,
       body: Stack(
         children: [
           // Video Background
@@ -158,15 +161,15 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
               ),
             ),
           
-          // Dark overlay
+          // Warm cream overlay
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  StudyRepsTheme.bgPrimary.withOpacity(0.8),
-                  StudyRepsTheme.bgPrimary.withOpacity(0.95),
+                  StudyRepsTheme.warmCream.withOpacity(0.8),
+                  StudyRepsTheme.warmCream.withOpacity(0.95),
                 ],
               ),
             ),
@@ -176,10 +179,7 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
           SafeArea(
             child: Column(
               children: [
-                // Progress indicator
                 _buildProgressBar(),
-                
-                // Steps
                 Expanded(
                   child: PageView(
                     controller: _pageController,
@@ -187,6 +187,7 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
                     onPageChanged: (i) => setState(() => _currentStep = i),
                     children: [
                       _buildNameStep(),
+                      _buildCurriculumStep(),
                       _buildSubjectsStep(),
                       _buildGoalStep(),
                     ],
@@ -205,41 +206,41 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
       padding: const EdgeInsets.all(20),
       child: Row(
         children: [
-          // Back button
           if (_currentStep > 0)
             IconButton(
               onPressed: () => _pageController.previousPage(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOut,
               ),
-              icon: const Icon(Icons.arrow_back_ios_rounded, color: StudyRepsTheme.textSecondary),
+              icon: const Icon(Icons.arrow_back_ios_rounded, color: StudyRepsTheme.warmTextMedium),
             )
           else
             const SizedBox(width: 48),
           
-          // Progress dots
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(3, (i) => AnimatedContainer(
+              children: List.generate(4, (i) => AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 width: _currentStep == i ? 32 : 10,
                 height: 10,
                 decoration: BoxDecoration(
                   color: _currentStep >= i 
-                      ? StudyRepsTheme.primaryIndigo 
-                      : StudyRepsTheme.bgTertiary,
+                      ? StudyRepsTheme.warmOrange 
+                      : StudyRepsTheme.warmBorder,
                   borderRadius: BorderRadius.circular(5),
                 ),
               )),
             ),
           ),
           
-          // Skip
           TextButton(
             onPressed: _skipOnboarding,
-            child: const Text('Skip', style: TextStyle(color: StudyRepsTheme.textMuted)),
+            child: Text(
+              'Skip',
+              style: GoogleFonts.outfit(color: StudyRepsTheme.warmTextLight),
+            ),
           ),
         ],
       ),
@@ -255,55 +256,62 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
         children: [
           const SizedBox(height: 40),
           
-          // Emoji
           const Text('👋', style: TextStyle(fontSize: 64))
               .animate().scale(delay: 200.ms),
           
           const SizedBox(height: 24),
           
-          // Title
-          const Text(
+          Text(
             "What's your name?",
-            style: TextStyle(
+            style: GoogleFonts.outfit(
               fontSize: 28,
               fontWeight: FontWeight.w800,
-              color: StudyRepsTheme.textPrimary,
+              color: StudyRepsTheme.warmTextDark,
             ),
             textAlign: TextAlign.center,
           ).animate().fadeIn(delay: 100.ms),
           
           const SizedBox(height: 12),
           
-          const Text(
+          Text(
             "Let's personalize your experience",
-            style: TextStyle(
+            style: GoogleFonts.outfit(
               fontSize: 16,
-              color: StudyRepsTheme.textSecondary,
+              color: StudyRepsTheme.warmTextMedium,
             ),
           ).animate().fadeIn(delay: 200.ms),
           
           const SizedBox(height: 40),
           
-          // Name input
           Container(
             decoration: BoxDecoration(
-              color: StudyRepsTheme.bgSecondary,
+              color: StudyRepsTheme.warmCard,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: StudyRepsTheme.primaryIndigo.withOpacity(0.5)),
+              border: Border.all(color: StudyRepsTheme.warmOrange.withOpacity(0.5)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: TextField(
               controller: _nameController,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: GoogleFonts.outfit(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
-                color: StudyRepsTheme.textPrimary,
+                color: StudyRepsTheme.warmTextDark,
               ),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Enter your name',
-                hintStyle: TextStyle(color: StudyRepsTheme.textMuted, fontSize: 20),
+                hintStyle: GoogleFonts.outfit(
+                  color: StudyRepsTheme.warmTextLight,
+                  fontSize: 20,
+                ),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+                contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
               ),
               onChanged: (v) => ref.read(onboardingNameProvider.notifier).state = v,
             ),
@@ -311,7 +319,6 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
           
           const SizedBox(height: 48),
           
-          // Continue button
           _buildContinueButton(
             enabled: _nameController.text.isNotEmpty,
             label: 'Continue',
@@ -321,7 +328,139 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
     );
   }
 
-  // STEP 2: Subjects
+  // STEP 2: Curriculum
+  Widget _buildCurriculumStep() {
+    final selectedBoard = ref.watch(onboardingBoardProvider);
+    final selectedGrade = ref.watch(onboardingGradeProvider);
+
+    final boards = ['CBSE', 'ICSE', 'IGCSE'];
+    final grades = ['Grade 7', 'Grade 8', 'Grade 9'];
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+          Text(
+            'Your Curriculum',
+            style: GoogleFonts.outfit(
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              color: StudyRepsTheme.warmTextDark,
+            ),
+            textAlign: TextAlign.center,
+          ).animate().fadeIn(),
+          const SizedBox(height: 8),
+          Text(
+            'So we can align your content',
+            style: GoogleFonts.outfit(
+              fontSize: 15,
+              color: StudyRepsTheme.warmTextMedium,
+            ),
+          ),
+          const SizedBox(height: 32),
+          
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Select Board',
+              style: GoogleFonts.outfit(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: StudyRepsTheme.warmTextDark,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            alignment: WrapAlignment.start,
+            children: boards.map((board) {
+              final isSelected = selectedBoard == board;
+              return GestureDetector(
+                onTap: () => ref.read(onboardingBoardProvider.notifier).state = board,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isSelected ? StudyRepsTheme.warmOrange : StudyRepsTheme.warmCard,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: isSelected ? StudyRepsTheme.warmOrange : StudyRepsTheme.warmBorder,
+                      width: 2,
+                    ),
+                  ),
+                  child: Text(
+                    board,
+                    style: GoogleFonts.outfit(
+                      color: isSelected ? Colors.white : StudyRepsTheme.warmTextDark,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ).animate().fadeIn(delay: 100.ms),
+
+          const SizedBox(height: 32),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Select Grade',
+              style: GoogleFonts.outfit(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: StudyRepsTheme.warmTextDark,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            alignment: WrapAlignment.start,
+            children: grades.map((grade) {
+              final isSelected = selectedGrade == grade;
+              return GestureDetector(
+                onTap: () => ref.read(onboardingGradeProvider.notifier).state = grade,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isSelected ? StudyRepsTheme.warmOrange : StudyRepsTheme.warmCard,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: isSelected ? StudyRepsTheme.warmOrange : StudyRepsTheme.warmBorder,
+                      width: 2,
+                    ),
+                  ),
+                  child: Text(
+                    grade,
+                    style: GoogleFonts.outfit(
+                      color: isSelected ? Colors.white : StudyRepsTheme.warmTextDark,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ).animate().fadeIn(delay: 200.ms),
+
+          const SizedBox(height: 40),
+          _buildContinueButton(
+            enabled: selectedBoard != null && selectedGrade != null,
+            label: 'Continue',
+          ),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+
+  // STEP 3: Subjects
   Widget _buildSubjectsStep() {
     final selectedSubjects = ref.watch(onboardingSubjectsProvider);
     
@@ -331,30 +470,28 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
         children: [
           const SizedBox(height: 20),
           
-          // Title
-          const Text(
+          Text(
             'What do you want to learn?',
-            style: TextStyle(
+            style: GoogleFonts.outfit(
               fontSize: 26,
               fontWeight: FontWeight.w800,
-              color: StudyRepsTheme.textPrimary,
+              color: StudyRepsTheme.warmTextDark,
             ),
             textAlign: TextAlign.center,
           ).animate().fadeIn(),
           
           const SizedBox(height: 8),
           
-          const Text(
+          Text(
             'Pick at least 3 subjects',
-            style: TextStyle(
+            style: GoogleFonts.outfit(
               fontSize: 15,
-              color: StudyRepsTheme.textSecondary,
+              color: StudyRepsTheme.warmTextMedium,
             ),
           ),
           
           const SizedBox(height: 32),
           
-          // Subjects grid
           Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -377,26 +514,32 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: isSelected 
-                        ? StudyRepsTheme.primaryIndigo 
-                        : StudyRepsTheme.bgSecondary,
+                        ? StudyRepsTheme.warmOrange 
+                        : StudyRepsTheme.warmCard,
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
                       color: isSelected 
-                          ? StudyRepsTheme.primaryIndigo 
-                          : StudyRepsTheme.borderSubtle,
+                          ? StudyRepsTheme.warmOrange 
+                          : StudyRepsTheme.warmBorder,
                       width: 2,
                     ),
                     boxShadow: isSelected ? [
                       BoxShadow(
-                        color: StudyRepsTheme.primaryIndigo.withOpacity(0.3),
+                        color: StudyRepsTheme.warmOrange.withOpacity(0.3),
                         blurRadius: 12,
                       ),
-                    ] : null,
+                    ] : [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Text(
                     subject,
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : StudyRepsTheme.textPrimary,
+                    style: GoogleFonts.outfit(
+                      color: isSelected ? Colors.white : StudyRepsTheme.warmTextDark,
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                       fontSize: 15,
                     ),
@@ -408,7 +551,6 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
           
           const SizedBox(height: 40),
           
-          // Continue
           _buildContinueButton(
             enabled: selectedSubjects.length >= 3,
             label: 'Continue',
@@ -418,7 +560,10 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
             const SizedBox(height: 12),
             Text(
               'Select ${3 - selectedSubjects.length} more',
-              style: const TextStyle(color: StudyRepsTheme.textMuted, fontSize: 13),
+              style: GoogleFonts.outfit(
+                color: StudyRepsTheme.warmTextLight,
+                fontSize: 13,
+              ),
             ),
           ],
           
@@ -439,7 +584,6 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
         children: [
           const SizedBox(height: 40),
           
-          // Fire emoji
           const Text('🔥', style: TextStyle(fontSize: 64))
               .animate().scale(delay: 100.ms),
           
@@ -447,20 +591,20 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
           
           Text(
             name.isNotEmpty ? 'Nice, $name!' : 'Almost done!',
-            style: const TextStyle(
+            style: GoogleFonts.outfit(
               fontSize: 28,
               fontWeight: FontWeight.w800,
-              color: StudyRepsTheme.textPrimary,
+              color: StudyRepsTheme.warmTextDark,
             ),
           ).animate().fadeIn(),
           
           const SizedBox(height: 8),
           
-          const Text(
+          Text(
             'Set your daily rep goal',
-            style: TextStyle(
+            style: GoogleFonts.outfit(
               fontSize: 16,
-              color: StudyRepsTheme.textSecondary,
+              color: StudyRepsTheme.warmTextMedium,
             ),
           ),
           
@@ -472,12 +616,19 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  StudyRepsTheme.primaryIndigo.withOpacity(0.2),
-                  StudyRepsTheme.bgSecondary,
+                  StudyRepsTheme.warmOrange.withOpacity(0.12),
+                  StudyRepsTheme.warmCard,
                 ],
               ),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: StudyRepsTheme.primaryIndigo.withOpacity(0.5)),
+              border: Border.all(color: StudyRepsTheme.warmOrange.withOpacity(0.3)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
               children: [
@@ -485,23 +636,23 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Icon(Icons.fitness_center_rounded, 
-                        color: StudyRepsTheme.primaryIndigo, size: 32),
+                        color: StudyRepsTheme.warmOrange, size: 32),
                     const SizedBox(width: 12),
                     Text(
                       '$dailyGoal',
-                      style: const TextStyle(
+                      style: GoogleFonts.outfit(
                         fontSize: 64,
                         fontWeight: FontWeight.w800,
-                        color: StudyRepsTheme.textPrimary,
+                        color: StudyRepsTheme.warmTextDark,
                       ),
                     ),
                   ],
                 ),
-                const Text(
+                Text(
                   'reps per day',
-                  style: TextStyle(
+                  style: GoogleFonts.outfit(
                     fontSize: 18,
-                    color: StudyRepsTheme.textSecondary,
+                    color: StudyRepsTheme.warmTextMedium,
                   ),
                 ),
               ],
@@ -513,10 +664,10 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
           // Goal slider
           SliderTheme(
             data: SliderThemeData(
-              activeTrackColor: StudyRepsTheme.primaryIndigo,
-              inactiveTrackColor: StudyRepsTheme.bgTertiary,
-              thumbColor: StudyRepsTheme.primaryIndigo,
-              overlayColor: StudyRepsTheme.primaryIndigo.withOpacity(0.2),
+              activeTrackColor: StudyRepsTheme.warmOrange,
+              inactiveTrackColor: StudyRepsTheme.warmBorder,
+              thumbColor: StudyRepsTheme.warmOrange,
+              overlayColor: StudyRepsTheme.warmOrange.withOpacity(0.2),
               trackHeight: 8,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 14),
             ),
@@ -541,7 +692,6 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
           
           const SizedBox(height: 48),
           
-          // Start button
           _buildContinueButton(
             enabled: true,
             label: "Let's Go! 🚀",
@@ -559,8 +709,8 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
       children: [
         Text(
           label,
-          style: TextStyle(
-            color: isActive ? StudyRepsTheme.primaryIndigo : StudyRepsTheme.textMuted,
+          style: GoogleFonts.outfit(
+            color: isActive ? StudyRepsTheme.warmOrange : StudyRepsTheme.warmTextLight,
             fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
             fontSize: 13,
           ),
@@ -580,19 +730,19 @@ class _StudentOnboardingScreenState extends ConsumerState<StudentOnboardingScree
         onPressed: enabled ? _nextStep : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: enabled 
-              ? StudyRepsTheme.primaryIndigo 
-              : StudyRepsTheme.bgTertiary,
+              ? StudyRepsTheme.warmOrange 
+              : StudyRepsTheme.warmBorder,
           padding: const EdgeInsets.symmetric(vertical: 18),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          elevation: enabled ? 8 : 0,
-          shadowColor: StudyRepsTheme.primaryIndigo.withOpacity(0.4),
+          elevation: enabled ? 4 : 0,
+          shadowColor: StudyRepsTheme.warmOrange.withOpacity(0.4),
         ),
         child: Text(
           label,
-          style: TextStyle(
-            color: enabled ? Colors.white : StudyRepsTheme.textMuted,
+          style: GoogleFonts.outfit(
+            color: enabled ? Colors.white : StudyRepsTheme.warmTextLight,
             fontWeight: FontWeight.w700,
             fontSize: 17,
           ),

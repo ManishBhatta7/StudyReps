@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/theme/retain_learn_theme.dart';
+import '../../core/theme/study_reps_theme.dart';
 import '../providers/chat_provider.dart';
 
 class NotebookChatView extends ConsumerStatefulWidget {
@@ -60,8 +60,8 @@ class _NotebookChatViewState extends ConsumerState<NotebookChatView> {
           height: 60,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: const BoxDecoration(
-            color: RetainLearnTheme.paperWhite,
-            border: Border(bottom: BorderSide(color: RetainLearnTheme.grayBorder)),
+            color: StudyRepsTheme.warmCream,
+            border: Border(bottom: BorderSide(color: StudyRepsTheme.warmBorder)),
           ),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
@@ -69,13 +69,13 @@ class _NotebookChatViewState extends ConsumerState<NotebookChatView> {
             separatorBuilder: (ctx, i) => const SizedBox(width: 8),
             itemBuilder: (ctx, i) {
               if (i == 0) {
-                 return const Chip(
-                  avatar: Icon(Icons.add, size: 16, color: RetainLearnTheme.tealPrimary),
-                  label: Text('Add Source'),
-                  backgroundColor: RetainLearnTheme.tealSurface,
+                 return Chip(
+                  avatar: const Icon(Icons.add, size: 16, color: StudyRepsTheme.warmOrange),
+                  label: const Text('Add Source'),
+                  backgroundColor: StudyRepsTheme.warmOrange.withOpacity(0.1),
                   side: BorderSide.none,
-                  labelStyle: TextStyle(
-                    color: RetainLearnTheme.tealDark,
+                  labelStyle: const TextStyle(
+                    color: StudyRepsTheme.warmOrangeDark,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                   ),
@@ -87,7 +87,7 @@ class _NotebookChatViewState extends ConsumerState<NotebookChatView> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: RetainLearnTheme.grayBorder),
+                  border: Border.all(color: StudyRepsTheme.warmBorder),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.02),
@@ -98,14 +98,14 @@ class _NotebookChatViewState extends ConsumerState<NotebookChatView> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.description_outlined, size: 14, color: RetainLearnTheme.textMedium),
+                    const Icon(Icons.description_outlined, size: 14, color: StudyRepsTheme.warmTextMedium),
                     const SizedBox(width: 6),
                     Text(
                       source,
-                      style: const TextStyle(fontSize: 12, color: RetainLearnTheme.textDark),
+                      style: const TextStyle(fontSize: 12, color: StudyRepsTheme.warmTextDark),
                     ),
                     const SizedBox(width: 4),
-                    const Icon(Icons.close, size: 12, color: RetainLearnTheme.textLight),
+                    const Icon(Icons.close, size: 12, color: StudyRepsTheme.warmTextLight),
                   ],
                 ),
               );
@@ -132,26 +132,31 @@ class _NotebookChatViewState extends ConsumerState<NotebookChatView> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: const BoxDecoration(
-            color: RetainLearnTheme.paperWhite,
-            border: Border(top: BorderSide(color: RetainLearnTheme.grayBorder)),
+            color: StudyRepsTheme.warmCream,
+            border: Border(top: BorderSide(color: StudyRepsTheme.warmBorder)),
           ),
           child: Row(
             children: [
               Expanded(
                 child: TextField(
                   controller: _textController,
+                  style: StudyRepsTheme.warmBodyStyle,
                   decoration: InputDecoration(
                     hintText: 'Ask a question about your sources...',
-                    hintStyle: const TextStyle(color: RetainLearnTheme.textLight),
+                    hintStyle: const TextStyle(color: StudyRepsTheme.warmTextLight),
                     filled: true,
-                    fillColor: RetainLearnTheme.paperOffWhite,
+                    fillColor: StudyRepsTheme.warmWhite,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(24),
-                      borderSide: const BorderSide(color: RetainLearnTheme.grayBorder),
+                      borderSide: const BorderSide(color: StudyRepsTheme.warmBorder),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(24),
-                      borderSide: const BorderSide(color: RetainLearnTheme.grayBorder),
+                      borderSide: const BorderSide(color: StudyRepsTheme.warmBorder),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      borderSide: const BorderSide(color: StudyRepsTheme.warmOrange),
                     ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                   ),
@@ -161,7 +166,8 @@ class _NotebookChatViewState extends ConsumerState<NotebookChatView> {
               const SizedBox(width: 12),
               FloatingActionButton(
                 onPressed: _handleSubmitted,
-                backgroundColor: RetainLearnTheme.tealPrimary,
+                backgroundColor: StudyRepsTheme.warmOrange,
+                foregroundColor: Colors.white,
                 elevation: 0,
                 mini: true,
                 child: chatState.isLoading
@@ -186,22 +192,22 @@ class _NotebookChatViewState extends ConsumerState<NotebookChatView> {
         children: [
           Container(
             padding: const EdgeInsets.all(24),
-            decoration: const BoxDecoration(
-              color: RetainLearnTheme.tealSurface,
+            decoration: BoxDecoration(
+              color: StudyRepsTheme.warmOrange.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.auto_awesome, size: 48, color: RetainLearnTheme.tealPrimary),
+            child: const Icon(Icons.auto_awesome, size: 48, color: StudyRepsTheme.warmOrange),
           ),
           const SizedBox(height: 24),
           Text(
-            'NotebookLM Assistant',
-            style: Theme.of(context).textTheme.displayMedium,
+            'Study Assistant',
+            style: StudyRepsTheme.warmHeadingStyle,
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Ask questions, summarize documents, or get study tips.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: RetainLearnTheme.textMedium),
+            style: StudyRepsTheme.warmBodyStyle.copyWith(color: StudyRepsTheme.warmTextMedium),
           ),
         ],
       ),
@@ -230,33 +236,33 @@ class _ChatBubble extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (!isUser) ...[
-                   const Icon(Icons.auto_awesome, size: 16, color: RetainLearnTheme.tealPrimary),
+                   const Icon(Icons.auto_awesome, size: 16, color: StudyRepsTheme.warmOrange),
                    const SizedBox(width: 8),
-                   const Text('Assistant', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: RetainLearnTheme.textDark)),
+                   Text('Assistant', style: StudyRepsTheme.warmLabelStyle.copyWith(color: StudyRepsTheme.warmTextDark)),
                 ],
                 if (isUser)
-                   const Text('You', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: RetainLearnTheme.textMedium)),
+                   Text('You', style: StudyRepsTheme.warmLabelStyle.copyWith(color: StudyRepsTheme.warmTextMedium)),
               ],
             ),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isUser ? RetainLearnTheme.paperOffWhite : Colors.transparent,
+                color: isUser ? StudyRepsTheme.warmWhite : Colors.transparent,
                 borderRadius: BorderRadius.circular(16),
-                border: isUser ? Border.all(color: RetainLearnTheme.grayBorder) : null,
+                border: isUser ? Border.all(color: StudyRepsTheme.warmBorder) : null,
               ),
               child: isUser 
-                ? Text(message.content, style: const TextStyle(color: RetainLearnTheme.textDark, height: 1.5))
+                ? Text(message.content, style: StudyRepsTheme.warmBodyStyle.copyWith(color: StudyRepsTheme.warmTextDark, height: 1.5))
                 : MarkdownBody(
                     data: message.content + (message.isStreaming ? ' ▋' : ''), // Blinking cursor effect
                     styleSheet: MarkdownStyleSheet(
-                      p: const TextStyle(color: RetainLearnTheme.textDark, height: 1.6, fontSize: 16),
-                      h1: const TextStyle(color: RetainLearnTheme.textDark, fontWeight: FontWeight.bold, fontSize: 24),
-                      h2: const TextStyle(color: RetainLearnTheme.textDark, fontWeight: FontWeight.bold, fontSize: 20),
-                      code: const TextStyle(backgroundColor: RetainLearnTheme.paperOffWhite, fontFamily: 'monospace'),
+                      p: StudyRepsTheme.warmBodyStyle.copyWith(color: StudyRepsTheme.warmTextDark, height: 1.6, fontSize: 16),
+                      h1: StudyRepsTheme.warmHeadingStyle.copyWith(color: StudyRepsTheme.warmTextDark, fontWeight: FontWeight.bold, fontSize: 24),
+                      h2: StudyRepsTheme.warmHeadingStyle.copyWith(color: StudyRepsTheme.warmTextDark, fontWeight: FontWeight.bold, fontSize: 20),
+                      code: const TextStyle(backgroundColor: StudyRepsTheme.warmCream, fontFamily: 'monospace'),
                       codeblockDecoration: BoxDecoration(
-                        color: RetainLearnTheme.paperOffWhite,
+                        color: StudyRepsTheme.warmCream,
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),

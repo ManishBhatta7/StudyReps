@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/study_reps_theme.dart';
 import '../../domain/models/video_model.dart';
@@ -52,7 +53,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: StudyRepsTheme.bgPrimary,
+      backgroundColor: StudyRepsTheme.warmCream,
       extendBody: true, // Required for floating glassmorphic nav bar
       body: IndexedStack(
         index: _currentIndex == 2 ? 0 : _currentIndex, // Skip create index
@@ -67,7 +68,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
       bottom: false,
       child: Padding(
         padding:
-            const EdgeInsets.only(left: 20, right: 20, bottom: 32, top: 12),
+            const EdgeInsets.only(left: 20, right: 20, bottom: 12, top: 12),
         child: Semantics(
           label: 'Application Navigation Bar',
           child: ClipRRect(
@@ -77,15 +78,15 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                 decoration: BoxDecoration(
-                  color: StudyRepsTheme.bgSecondary.withOpacity(0.65),
+                  color: Colors.white.withOpacity(0.85),
                   borderRadius: BorderRadius.circular(30),
                   border: Border.all(
-                      color: StudyRepsTheme.borderSubtle.withOpacity(0.5)),
+                      color: StudyRepsTheme.warmBorder.withOpacity(0.5)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withOpacity(0.08),
                       blurRadius: 20,
-                      offset: const Offset(0, 10),
+                      offset: const Offset(0, 8),
                     ),
                   ],
                 ),
@@ -129,12 +130,12 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
               color: isSelected
-                  ? StudyRepsTheme.primaryIndigo.withOpacity(0.2)
+                  ? StudyRepsTheme.warmOrange.withOpacity(0.12)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: isSelected
-                    ? StudyRepsTheme.primaryIndigo.withOpacity(0.3)
+                    ? StudyRepsTheme.warmOrange.withOpacity(0.3)
                     : Colors.transparent,
               )),
           child: Column(
@@ -146,8 +147,8 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
                 child: Icon(
                   icon,
                   color: isSelected
-                      ? StudyRepsTheme.primaryIndigoLight
-                      : StudyRepsTheme.textMuted,
+                      ? StudyRepsTheme.warmOrange
+                      : StudyRepsTheme.warmTextLight,
                   size: 24,
                 ),
               ),
@@ -157,8 +158,8 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
                 child: isSelected
                     ? Text(
                         label,
-                        style: const TextStyle(
-                          color: StudyRepsTheme.primaryIndigoLight,
+                        style: GoogleFonts.outfit(
+                          color: StudyRepsTheme.warmOrangeDark,
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.5,
@@ -186,11 +187,15 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            gradient: StudyRepsTheme.primaryGradient,
+            gradient: const LinearGradient(
+              colors: [StudyRepsTheme.warmOrange, StudyRepsTheme.warmOrangeDark],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: StudyRepsTheme.primaryIndigo.withOpacity(0.5),
+                color: StudyRepsTheme.warmOrange.withOpacity(0.45),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -239,12 +244,10 @@ class _CreateRepSheetState extends ConsumerState<_CreateRepSheet> {
           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            decoration: BoxDecoration(
-              color: StudyRepsTheme.bgSecondary.withOpacity(0.8),
+            decoration: const BoxDecoration(
+              color: StudyRepsTheme.warmCream,
               borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(32)),
-              border: Border.all(
-                  color: StudyRepsTheme.borderSubtle.withOpacity(0.5)),
+                  BorderRadius.vertical(top: Radius.circular(32)),
             ),
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -256,27 +259,27 @@ class _CreateRepSheetState extends ConsumerState<_CreateRepSheet> {
                     width: 48,
                     height: 5,
                     decoration: BoxDecoration(
-                      color: StudyRepsTheme.borderSubtle,
+                      color: StudyRepsTheme.warmBorder,
                       borderRadius: BorderRadius.circular(2.5),
                     ),
                   ),
                   const SizedBox(height: 32),
 
-                  const Text(
+                  Text(
                     'Create Rep',
-                    style: TextStyle(
+                    style: GoogleFonts.outfit(
                       fontSize: 26,
                       fontWeight: FontWeight.w800,
-                      color: StudyRepsTheme.textPrimary,
+                      color: StudyRepsTheme.warmTextDark,
                       letterSpacing: -0.5,
                     ),
                   ).animate().fadeIn().slideY(begin: 0.1),
 
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'Upload content and let AI generate study reps',
-                    style: TextStyle(
-                      color: StudyRepsTheme.textSecondary,
+                    style: GoogleFonts.outfit(
+                      color: StudyRepsTheme.warmTextMedium,
                       fontSize: 14,
                     ),
                     textAlign: TextAlign.center,
@@ -288,28 +291,21 @@ class _CreateRepSheetState extends ConsumerState<_CreateRepSheet> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                     decoration: BoxDecoration(
-                        color: StudyRepsTheme.bgPrimary.withOpacity(0.5),
+                        color: StudyRepsTheme.warmOrange.withOpacity(0.08),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: StudyRepsTheme.accentCyan.withOpacity(0.3),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: StudyRepsTheme.accentCyan.withOpacity(0.1),
-                            blurRadius: 8,
-                            spreadRadius: 2,
-                          )
-                        ]),
-                    child: const Row(
+                          color: StudyRepsTheme.warmOrange.withOpacity(0.3),
+                        )),
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.auto_awesome_rounded,
-                            color: StudyRepsTheme.accentCyan, size: 16),
-                        SizedBox(width: 8),
+                        const Icon(Icons.auto_awesome_rounded,
+                            color: StudyRepsTheme.warmOrange, size: 16),
+                        const SizedBox(width: 8),
                         Text(
                           'Powered by Gemini AI',
-                          style: TextStyle(
-                            color: StudyRepsTheme.accentCyan,
+                          style: GoogleFonts.outfit(
+                            color: StudyRepsTheme.warmOrange,
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.5,
@@ -348,7 +344,7 @@ class _CreateRepSheetState extends ConsumerState<_CreateRepSheet> {
                     icon: Icons.videocam_rounded,
                     title: 'Upload Video',
                     subtitle: 'Add a video and create questions',
-                    color: StudyRepsTheme.primaryIndigoLight,
+                    color: StudyRepsTheme.warmOrange,
                     onTap: () {
                       Navigator.pop(context);
                       _pickVideo();
@@ -504,7 +500,7 @@ class _CreateRepSheetState extends ConsumerState<_CreateRepSheet> {
       builder: (ctx) => Container(
         padding: const EdgeInsets.all(24),
         decoration: const BoxDecoration(
-          color: StudyRepsTheme.bgSecondary,
+          color: StudyRepsTheme.warmCream,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: SafeArea(
@@ -515,15 +511,15 @@ class _CreateRepSheetState extends ConsumerState<_CreateRepSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: StudyRepsTheme.borderSubtle,
+                  color: StudyRepsTheme.warmBorder,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Choose Image Source',
-                style: TextStyle(
-                  color: StudyRepsTheme.textPrimary,
+                style: GoogleFonts.outfit(
+                  color: StudyRepsTheme.warmTextDark,
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
                 ),
@@ -634,9 +630,15 @@ class _CreateOption extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: StudyRepsTheme.bgPrimary.withOpacity(0.4),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: color.withOpacity(0.2)),
+              color: StudyRepsTheme.warmCard,
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Row(
               children: [
@@ -657,8 +659,8 @@ class _CreateOption extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
-                          color: StudyRepsTheme.textPrimary,
+                        style: GoogleFonts.outfit(
+                          color: StudyRepsTheme.warmTextDark,
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
                           letterSpacing: 0.2,
@@ -667,8 +669,8 @@ class _CreateOption extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         subtitle,
-                        style: const TextStyle(
-                          color: StudyRepsTheme.textSecondary,
+                        style: GoogleFonts.outfit(
+                          color: StudyRepsTheme.warmTextMedium,
                           fontSize: 13,
                           height: 1.3,
                         ),
@@ -678,7 +680,7 @@ class _CreateOption extends StatelessWidget {
                 ),
                 const Icon(
                   Icons.chevron_right_rounded,
-                  color: StudyRepsTheme.textMuted,
+                  color: StudyRepsTheme.warmTextLight,
                   size: 24,
                 ),
               ],
@@ -714,7 +716,7 @@ class _SourceButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 24),
           decoration: BoxDecoration(
-            color: StudyRepsTheme.bgPrimary,
+            color: StudyRepsTheme.warmCard,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: color.withOpacity(0.3), width: 1.5),
             boxShadow: [

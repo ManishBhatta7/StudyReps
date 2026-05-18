@@ -61,6 +61,53 @@ class StudyRepsTheme {
   static const Color gradientMiddle = Color(0xFF818CF8);   // Light indigo
   static const Color gradientEnd = Color(0xFF38BDF8);      // Sky blue
 
+  // ===================================
+  // BOLDVOICE WARM PALETTE (non-video screens)
+  // ===================================
+  static const Color warmCream = Color(0xFFFAF5F0);
+  static const Color warmWhite = Color(0xFFFFFFFF);
+  static const Color warmCard = Color(0xFFFFFFFF);
+  static const Color warmDarkCard = Color(0xFF1C1C1E);
+  static const Color warmOrange = Color(0xFFFF7043);
+  static const Color warmOrangeLight = Color(0xFFFF8A65);
+  static const Color warmOrangeDark = Color(0xFFE64A19);
+  static const Color warmGreen = Color(0xFF4A9B5F);
+  static const Color warmTextDark = Color(0xFF1A1A1A);
+  static const Color warmTextMedium = Color(0xFF666666);
+  static const Color warmTextLight = Color(0xFF999999);
+  static const Color warmTextOnDark = Color(0xFFF5F5F5);
+  static const Color warmTextMutedOnDark = Color(0xFF8E8E93);
+  static const Color warmBorder = Color(0xFFE8E0D8);
+  static const Color warmChipBg = Color(0xFFF0E8E0);
+
+  // ===================================
+  // WARM TYPOGRAPHY
+  // ===================================
+
+  static TextStyle get warmHeadingStyle => GoogleFonts.outfit(
+    fontSize: 24,
+    fontWeight: FontWeight.w700,
+    color: warmTextDark,
+  );
+
+  static TextStyle get warmTitleStyle => GoogleFonts.outfit(
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    color: warmTextDark,
+  );
+
+  static TextStyle get warmBodyStyle => GoogleFonts.outfit(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    color: warmTextDark,
+    height: 1.5,
+  );
+
+  static TextStyle get warmLabelStyle => GoogleFonts.outfit(
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    color: warmTextDark,
+  );
 
 
   // ===================================

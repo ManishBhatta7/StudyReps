@@ -110,14 +110,14 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: StudyRepsTheme.bgPrimary,
+        color: StudyRepsTheme.warmCream,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         border: Border.all(
-          color: StudyRepsTheme.primaryPurple.withOpacity(0.3),
+          color: StudyRepsTheme.warmOrange.withOpacity(0.1),
         ),
         boxShadow: [
           BoxShadow(
-            color: StudyRepsTheme.primaryPurple.withOpacity(0.15),
+            color: StudyRepsTheme.warmOrange.withOpacity(0.05),
             blurRadius: 30,
             offset: const Offset(0, -5),
           ),
@@ -131,7 +131,7 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white24,
+              color: StudyRepsTheme.warmTextLight.withOpacity(0.2),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -167,8 +167,8 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               gradient: const LinearGradient(colors: [
-                StudyRepsTheme.primaryPurple,
-                StudyRepsTheme.accentCyan,
+                StudyRepsTheme.warmOrange,
+                StudyRepsTheme.warmOrangeDark,
               ]),
               borderRadius: BorderRadius.circular(14),
             ),
@@ -182,7 +182,7 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
                 const Text(
                   'AI Rep Generator',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: StudyRepsTheme.warmTextDark,
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.3,
@@ -191,8 +191,8 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
                 const SizedBox(height: 2),
                 Text(
                   widget.fileName ?? 'Analyzing content...',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.45),
+                  style: const TextStyle(
+                    color: StudyRepsTheme.warmTextMedium,
                     fontSize: 12,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -202,7 +202,7 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
           ),
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: Icon(Icons.close, color: Colors.white.withOpacity(0.4), size: 22),
+            icon: const Icon(Icons.close, color: StudyRepsTheme.warmTextMedium, size: 22),
           ),
         ],
       ),
@@ -219,26 +219,26 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(colors: [
-                StudyRepsTheme.primaryPurple.withOpacity(0.2),
-                StudyRepsTheme.accentCyan.withOpacity(0.1),
+                StudyRepsTheme.warmOrange.withOpacity(0.1),
+                StudyRepsTheme.warmOrange.withOpacity(0.05),
               ]),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.psychology_rounded,
-              color: StudyRepsTheme.accentCyan,
+              color: StudyRepsTheme.warmOrange,
               size: 48,
             ),
           )
               .animate(onPlay: (c) => c.repeat())
-              .shimmer(duration: 1500.ms, color: StudyRepsTheme.primaryPurple.withOpacity(0.3))
+              .shimmer(duration: 1500.ms, color: StudyRepsTheme.warmOrange.withOpacity(0.2))
               .then()
               .shake(hz: 1, duration: 300.ms),
           const SizedBox(height: 24),
           const Text(
             'Analyzing your content...',
             style: TextStyle(
-              color: Colors.white,
+              color: StudyRepsTheme.warmTextDark,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -246,19 +246,19 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
           const SizedBox(height: 8),
           Text(
             _getLoadingMessage(),
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.45),
+            style: const TextStyle(
+              color: StudyRepsTheme.warmTextMedium,
               fontSize: 13,
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-          SizedBox(
+          const SizedBox(
             width: 200,
             child: LinearProgressIndicator(
-              backgroundColor: Colors.white.withOpacity(0.1),
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                StudyRepsTheme.primaryPurple,
+              backgroundColor: StudyRepsTheme.warmBorder,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                StudyRepsTheme.warmOrange,
               ),
             ),
           ),
@@ -294,8 +294,8 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
             const SizedBox(height: 16),
             Text(
               _error ?? 'Something went wrong',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+              style: const TextStyle(
+                color: StudyRepsTheme.warmTextMedium,
                 fontSize: 14,
               ),
               textAlign: TextAlign.center,
@@ -306,7 +306,7 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
               icon: const Icon(Icons.refresh_rounded, size: 18),
               label: const Text('Try Again'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: StudyRepsTheme.primaryPurple,
+                backgroundColor: StudyRepsTheme.warmOrange,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -338,9 +338,16 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: StudyRepsTheme.warmBorder.withOpacity(0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -352,15 +359,15 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(colors: [
-                    StudyRepsTheme.primaryPurple,
-                    StudyRepsTheme.accentCyan,
+                    StudyRepsTheme.warmOrange,
+                    StudyRepsTheme.warmOrangeDark,
                   ]),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   'Rep ${index + 1}',
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: StudyRepsTheme.warmTextDark,
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                   ),
@@ -370,13 +377,13 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.08),
+                  color: StudyRepsTheme.warmOrange.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   rep.subject,
                   style: const TextStyle(
-                    color: StudyRepsTheme.accentCyan,
+                    color: StudyRepsTheme.warmOrange,
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),
@@ -384,7 +391,7 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
               ),
               const Spacer(),
               Icon(Icons.auto_awesome,
-                  color: StudyRepsTheme.primaryPurple.withOpacity(0.6), size: 16),
+                  color: StudyRepsTheme.warmOrange.withOpacity(0.3), size: 16),
             ],
           ),
           const SizedBox(height: 14),
@@ -393,7 +400,7 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
           Text(
             rep.title,
             style: const TextStyle(
-              color: Colors.white,
+              color: StudyRepsTheme.warmTextDark,
               fontSize: 16,
               fontWeight: FontWeight.w700,
               height: 1.3,
@@ -405,16 +412,16 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: StudyRepsTheme.primaryPurple.withOpacity(0.08),
+              color: StudyRepsTheme.warmOrange.withOpacity(0.05),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: StudyRepsTheme.primaryPurple.withOpacity(0.2)),
+                color: StudyRepsTheme.warmOrange.withOpacity(0.1)),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Icon(Icons.help_outline_rounded,
-                    color: StudyRepsTheme.accentCyan, size: 18),
+                    color: StudyRepsTheme.warmOrange, size: 18),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -445,8 +452,8 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: isCorrect
-                      ? StudyRepsTheme.successGreen.withOpacity(0.4)
-                      : Colors.white.withOpacity(0.06),
+                      ? StudyRepsTheme.warmGreen.withOpacity(0.3)
+                      : StudyRepsTheme.warmBorder.withOpacity(0.3),
                 ),
               ),
               child: Row(
@@ -457,16 +464,16 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: isCorrect
-                          ? StudyRepsTheme.successGreen.withOpacity(0.2)
-                          : Colors.white.withOpacity(0.08),
+                          ? StudyRepsTheme.warmGreen.withOpacity(0.1)
+                          : StudyRepsTheme.warmBorder.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       i < labels.length ? labels[i] : '${i + 1}',
                       style: TextStyle(
                         color: isCorrect
-                            ? StudyRepsTheme.successGreen
-                            : Colors.white.withOpacity(0.6),
+                            ? StudyRepsTheme.warmGreen
+                            : StudyRepsTheme.warmTextMedium,
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                       ),
@@ -477,14 +484,14 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
                     child: Text(
                       question.options[i],
                       style: TextStyle(
-                        color: Colors.white.withOpacity(isCorrect ? 0.95 : 0.7),
+                        color: StudyRepsTheme.warmTextDark.withOpacity(isCorrect ? 1.0 : 0.7),
                         fontSize: 13,
                       ),
                     ),
                   ),
                   if (isCorrect)
                     const Icon(Icons.check_circle_rounded,
-                        color: StudyRepsTheme.successGreen, size: 18),
+                        color: StudyRepsTheme.warmGreen, size: 18),
                 ],
               ),
             );
@@ -496,9 +503,9 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.03),
+                color: StudyRepsTheme.warmCream.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.white.withOpacity(0.06)),
+                border: Border.all(color: StudyRepsTheme.warmBorder.withOpacity(0.2)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -509,8 +516,8 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
                   Expanded(
                     child: Text(
                       question.explanation,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                      style: const TextStyle(
+                        color: StudyRepsTheme.warmTextMedium,
                         fontSize: 12,
                         fontStyle: FontStyle.italic,
                         height: 1.4,
@@ -530,9 +537,9 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
       decoration: BoxDecoration(
-        color: StudyRepsTheme.bgPrimary,
+        color: StudyRepsTheme.warmCream,
         border: Border(
-          top: BorderSide(color: Colors.white.withOpacity(0.08)),
+          top: BorderSide(color: StudyRepsTheme.warmBorder.withOpacity(0.5)),
         ),
       ),
       child: SafeArea(
@@ -545,8 +552,8 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
                 icon: const Icon(Icons.refresh_rounded, size: 18),
                 label: const Text('Regenerate'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white.withOpacity(0.7),
-                  side: BorderSide(color: Colors.white.withOpacity(0.15)),
+                  foregroundColor: StudyRepsTheme.warmTextMedium,
+                  side: const BorderSide(color: StudyRepsTheme.warmBorder),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -567,7 +574,7 @@ class _AiRepReviewSheetState extends State<AiRepReviewSheet> {
                       : 'Add ${_generatedReps.length} Reps',
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: StudyRepsTheme.primaryPurple,
+                  backgroundColor: StudyRepsTheme.warmOrange,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),

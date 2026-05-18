@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/retain_learn_theme.dart';
+import '../../core/theme/study_reps_theme.dart';
 
 /// Source Chip - Glassmorphic pill for displaying active sources
 ///
@@ -34,12 +34,12 @@ class SourceChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected 
               ? color.withOpacity(0.1) 
-              : RetainLearnTheme.paperWhite.withOpacity(0.9),
+              : StudyRepsTheme.warmWhite,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected 
                 ? color.withOpacity(0.3) 
-                : RetainLearnTheme.grayBorder,
+                : StudyRepsTheme.warmBorder,
           ),
         ),
         child: Row(
@@ -58,7 +58,7 @@ class SourceChip extends StatelessWidget {
                 fontWeight: FontWeight.w500,
                 color: isSelected 
                     ? color 
-                    : RetainLearnTheme.textMedium,
+                    : StudyRepsTheme.warmTextMedium,
               ),
             ),
             if (onRemove != null) ...[
@@ -68,7 +68,7 @@ class SourceChip extends StatelessWidget {
                 child: const Icon(
                   Icons.close,
                   size: 14,
-                  color: RetainLearnTheme.textLight,
+                  color: StudyRepsTheme.warmTextLight,
                 ),
               ),
             ],
@@ -81,19 +81,19 @@ class SourceChip extends StatelessWidget {
   Color _getTypeColor() {
     switch (type) {
       case SourceType.pdf:
-        return RetainLearnTheme.sourceAssignment;
+        return Colors.red.shade400;
       case SourceType.image:
-        return RetainLearnTheme.sourceReport;
+        return Colors.green.shade400;
       case SourceType.assignment:
-        return RetainLearnTheme.sourceAssignment;
+        return StudyRepsTheme.warmOrange;
       case SourceType.report:
-        return RetainLearnTheme.sourceReport;
+        return Colors.teal.shade400;
       case SourceType.quiz:
-        return RetainLearnTheme.sourceQuiz;
+        return Colors.deepPurple.shade300;
       case SourceType.essay:
-        return RetainLearnTheme.sourceEssay;
+        return Colors.pink.shade300;
       case SourceType.document:
-        return RetainLearnTheme.textMedium;
+        return StudyRepsTheme.warmTextMedium;
     }
   }
 

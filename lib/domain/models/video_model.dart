@@ -3,36 +3,58 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'video_model.freezed.dart';
 part 'video_model.g.dart';
 
-/// Video Model for StudyReps
+/// Content Type for feed items
+enum ContentType {
+  @JsonValue('video')
+  video,
+  @JsonValue('flashcard')
+  flashcard,
+}
+
+/// Feed Item Model for StudyReps
 /// 
-/// Represents a TikTok-style educational video with "The Lock" feature.
-/// Videos pause at [lockTimestamp] and require answering [question] to continue.
+/// Represents either a TikTok-style educational video or an interactive flashcard.
+/// For videos: pauses at [lockTimestamp] and requires answering [question] to continue.
+/// For flashcards: shows [flashcardFrontText] first, then the question gate.
 @freezed
 class VideoModel with _$VideoModel {
   const factory VideoModel({
     required String id,
-    required String videoUrl,
-    required int lockTimestamp, // Seconds into video where lock occurs
+    @Default('') String videoUrl,              // Empty for flashcards
+    @Default(0) int lockTimestamp,              // Seconds into video where lock occurs (0 for flashcards)
     required QuestionModel question,
     @Default('StudyReps') String creatorName,
     @Default('https://api.dicebear.com/7.x/avataaars/svg?seed=StudyReps') String creatorAvatar,
     required String title,
     required String subject,
-    @Default('') String thumbnailUrl, // Added for UI
+    @Default('') String thumbnailUrl,
     @Default(0) int likesCount,
     @Default(0) int repsCompleted,
     @Default(false) bool isLiked,
     @Default(false) bool isSaved,
-    @Default(Duration.zero) Duration duration, // Added missing duration
+    @Default(Duration.zero) Duration duration,
+    @Default(0) int startSeconds,
+    int? endSeconds,
+
+    // ── Content Type ──
+    @Default(ContentType.video) ContentType contentType,
+
+    // ── Flashcard-Specific Fields ──
+    @Default('') String flashcardFrontText,     // The "teach" side — concept explanation
+    @Default('') String flashcardBackText,      // Optional back text (revealed after answer)
+    @Default('') String flashcardImageUrl,      // Optional diagram/illustration URL
+    @Default('') String flashcardEmoji,         // Visual emoji for the card header
 
     // ── Adaptive Feed & Spaced Repetition Fields ──
-    @Default('') String transcript,              // Full text for tutorbot context & quiz gen
-    @Default([]) List<String> tags,              // Searchable tags for discovery
-    @Default([]) List<String> prerequisiteIds,   // Video IDs that should be mastered first
-    @Default(1) int difficultyLevel,             // 1-5 scale
-    @Default('') String topicId,                 // Maps to TopicSchema.id
-    @Default('') String conceptCluster,          // Groups related concepts (e.g. "newton_laws")
-    @Default('en') String language,              // ISO 639-1 language code
+    @Default('') String transcript,
+    @Default([]) List<String> tags,
+    @Default([]) List<String> prerequisiteIds,
+    @Default(1) int difficultyLevel,
+    @Default('') String topicId,
+    @Default('') String conceptCluster,
+    @Default('en') String language,
+    @Default([]) List<String> boards,
+    @Default([]) List<String> grades,
   }) = _VideoModel;
 
   factory VideoModel.fromJson(Map<String, dynamic> json) =>

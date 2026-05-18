@@ -54,6 +54,7 @@ _$UserPreferencesImpl _$$UserPreferencesImplFromJson(
     _$UserPreferencesImpl(
       userType: json['user_type'] as String?,
       board: json['board'] as String?,
+      grade: json['grade'] as String?,
       subject: json['subject'] as String?,
       theme: json['theme'] as String? ?? 'light',
       notifications: json['notifications'] as bool? ?? true,
@@ -68,6 +69,7 @@ Map<String, dynamic> _$$UserPreferencesImplToJson(
     <String, dynamic>{
       'user_type': instance.userType,
       'board': instance.board,
+      'grade': instance.grade,
       'subject': instance.subject,
       'theme': instance.theme,
       'notifications': instance.notifications,

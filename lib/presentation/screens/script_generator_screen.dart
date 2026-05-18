@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/study_reps_theme.dart';
 
-/// Script Generator Screen
+/// Script Generator Screen — BoldVoice warm cream design
 ///
 /// "Agile Production" tool — creators enter a topic/prompt and
 /// Gemini generates a structured video script with timing cues,
@@ -158,21 +159,17 @@ DIFFICULTY: 2
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: StudyRepsTheme.bgPrimary,
+      backgroundColor: StudyRepsTheme.warmCream,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: StudyRepsTheme.warmCream,
         elevation: 0,
-        title: const Text('AI Script Generator ✍️'),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                StudyRepsTheme.primaryPurple.withOpacity(0.2),
-                Colors.transparent,
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
+        iconTheme: const IconThemeData(color: StudyRepsTheme.warmTextDark),
+        title: Text(
+          'AI Script Generator ✍️',
+          style: GoogleFonts.outfit(
+            color: StudyRepsTheme.warmTextDark,
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
           ),
         ),
       ),
@@ -185,8 +182,8 @@ DIFFICULTY: 2
             _buildLabel('Topic / Concept'),
             TextField(
               controller: _topicController,
-              style: const TextStyle(color: Colors.white),
-              decoration: _inputDecoration('e.g. Newton\'s Third Law'),
+              style: GoogleFonts.outfit(color: StudyRepsTheme.warmTextDark),
+              decoration: _inputDecoration("e.g. Newton's Third Law"),
             ),
             const SizedBox(height: 16),
 
@@ -194,7 +191,7 @@ DIFFICULTY: 2
             _buildLabel('Subject (optional)'),
             TextField(
               controller: _subjectController,
-              style: const TextStyle(color: Colors.white),
+              style: GoogleFonts.outfit(color: StudyRepsTheme.warmTextDark),
               decoration: _inputDecoration('e.g. Physics'),
             ),
             const SizedBox(height: 16),
@@ -202,10 +199,11 @@ DIFFICULTY: 2
             // Duration slider
             _buildLabel('Duration: ${_durationSeconds}s'),
             SliderTheme(
-              data: SliderTheme.of(context).copyWith(
-                activeTrackColor: StudyRepsTheme.primaryPurple,
-                thumbColor: StudyRepsTheme.accentCyan,
-                inactiveTrackColor: Colors.white12,
+              data: SliderThemeData(
+                activeTrackColor: StudyRepsTheme.warmOrange,
+                thumbColor: StudyRepsTheme.warmOrange,
+                inactiveTrackColor: StudyRepsTheme.warmBorder,
+                overlayColor: StudyRepsTheme.warmOrange.withOpacity(0.2),
               ),
               child: Slider(
                 value: _durationSeconds.toDouble(),
@@ -225,13 +223,17 @@ DIFFICULTY: 2
               children: ['Beginner', 'Intermediate', 'Advanced'].map((level) {
                 final isSelected = _targetLevel == level;
                 return ChoiceChip(
-                  label: Text(level),
-                  selected: isSelected,
-                  selectedColor: StudyRepsTheme.primaryPurple,
-                  backgroundColor: Colors.white10,
-                  labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : Colors.white70,
+                  label: Text(
+                    level,
+                    style: GoogleFonts.outfit(
+                      color: isSelected ? Colors.white : StudyRepsTheme.warmTextDark,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
+                  selected: isSelected,
+                  selectedColor: StudyRepsTheme.warmOrange,
+                  backgroundColor: StudyRepsTheme.warmCard,
+                  side: BorderSide(color: isSelected ? StudyRepsTheme.warmOrange : StudyRepsTheme.warmBorder),
                   onSelected: (_) => setState(() => _targetLevel = level),
                 );
               }).toList(),
@@ -245,22 +247,23 @@ DIFFICULTY: 2
                 onPressed: _isGenerating ? null : _generateScript,
                 icon: _isGenerating
                     ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
+                        width: 18, height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       )
-                    : const Icon(Icons.auto_awesome),
-                label: Text(_isGenerating ? 'Generating...' : 'Generate Script'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: StudyRepsTheme.primaryPurple,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    : const Icon(Icons.auto_awesome, color: Colors.white),
+                label: Text(
+                  _isGenerating ? 'Generating...' : 'Generate Script',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
                   ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: StudyRepsTheme.warmOrange,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  elevation: 4,
+                  shadowColor: StudyRepsTheme.warmOrange.withOpacity(0.4),
                 ),
               ),
             ),
@@ -273,16 +276,21 @@ DIFFICULTY: 2
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: StudyRepsTheme.warmCard,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: StudyRepsTheme.primaryPurple.withOpacity(0.2),
-                  ),
+                  border: Border.all(color: StudyRepsTheme.warmBorder),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: SelectableText(
                   _generatedScript,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
+                  style: GoogleFonts.outfit(
+                    color: StudyRepsTheme.warmTextDark,
                     fontSize: 14,
                     height: 1.6,
                   ),
@@ -296,12 +304,15 @@ DIFFICULTY: 2
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: _generateScript,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Regenerate'),
+                      icon: const Icon(Icons.refresh, color: StudyRepsTheme.warmTextMedium),
+                      label: Text(
+                        'Regenerate',
+                        style: GoogleFonts.outfit(color: StudyRepsTheme.warmTextMedium),
+                      ),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white70,
-                        side: const BorderSide(color: Colors.white24),
+                        side: const BorderSide(color: StudyRepsTheme.warmBorder),
                         padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                   ),
@@ -309,17 +320,27 @@ DIFFICULTY: 2
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        // TODO: Navigate to video recording with script as teleprompter
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Script saved! Record your video next.')),
+                          SnackBar(
+                            content: Text(
+                              'Script saved! Record your video next.',
+                              style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+                            ),
+                            backgroundColor: StudyRepsTheme.warmGreen,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
                         );
                       },
-                      icon: const Icon(Icons.videocam),
-                      label: const Text('Use Script'),
+                      icon: const Icon(Icons.videocam, color: Colors.white),
+                      label: Text(
+                        'Use Script',
+                        style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600),
+                      ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: StudyRepsTheme.accentCyan,
-                        foregroundColor: Colors.white,
+                        backgroundColor: StudyRepsTheme.warmGreen,
                         padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                   ),
@@ -337,10 +358,10 @@ DIFFICULTY: 2
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         text,
-        style: TextStyle(
-          color: Colors.white.withOpacity(0.7),
+        style: GoogleFonts.outfit(
+          color: StudyRepsTheme.warmTextMedium,
           fontSize: 13,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -349,12 +370,20 @@ DIFFICULTY: 2
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+      hintStyle: GoogleFonts.outfit(color: StudyRepsTheme.warmTextLight),
       filled: true,
-      fillColor: Colors.white.withOpacity(0.08),
+      fillColor: StudyRepsTheme.warmCard,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide.none,
+        borderSide: const BorderSide(color: StudyRepsTheme.warmBorder),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: StudyRepsTheme.warmBorder),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: StudyRepsTheme.warmOrange, width: 2),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
     );

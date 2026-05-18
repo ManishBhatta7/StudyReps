@@ -43,7 +43,7 @@ class GateOverlay extends StatelessWidget {
         );
       },
       child: Container(
-        color: Colors.black.withOpacity(0.6),
+        color: StudyRepsTheme.warmCream.withOpacity(0.5),
         child: Center(
           child: Stack(
             clipBehavior: Clip.none,
@@ -58,7 +58,7 @@ class GateOverlay extends StatelessWidget {
                     width: MediaQuery.of(context).size.width * 0.9,
                     padding: const EdgeInsets.fromLTRB(24, 60, 24, 24), // Top padding for Mascot
                     decoration: BoxDecoration(
-                      color: StudyRepsTheme.bgSecondary.withOpacity(0.8),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                         color: isAnswered 
@@ -68,7 +68,7 @@ class GateOverlay extends StatelessWidget {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
+                          color: Colors.black.withOpacity(0.05),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -127,7 +127,7 @@ class GateOverlay extends StatelessWidget {
       child: Text(
         text,
         style: const TextStyle(
-          color: StudyRepsTheme.bgPrimary,
+          color: StudyRepsTheme.warmTextDark,
           fontSize: 12,
           fontWeight: FontWeight.bold,
         ),
@@ -172,7 +172,7 @@ class GateOverlay extends StatelessWidget {
         const Text(
           'Great job! 🎉',
           style: TextStyle(
-            color: Colors.white,
+            color: StudyRepsTheme.warmTextDark,
             fontSize: 18,
           ),
         ),
@@ -193,14 +193,14 @@ class GateOverlay extends StatelessWidget {
           children: [
             Icon(
               Icons.lock_rounded,
-              color: StudyRepsTheme.primaryPurple,
+              color: StudyRepsTheme.warmOrange,
               size: 20,
             ),
             SizedBox(width: 8),
             Text(
               'LOGIC GATE',
               style: TextStyle(
-                color: StudyRepsTheme.primaryPurple,
+                color: StudyRepsTheme.warmOrange,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 2,
@@ -216,7 +216,7 @@ class GateOverlay extends StatelessWidget {
           question.prompt,
           textAlign: TextAlign.center,
           style: const TextStyle(
-            color: Colors.white,
+            color: StudyRepsTheme.warmTextDark,
             fontSize: 18,
             fontWeight: FontWeight.w500,
             height: 1.4,
@@ -246,21 +246,21 @@ class GateOverlay extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: showAsCorrect
-                        ? StudyRepsTheme.successGreen.withOpacity(0.2)
+                        ? StudyRepsTheme.warmGreen.withOpacity(0.1)
                         : showAsWrong
-                            ? Colors.red.withOpacity(0.2)
+                            ? Colors.red.withOpacity(0.1)
                             : isSelected
-                                ? StudyRepsTheme.primaryPurple.withOpacity(0.2)
-                                : Colors.white.withOpacity(0.05),
+                                ? StudyRepsTheme.warmOrange.withOpacity(0.1)
+                                : Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: showAsCorrect
-                          ? StudyRepsTheme.successGreen
+                          ? StudyRepsTheme.warmGreen
                           : showAsWrong
                               ? Colors.red
                               : isSelected
-                                  ? StudyRepsTheme.primaryPurple
-                                  : Colors.white.withOpacity(0.2),
+                                  ? StudyRepsTheme.warmOrange
+                                  : StudyRepsTheme.warmBorder,
                       width: 2,
                     ),
                   ),
@@ -271,10 +271,10 @@ class GateOverlay extends StatelessWidget {
                         height: 32,
                         decoration: BoxDecoration(
                           color: showAsCorrect
-                              ? StudyRepsTheme.successGreen
+                              ? StudyRepsTheme.warmGreen
                               : showAsWrong
                                   ? Colors.red
-                                  : StudyRepsTheme.primaryPurple.withOpacity(0.3),
+                                  : StudyRepsTheme.warmOrange.withOpacity(0.3),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Center(
@@ -292,7 +292,7 @@ class GateOverlay extends StatelessWidget {
                         child: Text(
                           option,
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: StudyRepsTheme.warmTextDark,
                             fontSize: 15,
                           ),
                         ),

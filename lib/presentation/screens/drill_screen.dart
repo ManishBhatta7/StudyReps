@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/study_reps_theme.dart';
 import '../../data/providers/repository_providers.dart';
 import '../providers/chat_provider.dart';
@@ -71,7 +72,6 @@ class DrillNotifier extends StateNotifier<DrillState> {
   final Ref ref;
 
   DrillNotifier(this.ref) : super(const DrillState()) {
-    // Initial Greeting
     state = state.copyWith(messages: [
       ChatMessage(
         id: 'init',
@@ -85,7 +85,6 @@ class DrillNotifier extends StateNotifier<DrillState> {
   Future<void> sendResponse(String text) async {
     if (text.trim().isEmpty) return;
 
-    // 1. Add User Message
     final userMsg = ChatMessage(
       id: DateTime.now().toString(),
       content: text,
@@ -96,17 +95,14 @@ class DrillNotifier extends StateNotifier<DrillState> {
     state = state.copyWith(
       messages: [...state.messages, userMsg],
       isLoading: true,
-      currentTopic: state.currentTopic ?? text, // Naive topic detection for first msg
+      currentTopic: state.currentTopic ?? text,
     );
 
-    // 2. Prepare Context for AI
-    // We prepend the System Prompt to the conversation history for the AI
     final prompt = '$kDrillSystemPrompt\n\nUser: $text';
 
     try {
       final repository = ref.read(geminiRepositoryProvider);
       
-      // Placeholder for bot
       final botMsgId = 'bot_${DateTime.now().millisecondsSinceEpoch}';
       final botMsg = ChatMessage(
         id: botMsgId,
@@ -121,7 +117,6 @@ class DrillNotifier extends StateNotifier<DrillState> {
       final stream = repository.sendChatMessage(
         message: prompt,
         contextIds: [], 
-        // In a real app we'd maintain history context here or via the repository
       );
 
       String accumulated = '';
@@ -134,11 +129,8 @@ class DrillNotifier extends StateNotifier<DrillState> {
         );
       }
       
-      // Parse Rep Count from response if possible
       int newRep = state.currentRep;
       if (accumulated.contains('Rep')) {
-         // Naive parsing logic could go here
-         // e.g. Regex to find "Rep (\d+)/10"
          final regex = RegExp(r'Rep\s+(\d+)/');
          final match = regex.firstMatch(accumulated);
          if (match != null) {
@@ -156,12 +148,11 @@ class DrillNotifier extends StateNotifier<DrillState> {
 
     } catch (e) {
       state = state.copyWith(isLoading: false);
-      // Handle error display
     }
   }
 }
 
-// --- Screen ---
+// --- Screen — BoldVoice warm cream design ---
 class DrillScreen extends ConsumerStatefulWidget {
   const DrillScreen({super.key});
 
@@ -195,19 +186,32 @@ class _DrillScreenState extends ConsumerState<DrillScreen> {
     final state = ref.watch(drillProvider);
 
     return Scaffold(
-      backgroundColor: StudyRepsTheme.bgPrimary,
+      backgroundColor: StudyRepsTheme.warmCream,
       appBar: AppBar(
+        backgroundColor: StudyRepsTheme.warmCard,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: StudyRepsTheme.warmTextDark),
         title: Column(
           children: [
-            const Text('AdaptiveEd Coach'),
+            Text(
+              'AdaptiveEd Coach',
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.w700,
+                color: StudyRepsTheme.warmTextDark,
+                fontSize: 16,
+              ),
+            ),
             Text(
               "Rep ${state.currentRep}/${state.totalReps} • ${state.currentTopic ?? 'Select Topic'}",
-              style: StudyRepsTheme.darkTheme.textTheme.labelMedium,
+              style: GoogleFonts.outfit(
+                fontSize: 12,
+                color: StudyRepsTheme.warmTextLight,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),
-        backgroundColor: StudyRepsTheme.bgSecondary,
-        elevation: 0,
+        centerTitle: true,
       ),
       body: Column(
         children: [
@@ -226,26 +230,32 @@ class _DrillScreenState extends ConsumerState<DrillScreen> {
           // Input
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: StudyRepsTheme.bgSecondary,
-              border: Border(top: BorderSide(color: Colors.white10)),
+            decoration: BoxDecoration(
+              color: StudyRepsTheme.warmCard,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, -2),
+                ),
+              ],
             ),
             child: Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _textController,
-                    style: const TextStyle(color: Colors.white),
+                    style: GoogleFonts.outfit(color: StudyRepsTheme.warmTextDark),
                     decoration: InputDecoration(
                       hintText: 'Answer or ask...',
-                      hintStyle: const TextStyle(color: Colors.white54),
+                      hintStyle: GoogleFonts.outfit(color: StudyRepsTheme.warmTextLight),
                       filled: true,
-                      fillColor: Colors.black26,
+                      fillColor: StudyRepsTheme.warmChipBg,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding: const EdgeInsets.symmetric( horizontal: 20, vertical: 14),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                     ),
                     onSubmitted: (_) => _handleSubmitted(),
                   ),
@@ -253,11 +263,11 @@ class _DrillScreenState extends ConsumerState<DrillScreen> {
                 const SizedBox(width: 12),
                 FloatingActionButton(
                   onPressed: _handleSubmitted,
-                  backgroundColor: StudyRepsTheme.primaryPurple,
+                  backgroundColor: StudyRepsTheme.warmOrange,
                   mini: true,
                   child: state.isLoading 
                     ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Icon(Icons.send, size: 18),
+                    : const Icon(Icons.send_rounded, size: 18, color: Colors.white),
                 ),
               ],
             ),
@@ -282,27 +292,50 @@ class _DrillBubble extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.85),
         decoration: BoxDecoration(
-          color: isUser ? StudyRepsTheme.primaryPurple.withOpacity(0.2) : StudyRepsTheme.bgSecondary,
+          color: isUser ? StudyRepsTheme.warmOrange.withOpacity(0.12) : StudyRepsTheme.warmCard,
           borderRadius: BorderRadius.circular(16).copyWith(
             bottomRight: isUser ? Radius.zero : null,
             bottomLeft: !isUser ? Radius.zero : null,
           ),
           border: Border.all(
-            color: isUser ? StudyRepsTheme.primaryPurple.withOpacity(0.5) : Colors.white10,
+            color: isUser ? StudyRepsTheme.warmOrange.withOpacity(0.3) : StudyRepsTheme.warmBorder,
           ),
+          boxShadow: [
+            if (!isUser)
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!isUser) ...[
-              const Text('COACH', style: TextStyle(color: StudyRepsTheme.primaryPurple, fontSize: 10, fontWeight: FontWeight.bold)),
+              Text(
+                'COACH',
+                style: GoogleFonts.outfit(
+                  color: StudyRepsTheme.warmOrange,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1,
+                ),
+              ),
               const SizedBox(height: 8),
             ],
             MarkdownBody(
               data: message.content,
               styleSheet: MarkdownStyleSheet(
-                p: const TextStyle(color: Colors.white, fontSize: 16, height: 1.5),
-                strong: const TextStyle(color: StudyRepsTheme.successGreen, fontWeight: FontWeight.bold),
+                p: GoogleFonts.outfit(
+                  color: StudyRepsTheme.warmTextDark,
+                  fontSize: 15,
+                  height: 1.5,
+                ),
+                strong: GoogleFonts.outfit(
+                  color: StudyRepsTheme.warmGreen,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/retain_learn_theme.dart';
+import '../../core/theme/study_reps_theme.dart';
 
 /// Studio Card - Reusable masonry card for dashboard
 ///
@@ -22,7 +22,7 @@ class StudioCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.icon,
-    this.accentColor = RetainLearnTheme.tealPrimary,
+    this.accentColor = StudyRepsTheme.warmOrange,
     this.onTap,
     this.isLarge = false,
     this.trailing,
@@ -36,7 +36,7 @@ class StudioCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-          color: RetainLearnTheme.grayBorder.withOpacity(0.7),
+          color: StudyRepsTheme.warmBorder.withOpacity(0.7),
         ),
       ),
       child: InkWell(
@@ -47,10 +47,10 @@ class StudioCard extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                RetainLearnTheme.paperWhite,
+                StudyRepsTheme.warmWhite,
                 isLarge
                     ? accentColor.withOpacity(0.03)
-                    : RetainLearnTheme.paperWhite,
+                    : StudyRepsTheme.warmWhite,
               ],
             ),
           ),
@@ -87,9 +87,9 @@ class StudioCard extends StatelessWidget {
                 style: isLarge
                     ? Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: RetainLearnTheme.textDark,
+                          color: StudyRepsTheme.warmTextDark,
                         )
-                    : RetainLearnTheme.cardHeaderStyle,
+                    : StudyRepsTheme.warmTitleStyle,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -97,7 +97,7 @@ class StudioCard extends StatelessWidget {
               Text(
                 subtitle,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: RetainLearnTheme.textMedium,
+                      color: StudyRepsTheme.warmTextMedium,
                     ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -125,7 +125,7 @@ class MetricCard extends StatelessWidget {
     required this.value,
     this.subtitle,
     required this.icon,
-    this.accentColor = RetainLearnTheme.tealPrimary,
+    this.accentColor = StudyRepsTheme.warmOrange,
     this.onTap,
   });
 
@@ -135,7 +135,7 @@ class MetricCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: RetainLearnTheme.grayBorder),
+        side: const BorderSide(color: StudyRepsTheme.warmBorder),
       ),
       child: InkWell(
         onTap: onTap,
@@ -151,7 +151,7 @@ class MetricCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     title,
-                    style: Theme.of(context).textTheme.labelMedium,
+                    style: StudyRepsTheme.warmLabelStyle,
                   ),
                 ],
               ),
@@ -167,7 +167,7 @@ class MetricCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   subtitle!,
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: StudyRepsTheme.warmBodyStyle.copyWith(fontSize: 12),
                 ),
               ],
             ],

@@ -1,7 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/video_model.dart';
-import '../../data/content/force_chapter_videos.dart';
+import '../../data/services/youtube_curation_service.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../data/repositories/videos_repository.dart';
@@ -14,25 +13,15 @@ final videosRepositoryProvider = Provider<VideosRepository>((ref) {
 /// Local state for user-created videos (immediate feedback)
 final userCreatedVideosProvider = StateProvider<List<VideoModel>>((ref) => []);
 
-/// All Videos Provider (Supabase + Local + Mock Fallback)
+/// All Videos Provider (Curated Content Focus)
 final allVideosProvider = FutureProvider<List<VideoModel>>((ref) async {
   final userVideos = ref.watch(userCreatedVideosProvider);
-  List<VideoModel> fetchedVideos = [];
 
-  try {
-    final repo = ref.read(videosRepositoryProvider);
-    fetchedVideos = await repo.fetchVideos(limit: 50); // Fetch initial batch
-  } catch (e) {
-    debugPrint('⚠️ Failed to fetch videos from Supabase, falling back to mock: $e');
-  }
-  
-  // Fallback to mock data if empty
-  if (fetchedVideos.isEmpty) {
-    fetchedVideos = ForceChapterVideos.getVideos();
-  }
-
-  // Combine user created (newest first) with fetched
-  return [...userVideos, ...fetchedVideos];
+  // Focus only on high-quality curated educational content (CS50, MIT, Stanford)
+  return [
+    ...userVideos, 
+    ...YoutubeCurationService.getCuratedContent(),
+  ];
 });
 
 /// Current Video Index State

@@ -107,7 +107,7 @@ class _AppRootState extends State<AppRoot> {
         debugShowCheckedModeBanner: false,
         theme: StudyRepsTheme.darkTheme,
         home: Scaffold(
-          backgroundColor: StudyRepsTheme.bgPrimary,
+          backgroundColor: StudyRepsTheme.warmCream,
           body: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -118,11 +118,18 @@ class _AppRootState extends State<AppRoot> {
                   height: 80,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    gradient: StudyRepsTheme.primaryGradient,
+                    gradient: const LinearGradient(
+                      colors: [
+                        StudyRepsTheme.warmOrange,
+                        StudyRepsTheme.warmOrangeDark,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: StudyRepsTheme.primaryIndigo.withOpacity(0.5),
+                        color: StudyRepsTheme.warmOrange.withOpacity(0.4),
                         blurRadius: 30,
                         offset: const Offset(0, 10),
                       ),
@@ -149,7 +156,7 @@ class _AppRootState extends State<AppRoot> {
                     width: 24,
                     height: 24,
                     child: CircularProgressIndicator(
-                      color: StudyRepsTheme.primaryPurple,
+                      color: StudyRepsTheme.warmOrange,
                       strokeWidth: 2,
                     ),
                   ),

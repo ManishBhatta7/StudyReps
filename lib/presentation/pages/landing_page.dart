@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../core/theme/retain_learn_theme.dart';
+import '../../core/theme/study_reps_theme.dart';
 
-/// Landing Page - Matches Web RetainLearn design
+/// Landing Page - Matches StudyReps warm theme
 /// 
 /// Features:
-/// - Large serif headline with "Notebook" in Teal italic
+/// - Large serif headline with "StudyReps" in Orange italic
 /// - Clean white/off-white background
-/// - Pill-shaped teal CTA button
+/// - Pill-shaped orange CTA button
 /// - AI Analysis mockup card
 /// - Feature sections
 class LandingPage extends StatelessWidget {
@@ -18,7 +18,7 @@ class LandingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: RetainLearnTheme.paperOffWhite,
+      backgroundColor: StudyRepsTheme.warmCream,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -43,14 +43,14 @@ class LandingPage extends StatelessWidget {
   Widget _buildAppBar(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      color: RetainLearnTheme.paperWhite,
+      color: StudyRepsTheme.warmWhite,
       child: Row(
         children: [
           // Logo
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: RetainLearnTheme.tealPrimary,
+              color: StudyRepsTheme.warmOrange,
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
@@ -61,11 +61,11 @@ class LandingPage extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Text(
-            'RetainLearn',
-            style: GoogleFonts.inter(
+            'StudyReps',
+            style: GoogleFonts.outfit(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: RetainLearnTheme.textDark,
+              color: StudyRepsTheme.warmTextDark,
             ),
           ),
           const Spacer(),
@@ -75,21 +75,21 @@ class LandingPage extends StatelessWidget {
               onPressed: () {},
               child: const Text(
                 'Features',
-                style: TextStyle(color: RetainLearnTheme.textMedium),
+                style: TextStyle(color: StudyRepsTheme.warmTextMedium),
               ),
             ),
             TextButton(
               onPressed: () {},
               child: const Text(
                 'How it Works',
-                style: TextStyle(color: RetainLearnTheme.textMedium),
+                style: TextStyle(color: StudyRepsTheme.warmTextMedium),
               ),
             ),
             TextButton(
               onPressed: () {},
               child: const Text(
                 'Pricing',
-                style: TextStyle(color: RetainLearnTheme.textMedium),
+                style: TextStyle(color: StudyRepsTheme.warmTextMedium),
               ),
             ),
             const SizedBox(width: 16),
@@ -98,7 +98,7 @@ class LandingPage extends StatelessWidget {
           FilledButton(
             onPressed: () => context.go('/login'),
             style: FilledButton.styleFrom(
-              backgroundColor: RetainLearnTheme.tealPrimary,
+              backgroundColor: StudyRepsTheme.warmOrange,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
             child: const Text('Dashboard'),
@@ -143,10 +143,10 @@ class _HeroSection extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: RetainLearnTheme.tealSurface,
+            color: StudyRepsTheme.warmCream,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: RetainLearnTheme.tealPrimary.withOpacity(0.2),
+              color: StudyRepsTheme.warmOrange.withOpacity(0.2),
             ),
           ),
           child: const Row(
@@ -155,7 +155,7 @@ class _HeroSection extends StatelessWidget {
               Icon(
                 Icons.auto_awesome,
                 size: 14,
-                color: RetainLearnTheme.tealPrimary,
+                color: StudyRepsTheme.warmOrange,
               ),
               SizedBox(width: 6),
               Text(
@@ -163,7 +163,7 @@ class _HeroSection extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: RetainLearnTheme.tealDark,
+                  color: StudyRepsTheme.warmOrangeDark,
                 ),
               ),
             ],
@@ -174,19 +174,19 @@ class _HeroSection extends StatelessWidget {
         // Main Headline
         RichText(
           text: TextSpan(
-            style: GoogleFonts.merriweather(
+            style: GoogleFonts.outfit(
               fontSize: 36,
               fontWeight: FontWeight.w900,
-              color: RetainLearnTheme.textDark,
+              color: StudyRepsTheme.warmTextDark,
               height: 1.2,
             ),
             children: [
               const TextSpan(text: 'Your\nIntelligent\n'),
               TextSpan(
-                text: 'Notebook',
-                style: GoogleFonts.merriweather(
+                text: 'StudyReps',
+                style: GoogleFonts.outfit(
                   fontStyle: FontStyle.italic,
-                  color: RetainLearnTheme.tealPrimary,
+                  color: StudyRepsTheme.warmOrange,
                 ),
               ),
               const TextSpan(text: ' for\nAdaptive\nLearning.'),
@@ -197,10 +197,10 @@ class _HeroSection extends StatelessWidget {
 
         // Subtitle
         Text(
-          'RetainLearn transforms your assignments, reports, and doubts into a personalized learning journey. Powered by Gemini AI to adapt to your unique style.',
-          style: GoogleFonts.inter(
+          'StudyReps transforms your assignments, reports, and doubts into a personalized learning journey. Powered by Gemini AI to adapt to your unique style.',
+          style: GoogleFonts.outfit(
             fontSize: 16,
-            color: RetainLearnTheme.textMedium,
+            color: StudyRepsTheme.warmTextMedium,
             height: 1.6,
           ),
         ),
@@ -216,25 +216,25 @@ class _HeroSection extends StatelessWidget {
               icon: const Icon(Icons.arrow_forward, size: 18),
               label: const Text('Start Your Journey'),
               style: FilledButton.styleFrom(
-                backgroundColor: RetainLearnTheme.tealPrimary,
+                backgroundColor: StudyRepsTheme.warmOrange,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               ),
             ),
             OutlinedButton(
               onPressed: () => GoRouter.of(context).go('/login'),
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: RetainLearnTheme.grayBorder),
+                side: const BorderSide(color: StudyRepsTheme.warmBorder),
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               ),
               child: const Text('Take The Quiz'),
             ),
-            // NEW: Board Exam Demo Button
+            // Demo Button
             FilledButton.icon(
               onPressed: () => GoRouter.of(context).go('/board-exam'),
               icon: const Icon(Icons.school, size: 18),
               label: const Text('Board Exam Demo'),
               style: FilledButton.styleFrom(
-                backgroundColor: Colors.purple,
+                backgroundColor: StudyRepsTheme.warmOrangeDark,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               ),
             ),
@@ -258,13 +258,13 @@ class _HeroSection extends StatelessWidget {
                       height: 32,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: RetainLearnTheme.tealSurface,
+                        color: StudyRepsTheme.warmCream,
                         border: Border.all(color: Colors.white, width: 2),
                       ),
                       child: const Icon(
                         Icons.person,
                         size: 16,
-                        color: RetainLearnTheme.tealPrimary,
+                        color: StudyRepsTheme.warmOrange,
                       ),
                     ),
                   );
@@ -274,9 +274,9 @@ class _HeroSection extends StatelessWidget {
             const SizedBox(width: 12),
             RichText(
               text: TextSpan(
-                style: GoogleFonts.inter(
+                style: GoogleFonts.outfit(
                   fontSize: 14,
-                  color: RetainLearnTheme.textMedium,
+                  color: StudyRepsTheme.warmTextMedium,
                 ),
                 children: const [
                   TextSpan(text: 'Joined by '),
@@ -284,7 +284,7 @@ class _HeroSection extends StatelessWidget {
                     text: '1,200+',
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      color: RetainLearnTheme.textDark,
+                      color: StudyRepsTheme.warmTextDark,
                     ),
                   ),
                   TextSpan(text: ' learners today'),
@@ -304,7 +304,7 @@ class _HeroSection extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: RetainLearnTheme.paperWhite,
+            color: StudyRepsTheme.warmWhite,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
@@ -322,12 +322,12 @@ class _HeroSection extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: RetainLearnTheme.tealSurface,
+                      color: StudyRepsTheme.warmCream,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(
                       Icons.analytics,
-                      color: RetainLearnTheme.tealPrimary,
+                      color: StudyRepsTheme.warmOrange,
                       size: 18,
                     ),
                   ),
@@ -337,17 +337,17 @@ class _HeroSection extends StatelessWidget {
                     children: [
                       Text(
                         'AI Analysis',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.outfit(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: RetainLearnTheme.textDark,
+                          color: StudyRepsTheme.warmTextDark,
                         ),
                       ),
                       const Text(
                         'Assignment ID: #4421',
                         style: TextStyle(
                           fontSize: 12,
-                          color: RetainLearnTheme.textLight,
+                          color: StudyRepsTheme.warmTextLight,
                         ),
                       ),
                     ],
@@ -356,23 +356,23 @@ class _HeroSection extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               // Progress bars
-              _buildProgressBar(0.85, RetainLearnTheme.tealPrimary),
+              _buildProgressBar(0.85, StudyRepsTheme.warmOrange),
               const SizedBox(height: 8),
-              _buildProgressBar(0.6, RetainLearnTheme.tealLight),
+              _buildProgressBar(0.6, StudyRepsTheme.warmOrangeDark),
               const SizedBox(height: 16),
               // AI Message bubble
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: RetainLearnTheme.tealSurface,
+                  color: StudyRepsTheme.warmCream,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   '"I\'ve analyzed your logic in the quadratic formula. You missed a negative sign in the discriminant—let me show you why."',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.outfit(
                     fontSize: 13,
                     fontStyle: FontStyle.italic,
-                    color: RetainLearnTheme.textMedium,
+                    color: StudyRepsTheme.warmTextMedium,
                     height: 1.4,
                   ),
                 ),
@@ -385,7 +385,7 @@ class _HeroSection extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: RetainLearnTheme.paperWhite,
+            color: StudyRepsTheme.warmWhite,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
@@ -403,10 +403,10 @@ class _HeroSection extends StatelessWidget {
                   children: [
                     Text(
                       'Your Style',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.outfit(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: RetainLearnTheme.textDark,
+                        color: StudyRepsTheme.warmTextDark,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -433,7 +433,7 @@ class _HeroSection extends StatelessWidget {
                           children: [
                             Text(
                               'Visual',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.outfit(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -442,7 +442,7 @@ class _HeroSection extends StatelessWidget {
                               'Content adapted for diagrams',
                               style: TextStyle(
                                 fontSize: 11,
-                                color: RetainLearnTheme.textLight,
+                                color: StudyRepsTheme.warmTextLight,
                               ),
                             ),
                           ],
@@ -463,7 +463,7 @@ class _HeroSection extends StatelessWidget {
     return Container(
       height: 8,
       decoration: BoxDecoration(
-        color: RetainLearnTheme.grayBorder,
+        color: StudyRepsTheme.warmBorder,
         borderRadius: BorderRadius.circular(4),
       ),
       child: FractionallySizedBox(
@@ -492,19 +492,20 @@ class _FeaturesSection extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(32),
-      color: RetainLearnTheme.paperWhite,
+      color: StudyRepsTheme.warmWhite,
       child: Column(
         children: [
           Text(
             'Powerful Features',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: StudyRepsTheme.warmTextDark,
                 ),
           ),
           const SizedBox(height: 8),
           const Text(
             'Everything you need to excel in learning',
-            style: TextStyle(color: RetainLearnTheme.textMedium),
+            style: TextStyle(color: StudyRepsTheme.warmTextMedium),
           ),
           const SizedBox(height: 32),
           Wrap(
@@ -516,19 +517,19 @@ class _FeaturesSection extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: RetainLearnTheme.paperOffWhite,
+                    color: StudyRepsTheme.warmCream,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: RetainLearnTheme.grayBorder),
+                    border: Border.all(color: StudyRepsTheme.warmBorder),
                   ),
                   child: Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: RetainLearnTheme.tealSurface,
+                          color: StudyRepsTheme.warmWhite,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(f.$1, color: RetainLearnTheme.tealPrimary),
+                        child: Icon(f.$1, color: StudyRepsTheme.warmOrange),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -537,9 +538,10 @@ class _FeaturesSection extends StatelessWidget {
                           children: [
                             Text(
                               f.$2,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.outfit(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
+                                color: StudyRepsTheme.warmTextDark,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -547,7 +549,7 @@ class _FeaturesSection extends StatelessWidget {
                               f.$3,
                               style: const TextStyle(
                                 fontSize: 13,
-                                color: RetainLearnTheme.textMedium,
+                                color: StudyRepsTheme.warmTextMedium,
                               ),
                             ),
                           ],
@@ -582,6 +584,7 @@ class _HowItWorksSection extends StatelessWidget {
             'How It Works',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: StudyRepsTheme.warmTextDark,
                 ),
           ),
           const SizedBox(height: 32),
@@ -598,13 +601,13 @@ class _HowItWorksSection extends StatelessWidget {
                       width: 48,
                       height: 48,
                       decoration: const BoxDecoration(
-                        color: RetainLearnTheme.tealPrimary,
+                        color: StudyRepsTheme.warmOrange,
                         shape: BoxShape.circle,
                       ),
                       child: Center(
                         child: Text(
                           s.$1,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.outfit(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -615,9 +618,10 @@ class _HowItWorksSection extends StatelessWidget {
                     const SizedBox(height: 16),
                     Text(
                       s.$2,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.outfit(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
+                        color: StudyRepsTheme.warmTextDark,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -626,7 +630,7 @@ class _HowItWorksSection extends StatelessWidget {
                       s.$3,
                       style: const TextStyle(
                         fontSize: 14,
-                        color: RetainLearnTheme.textMedium,
+                        color: StudyRepsTheme.warmTextMedium,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -650,8 +654,8 @@ class _CTASection extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
-            RetainLearnTheme.tealPrimary,
-            RetainLearnTheme.tealDark,
+            StudyRepsTheme.warmOrange,
+            StudyRepsTheme.warmOrangeDark,
           ],
         ),
         borderRadius: BorderRadius.circular(24),
@@ -661,7 +665,7 @@ class _CTASection extends StatelessWidget {
           Text(
             'Ready to Transform Your Learning?',
             textAlign: TextAlign.center,
-            style: GoogleFonts.merriweather(
+            style: GoogleFonts.outfit(
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Colors.white,
@@ -669,7 +673,7 @@ class _CTASection extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'Join thousands of students already using RetainLearn',
+            'Join thousands of students already using StudyReps',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15,
@@ -681,7 +685,7 @@ class _CTASection extends StatelessWidget {
             onPressed: () => GoRouter.of(context).go('/signup'),
             style: FilledButton.styleFrom(
               backgroundColor: Colors.white,
-              foregroundColor: RetainLearnTheme.tealPrimary,
+              foregroundColor: StudyRepsTheme.warmOrange,
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
             ),
             child: const Text('Get Started Free'),
@@ -697,16 +701,16 @@ class _Footer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
-      color: RetainLearnTheme.paperWhite,
+      color: StudyRepsTheme.warmWhite,
       child: const Column(
         children: [
-          Divider(color: RetainLearnTheme.grayBorder),
+          Divider(color: StudyRepsTheme.warmBorder),
           SizedBox(height: 16),
           Text(
-            '© 2024 RetainLearn. Powered by Gemini AI.',
+            '© 2024 StudyReps. Powered by Gemini AI.',
             style: TextStyle(
               fontSize: 13,
-              color: RetainLearnTheme.textLight,
+              color: StudyRepsTheme.warmTextLight,
             ),
           ),
         ],

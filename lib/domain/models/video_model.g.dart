@@ -9,8 +9,8 @@ part of 'video_model.dart';
 _$VideoModelImpl _$$VideoModelImplFromJson(Map<String, dynamic> json) =>
     _$VideoModelImpl(
       id: json['id'] as String,
-      videoUrl: json['videoUrl'] as String,
-      lockTimestamp: (json['lockTimestamp'] as num).toInt(),
+      videoUrl: json['videoUrl'] as String? ?? '',
+      lockTimestamp: (json['lockTimestamp'] as num?)?.toInt() ?? 0,
       question:
           QuestionModel.fromJson(json['question'] as Map<String, dynamic>),
       creatorName: json['creatorName'] as String? ?? 'StudyReps',
@@ -26,6 +26,15 @@ _$VideoModelImpl _$$VideoModelImplFromJson(Map<String, dynamic> json) =>
       duration: json['duration'] == null
           ? Duration.zero
           : Duration(microseconds: (json['duration'] as num).toInt()),
+      startSeconds: (json['startSeconds'] as num?)?.toInt() ?? 0,
+      endSeconds: (json['endSeconds'] as num?)?.toInt(),
+      contentType:
+          $enumDecodeNullable(_$ContentTypeEnumMap, json['contentType']) ??
+              ContentType.video,
+      flashcardFrontText: json['flashcardFrontText'] as String? ?? '',
+      flashcardBackText: json['flashcardBackText'] as String? ?? '',
+      flashcardImageUrl: json['flashcardImageUrl'] as String? ?? '',
+      flashcardEmoji: json['flashcardEmoji'] as String? ?? '',
       transcript: json['transcript'] as String? ?? '',
       tags:
           (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
@@ -38,6 +47,14 @@ _$VideoModelImpl _$$VideoModelImplFromJson(Map<String, dynamic> json) =>
       topicId: json['topicId'] as String? ?? '',
       conceptCluster: json['conceptCluster'] as String? ?? '',
       language: json['language'] as String? ?? 'en',
+      boards: (json['boards'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      grades: (json['grades'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$$VideoModelImplToJson(_$VideoModelImpl instance) =>
@@ -56,6 +73,13 @@ Map<String, dynamic> _$$VideoModelImplToJson(_$VideoModelImpl instance) =>
       'isLiked': instance.isLiked,
       'isSaved': instance.isSaved,
       'duration': instance.duration.inMicroseconds,
+      'startSeconds': instance.startSeconds,
+      'endSeconds': instance.endSeconds,
+      'contentType': _$ContentTypeEnumMap[instance.contentType]!,
+      'flashcardFrontText': instance.flashcardFrontText,
+      'flashcardBackText': instance.flashcardBackText,
+      'flashcardImageUrl': instance.flashcardImageUrl,
+      'flashcardEmoji': instance.flashcardEmoji,
       'transcript': instance.transcript,
       'tags': instance.tags,
       'prerequisiteIds': instance.prerequisiteIds,
@@ -63,7 +87,14 @@ Map<String, dynamic> _$$VideoModelImplToJson(_$VideoModelImpl instance) =>
       'topicId': instance.topicId,
       'conceptCluster': instance.conceptCluster,
       'language': instance.language,
+      'boards': instance.boards,
+      'grades': instance.grades,
     };
+
+const _$ContentTypeEnumMap = {
+  ContentType.video: 'video',
+  ContentType.flashcard: 'flashcard',
+};
 
 _$QuestionModelImpl _$$QuestionModelImplFromJson(Map<String, dynamic> json) =>
     _$QuestionModelImpl(

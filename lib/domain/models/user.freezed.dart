@@ -374,6 +374,7 @@ mixin _$UserPreferences {
   @JsonKey(name: 'user_type')
   String? get userType => throw _privateConstructorUsedError;
   String? get board => throw _privateConstructorUsedError;
+  String? get grade => throw _privateConstructorUsedError;
   String? get subject => throw _privateConstructorUsedError;
   String get theme => throw _privateConstructorUsedError;
   bool get notifications => throw _privateConstructorUsedError;
@@ -396,6 +397,7 @@ abstract class $UserPreferencesCopyWith<$Res> {
   $Res call(
       {@JsonKey(name: 'user_type') String? userType,
       String? board,
+      String? grade,
       String? subject,
       String theme,
       bool notifications,
@@ -418,6 +420,7 @@ class _$UserPreferencesCopyWithImpl<$Res, $Val extends UserPreferences>
   $Res call({
     Object? userType = freezed,
     Object? board = freezed,
+    Object? grade = freezed,
     Object? subject = freezed,
     Object? theme = null,
     Object? notifications = null,
@@ -432,6 +435,10 @@ class _$UserPreferencesCopyWithImpl<$Res, $Val extends UserPreferences>
       board: freezed == board
           ? _value.board
           : board // ignore: cast_nullable_to_non_nullable
+              as String?,
+      grade: freezed == grade
+          ? _value.grade
+          : grade // ignore: cast_nullable_to_non_nullable
               as String?,
       subject: freezed == subject
           ? _value.subject
@@ -468,6 +475,7 @@ abstract class _$$UserPreferencesImplCopyWith<$Res>
   $Res call(
       {@JsonKey(name: 'user_type') String? userType,
       String? board,
+      String? grade,
       String? subject,
       String theme,
       bool notifications,
@@ -488,6 +496,7 @@ class __$$UserPreferencesImplCopyWithImpl<$Res>
   $Res call({
     Object? userType = freezed,
     Object? board = freezed,
+    Object? grade = freezed,
     Object? subject = freezed,
     Object? theme = null,
     Object? notifications = null,
@@ -502,6 +511,10 @@ class __$$UserPreferencesImplCopyWithImpl<$Res>
       board: freezed == board
           ? _value.board
           : board // ignore: cast_nullable_to_non_nullable
+              as String?,
+      grade: freezed == grade
+          ? _value.grade
+          : grade // ignore: cast_nullable_to_non_nullable
               as String?,
       subject: freezed == subject
           ? _value.subject
@@ -533,6 +546,7 @@ class _$UserPreferencesImpl implements _UserPreferences {
   const _$UserPreferencesImpl(
       {@JsonKey(name: 'user_type') this.userType,
       this.board,
+      this.grade,
       this.subject,
       this.theme = 'light',
       this.notifications = true,
@@ -547,6 +561,8 @@ class _$UserPreferencesImpl implements _UserPreferences {
   final String? userType;
   @override
   final String? board;
+  @override
+  final String? grade;
   @override
   final String? subject;
   @override
@@ -564,7 +580,7 @@ class _$UserPreferencesImpl implements _UserPreferences {
 
   @override
   String toString() {
-    return 'UserPreferences(userType: $userType, board: $board, subject: $subject, theme: $theme, notifications: $notifications, language: $language, completedAt: $completedAt)';
+    return 'UserPreferences(userType: $userType, board: $board, grade: $grade, subject: $subject, theme: $theme, notifications: $notifications, language: $language, completedAt: $completedAt)';
   }
 
   @override
@@ -575,6 +591,7 @@ class _$UserPreferencesImpl implements _UserPreferences {
             (identical(other.userType, userType) ||
                 other.userType == userType) &&
             (identical(other.board, board) || other.board == board) &&
+            (identical(other.grade, grade) || other.grade == grade) &&
             (identical(other.subject, subject) || other.subject == subject) &&
             (identical(other.theme, theme) || other.theme == theme) &&
             (identical(other.notifications, notifications) ||
@@ -587,8 +604,8 @@ class _$UserPreferencesImpl implements _UserPreferences {
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, userType, board, subject, theme,
-      notifications, language, completedAt);
+  int get hashCode => Object.hash(runtimeType, userType, board, grade, subject,
+      theme, notifications, language, completedAt);
 
   @JsonKey(ignore: true)
   @override
@@ -609,6 +626,7 @@ abstract class _UserPreferences implements UserPreferences {
   const factory _UserPreferences(
           {@JsonKey(name: 'user_type') final String? userType,
           final String? board,
+          final String? grade,
           final String? subject,
           final String theme,
           final bool notifications,
@@ -624,6 +642,8 @@ abstract class _UserPreferences implements UserPreferences {
   String? get userType;
   @override
   String? get board;
+  @override
+  String? get grade;
   @override
   String? get subject;
   @override
