@@ -59,14 +59,6 @@ class VideosRepository {
         videoData['isLiked'] = isLiked;
         videoData['isSaved'] = isSaved;
         videoData['likesCount'] = likes.length;
-
-        // Force local asset workaround for the mock videos to avoid CORS errors
-        // since we cannot currently reset the Supabase database.
-        const mockIds = ['physics_newton_apple', 'chem_periodic_table', 'bio_cell_division', 'math_pythagoras', 'physics_thermo'];
-        if (mockIds.contains(json['id'])) {
-          videoData['videoUrl'] = 'assets/videos/sample.mp4';
-        }
-
         return VideoModel.fromJson(videoData);
       }).toList();
     } catch (e) {

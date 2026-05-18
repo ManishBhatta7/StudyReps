@@ -11,7 +11,7 @@ class ForceChapterVideos {
     // ── PHYSICS ──
     const VideoModel(
       id: 'physics_newton_apple',
-      videoUrl: 'assets/videos/sample.mp4',
+      videoUrl: 'https://www.youtube.com/watch?v=E-kn4sYdBFg',
       lockTimestamp: 8,
       title: 'Newton\'s Law of Gravitation',
       subject: 'Physics',
@@ -33,7 +33,7 @@ class ForceChapterVideos {
     ),
     const VideoModel(
       id: 'physics_newtons_laws',
-      videoUrl: 'assets/videos/sample.mp4',
+      videoUrl: 'https://www.youtube.com/watch?v=kKKM8Y-u7ds',
       lockTimestamp: 12,
       title: 'Newton\'s 3 Laws of Motion',
       subject: 'Physics',
@@ -55,7 +55,7 @@ class ForceChapterVideos {
     ),
     const VideoModel(
       id: 'physics_thermo',
-      videoUrl: 'assets/videos/sample.mp4',
+      videoUrl: 'https://www.youtube.com/watch?v=BPhT8hCR7bY',
       lockTimestamp: 20,
       title: 'Thermodynamics: Entropy',
       subject: 'Physics',
@@ -79,7 +79,7 @@ class ForceChapterVideos {
     // ── CHEMISTRY ──
     const VideoModel(
       id: 'chem_periodic_table',
-      videoUrl: 'assets/videos/sample.mp4',
+      videoUrl: 'https://www.youtube.com/watch?v=0RRVV4Diomg',
       lockTimestamp: 10,
       title: 'The Periodic Table: Trends',
       subject: 'Chemistry',
@@ -101,7 +101,7 @@ class ForceChapterVideos {
     ),
     const VideoModel(
       id: 'chem_acids_bases',
-      videoUrl: 'assets/videos/sample.mp4',
+      videoUrl: 'https://www.youtube.com/watch?v=tGHtIeKEFiU',
       lockTimestamp: 13,
       title: 'Acids, Bases and pH Scale',
       subject: 'Chemistry',
@@ -125,7 +125,7 @@ class ForceChapterVideos {
     // ── BIOLOGY ──
     const VideoModel(
       id: 'bio_cell_division',
-      videoUrl: 'assets/videos/sample.mp4',
+      videoUrl: 'https://www.youtube.com/watch?v=f-ldPgEfAHI',
       lockTimestamp: 15,
       title: 'Mitosis vs Meiosis',
       subject: 'Biology',
@@ -147,7 +147,7 @@ class ForceChapterVideos {
     ),
     const VideoModel(
       id: 'bio_dna_structure',
-      videoUrl: 'assets/videos/sample.mp4',
+      videoUrl: 'https://www.youtube.com/watch?v=MvuYATh7Y74',
       lockTimestamp: 14,
       title: 'DNA: The Double Helix',
       subject: 'Biology',
@@ -171,7 +171,7 @@ class ForceChapterVideos {
     // ── MATHEMATICS ──
     const VideoModel(
       id: 'math_pythagoras',
-      videoUrl: 'assets/videos/sample.mp4',
+      videoUrl: 'https://www.youtube.com/watch?v=2MSi6S9hFmo',
       lockTimestamp: 12,
       title: 'Pythagorean Theorem Visualized',
       subject: 'Mathematics',
@@ -193,7 +193,7 @@ class ForceChapterVideos {
     ),
     const VideoModel(
       id: 'math_probability_basics',
-      videoUrl: 'assets/videos/sample.mp4',
+      videoUrl: 'https://www.youtube.com/watch?v=uzkc-qNVoOk',
       lockTimestamp: 10,
       title: 'Probability: Coins and Dice',
       subject: 'Mathematics',
@@ -217,7 +217,7 @@ class ForceChapterVideos {
     // ── HISTORY ──
     const VideoModel(
       id: 'hist_independence',
-      videoUrl: 'assets/videos/sample.mp4',
+      videoUrl: 'https://www.youtube.com/watch?v=_pcuTbkfz8g',
       lockTimestamp: 15,
       title: 'Indian Independence Movement',
       subject: 'History',
@@ -239,7 +239,7 @@ class ForceChapterVideos {
     ),
     const VideoModel(
       id: 'hist_mughal_empire',
-      videoUrl: 'assets/videos/sample.mp4',
+      videoUrl: 'https://www.youtube.com/watch?v=rBJbhbBq7DY',
       lockTimestamp: 14,
       title: 'The Mughal Empire',
       subject: 'History',

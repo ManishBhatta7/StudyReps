@@ -394,9 +394,18 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
           }
         }
       } else {
-        // Native video_player initialization logic
-        if (kIsWeb || url.startsWith('http')) {
-          _controller = VideoPlayerController.networkUrl(Uri.parse(url));
+        // Non-YouTube URL — on web we cannot reliably play arbitrary MP4s
+        if (kIsWeb) {
+          // Gracefully skip: show initialized=true but no controller
+          // The build will show a placeholder instead of crashing
+          debugPrint('⚠️ Skipping non-YouTube video on web: $url');
+          if (mounted) setState(() => _isInitialized = true);
+          return;
+        }
+
+        // Native platforms: use video_player normally
+        if (url.startsWith('assets/')) {
+          _controller = VideoPlayerController.asset(url);
         } else {
           _controller = VideoPlayerController.networkUrl(Uri.parse(url));
         }
@@ -768,10 +777,39 @@ class _SwipeGatedVideoItemState extends ConsumerState<SwipeGatedVideoItem>
                 child: Center(
                   child: _isYoutube 
                     ? YoutubePlayer(controller: _ytController!)
-                    : AspectRatio(
-                        aspectRatio: _controller!.value.aspectRatio,
-                        child: VideoPlayer(_controller!),
-                      ),
+                    : _controller != null
+                      ? AspectRatio(
+                          aspectRatio: _controller!.value.aspectRatio,
+                          child: VideoPlayer(_controller!),
+                        )
+                      // Web fallback: non-YouTube video, show placeholder
+                      : Container(
+                          color: Colors.black,
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.play_circle_outline,
+                                    color: Colors.white54, size: 72),
+                                const SizedBox(height: 16),
+                                Text(
+                                  widget.video.title,
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 8),
+                                const Text(
+                                  'Video coming soon',
+                                  style: TextStyle(color: Colors.white38, fontSize: 13),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                 ),
               )
             else
